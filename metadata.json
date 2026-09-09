@@ -1,0 +1,6 @@
+{
+  "name": "Ismaili Center Houston Guide",
+  "description": "Interactive visitor guide, Jamatkhana prayer schedules, AI assistant, voice hotline, and media for the Ismaili Center Houston.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
