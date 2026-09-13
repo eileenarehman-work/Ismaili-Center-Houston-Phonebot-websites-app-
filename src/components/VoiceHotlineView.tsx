@@ -34,12 +34,16 @@ export const VoiceHotlineView: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isMicActive, setIsMicActive] = useState(true);
+  const [isListening, setIsListening] = useState(false);
   const [showKeypad, setShowKeypad] = useState(true);
   const [callSeconds, setCallSeconds] = useState(0);
-  const [statusText, setStatusText] = useState('Hotline Ready • Click Start Call to Connect');
+  const [statusText, setStatusText] = useState('Hotline Ready • Click Call Hotline to Connect');
   const [operatorSpeaking, setOperatorSpeaking] = useState(false);
   const [transcript, setTranscript] = useState<Array<{ speaker: string; text: string; time: string }>>([]);
+  const [userInterimSpeech, setUserInterimSpeech] = useState('');
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
 
+  const callActiveRef = useRef<boolean>(false);
   const timerRef = useRef<any>(null);
   const recognitionRef = useRef<any>(null);
   const transcriptBottomRef = useRef<HTMLDivElement>(null);
@@ -51,54 +55,22 @@ export const VoiceHotlineView: React.FC = () => {
     }
   }, [transcript]);
 
-  // Setup Speech Recognition for hands-free natural voice interaction
+  // Clean up on component unmount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRec) {
-        const recog = new SpeechRec();
-        recog.continuous = false;
-        recog.interimResults = false;
-        recog.lang = 'en-US';
-
-        recog.onresult = (event: any) => {
-          if (event?.results?.[0]?.[0]?.transcript) {
-            const userSaid = event.results[0][0].transcript.trim();
-            if (userSaid) {
-              addTranscriptEntry('You (Voice)', userSaid);
-              handleUserVoiceInput(userSaid);
-            }
-          }
-        };
-
-        recog.onerror = () => {
-          if (callState === 'connected' && !operatorSpeaking) {
-            setStatusText('Line Active • Listening for your question...');
-          }
-        };
-
-        recog.onend = () => {
-          // Restart recognition if call is active, mic enabled, and operator is not speaking
-          if (callState === 'connected' && isMicActive && !operatorSpeaking) {
-            try {
-              recog.start();
-            } catch (e) {
-              // already active
-            }
-          }
-        };
-
-        recognitionRef.current = recog;
-      }
-    }
-
     return () => {
+      callActiveRef.current = false;
       if (timerRef.current) clearInterval(timerRef.current);
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
+      telecomAudio.stopAll();
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
+      }
     };
-  }, [callState, isMicActive, operatorSpeaking]);
+  }, []);
 
   const formatTimer = (totalSec: number) => {
     const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
@@ -111,27 +83,117 @@ export const VoiceHotlineView: React.FC = () => {
     setTranscript((prev) => [...prev, { speaker, text, time }]);
   };
 
-  // Speaks text using natural speech synthesis
+  // Safe Speech Recognition control for talking to the AI phonebot
+  const startListening = () => {
+    if (!callActiveRef.current || operatorSpeaking || !isMicActive) return;
+    if (typeof window === 'undefined') return;
+
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      setStatusText('Line Active • Voice recognition not supported in this browser');
+      return;
+    }
+
+    try {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
+      }
+
+      const recog = new SpeechRec();
+      recog.continuous = false;
+      recog.interimResults = true;
+      recog.lang = 'en-US';
+
+      recog.onstart = () => {
+        if (!callActiveRef.current) {
+          try { recog.abort(); } catch (e) {}
+          return;
+        }
+        setIsListening(true);
+        setStatusText('AI Phonebot is listening... Speak your question now');
+      };
+
+      recog.onresult = (event: any) => {
+        if (!callActiveRef.current) return;
+        let interim = '';
+        let final = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            final += event.results[i][0].transcript;
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        if (interim) {
+          setUserInterimSpeech(interim);
+        }
+        if (final.trim()) {
+          setUserInterimSpeech('');
+          setIsListening(false);
+          const userSaid = final.trim();
+          addTranscriptEntry('You (Voice)', userSaid);
+          handleUserVoiceInput(userSaid);
+        }
+      };
+
+      recog.onerror = () => {
+        setIsListening(false);
+        setUserInterimSpeech('');
+        if (callActiveRef.current && !operatorSpeaking) {
+          setStatusText('Line Active • Tap "Talk to Phonebot" or speak anytime');
+        }
+      };
+
+      recog.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recog;
+      recog.start();
+    } catch (err) {
+      setIsListening(false);
+    }
+  };
+
+  const stopListening = () => {
+    setIsListening(false);
+    setUserInterimSpeech('');
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {}
+    }
+  };
+
+  // Speaks text using natural speech synthesis with strict callActive checks
   const speakText = (text: string, onDone?: () => void) => {
+    // If call was hung up, cut off immediately!
+    if (!callActiveRef.current) return;
+
     if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
       if (onDone) onDone();
       return;
     }
 
+    // Cancel any previous speech and pause mic during phonebot speaking
     window.speechSynthesis.cancel();
+    stopListening();
     setOperatorSpeaking(true);
 
     const cleanText = text
       .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/###?\s*/g, '')
       .replace(/https?:\/\/[^\s]+/g, 'on the official website ismailicenter.org')
-      .replace(/[-*#]\s+/g, '')
+      .replace(/[-*•]\s+/g, '')
       .replace(/\n+/g, '. ');
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
 
-    // Pick a natural English voice if available
+    // Select natural English voice if available
     const voices = window.speechSynthesis.getVoices();
     const naturalVoice = voices.find(v => 
       (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Karen') || v.name.includes('Daniel')) &&
@@ -143,79 +205,118 @@ export const VoiceHotlineView: React.FC = () => {
     }
 
     utterance.onstart = () => {
-      setStatusText('Automated Operator Speaking...');
-      // Pause mic while operator is speaking to prevent acoustic feedback
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {}
+      if (!callActiveRef.current) {
+        window.speechSynthesis.cancel();
+        setOperatorSpeaking(false);
+        return;
       }
+      setStatusText('AI Phonebot is speaking...');
     };
 
     utterance.onend = () => {
       setOperatorSpeaking(false);
-      setStatusText('Line Active • Listening or press any keypad number...');
+      if (!callActiveRef.current) return;
+      setStatusText('AI Phonebot is listening... Speak now');
       if (onDone) onDone();
-      // Resume listening
-      if (callState === 'connected' && isMicActive && recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-        } catch (e) {}
-      }
     };
 
     utterance.onerror = () => {
       setOperatorSpeaking(false);
-      setStatusText('Line Active • Ready for input...');
+      if (!callActiveRef.current) return;
+      setStatusText('Line Active • Ready for your voice...');
       if (onDone) onDone();
     };
 
     window.speechSynthesis.speak(utterance);
   };
 
-  // Start realistic call with ringback tone
+  // Process caller voice input via smart assistant engine and respond aloud
+  const handleUserVoiceInput = async (query: string) => {
+    if (!callActiveRef.current) return;
+
+    setIsProcessingVoice(true);
+    setStatusText('AI Phonebot is thinking...');
+    stopListening();
+
+    try {
+      const response = await getSmartAssistantResponse(query);
+      if (!callActiveRef.current) return;
+
+      const reply = response.reply || "I am glad to help! You can visit on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time.";
+      addTranscriptEntry('AI Phonebot', reply);
+
+      speakText(reply, () => {
+        if (callActiveRef.current && isMicActive) {
+          startListening();
+        }
+      });
+    } catch (_err) {
+      if (!callActiveRef.current) return;
+      const fallbackReply = "The Ismaili Center Houston is located in Montrose, Houston. Visitors are welcome on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time.";
+      addTranscriptEntry('AI Phonebot', fallbackReply);
+      speakText(fallbackReply, () => {
+        if (callActiveRef.current && isMicActive) {
+          startListening();
+        }
+      });
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  };
+
+  // Start call: play ringback tone, then immediately greet caller via AI Phonebot
   const startCall = () => {
+    callActiveRef.current = true;
     setCallState('ringing');
     setIsPaused(false);
     setCallSeconds(0);
     setStatusText('Connecting to +1 (713) 522-2026... Dialing');
 
-    // Play authentic ringback tone (1.8s) followed by connect click
     telecomAudio.playRingback(() => {
+      if (!callActiveRef.current) return;
+
       setCallState('connected');
-      setStatusText('Call Connected • HD VoLTE Audio Active');
+      setStatusText('Call Connected • HD Voice Link Active');
 
       // Start duration counter
       timerRef.current = setInterval(() => {
         setCallSeconds((s) => s + 1);
       }, 1000);
 
-      const ivrGreeting = 
-        "Thank you for calling the Ismaili Center Houston automated information line. All timings are provided in Central Time. For visitor hours and free admission, press 1. For Jamatkhana prayer times, press 2. For guided architectural tour booking, press 3. For location, directions, and parking, press 4. For architectural design and gardens, press 5. For His Highness the Aga Khan and community information, press 6. Or speak your inquiry at any time.";
+      // Conversational greeting from the AI Phonebot as requested
+      const phonebotGreeting = 
+        "Hello and welcome to the Ismaili Center Houston! I am your AI phonebot ambassador. You can speak to me directly about our visiting hours, guided architectural tours, Central Time prayer schedules, or anything else about the Center. How may I help you today?";
 
-      addTranscriptEntry('Automated Operator', ivrGreeting);
-      speakText(ivrGreeting);
+      addTranscriptEntry('AI Phonebot', phonebotGreeting);
+      speakText(phonebotGreeting, () => {
+        // Automatically start listening for caller's voice once greeting completes
+        if (callActiveRef.current && isMicActive) {
+          startListening();
+        }
+      });
     });
   };
 
-  // End call
+  // End call: IMMEDIATELY cut off phonebot speech and all telecom audio
   const endCall = () => {
+    callActiveRef.current = false;
     setCallState('ended');
     setIsPaused(false);
     setOperatorSpeaking(false);
+    setIsListening(false);
+    setUserInterimSpeech('');
+    setIsProcessingVoice(false);
+
     if (timerRef.current) clearInterval(timerRef.current);
+
+    // CUT OFF ALL AUDIO IMMEDIATELY
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {}
-    }
+    telecomAudio.stopAll();
+    stopListening();
 
-    // Play hangup tone
-    telecomAudio.playHangupTone();
-    setStatusText('Call Ended • Duration ' + formatTimer(callSeconds));
+    setStatusText('Call Ended • Audio Cut Off • Duration ' + formatTimer(callSeconds));
   };
 
   // Handle keypad digit presses with genuine DTMF audio
@@ -227,31 +328,12 @@ export const VoiceHotlineView: React.FC = () => {
     }
 
     addTranscriptEntry(`You (Keypad [${digit}])`, menuTitle);
-    addTranscriptEntry('Automated Operator', responseText);
-    speakText(responseText);
-  };
-
-  // Process natural spoken questions via backend chat or smart assistant engine
-  const handleUserVoiceInput = async (query: string) => {
-    setStatusText('Processing your inquiry...');
-    try {
-      const response = await getSmartAssistantResponse(query);
-      const reply = response.reply || "I am happy to assist you with visitor hours, prayer times, or architectural tours.";
-      addTranscriptEntry('Automated Operator', reply);
-      
-      // Clean markdown tags for natural speech synthesis
-      const speechClean = reply
-        .replace(/###?\s*/g, '')
-        .replace(/\*\*/g, '')
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-        .replace(/- /g, '')
-        .replace(/---/g, '');
-      speakText(speechClean);
-    } catch (_e) {
-      const fallbackReply = "The Ismaili Center Houston welcomes visitors on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time. Guided architectural tours are free of charge.";
-      addTranscriptEntry('Automated Operator', fallbackReply);
-      speakText(fallbackReply);
-    }
+    addTranscriptEntry('AI Phonebot', responseText);
+    speakText(responseText, () => {
+      if (callActiveRef.current && isMicActive) {
+        startListening();
+      }
+    });
   };
 
   // Interactive Voice Response (IVR) phone tree options
@@ -369,13 +451,18 @@ export const VoiceHotlineView: React.FC = () => {
     {
       digit: '0',
       sub: 'OPER',
-      label: 'Live AI Operator',
-      handler: () =>
-        handleKeypadPress(
-          '0',
-          "Connecting you to the live AI ambassador operator. You can now speak any question naturally into your microphone, and I will answer directly.",
-          'Selection 0: Connect to AI Operator'
-        ),
+      label: 'Live AI Phonebot',
+      handler: () => {
+        telecomAudio.playDTMF('0');
+        const greeting = "You are speaking directly with the AI phonebot ambassador for the Ismaili Center Houston. What can I assist you with regarding visiting hours, tours, or prayer schedules?";
+        addTranscriptEntry('You (Keypad [0])', 'Transferred to AI Phonebot');
+        addTranscriptEntry('AI Phonebot', greeting);
+        speakText(greeting, () => {
+          if (callActiveRef.current && isMicActive) {
+            startListening();
+          }
+        });
+      },
     },
     {
       digit: '#',
@@ -557,6 +644,113 @@ export const VoiceHotlineView: React.FC = () => {
                     <PhoneOff className="w-5 h-5 fill-current" />
                     <span>End Call</span>
                   </button>
+                </div>
+              )}
+
+              {/* Two-Way Voice Communication Section (Strictly Voice - No Text Input) */}
+              {callState === 'connected' && (
+                <div className="mt-4 pt-4 border-t border-slate-700/60 w-full space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-rose-300 text-xs font-semibold">
+                      <Sparkles className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+                      <span>Live Voice Communication</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      VOICE ONLY
+                    </span>
+                  </div>
+
+                  {/* Interactive Voice Talk Station */}
+                  <div className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2.5">
+                    {/* Live speech feedback if hearing words */}
+                    {userInterimSpeech && (
+                      <div className="w-full text-center px-3 py-1.5 rounded-lg bg-rose-950/50 border border-rose-800 text-rose-200 text-xs italic animate-pulse">
+                        Hearing: "{userInterimSpeech}..."
+                      </div>
+                    )}
+
+                    {/* Talk to Phonebot Primary Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (operatorSpeaking) {
+                          window.speechSynthesis.cancel();
+                          setOperatorSpeaking(false);
+                        }
+                        if (isListening) {
+                          stopListening();
+                          setStatusText('Voice paused • Tap to talk again');
+                        } else {
+                          startListening();
+                        }
+                      }}
+                      className={`w-full py-3 px-4 rounded-xl font-semibold text-xs transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-md active:scale-95 ${
+                        operatorSpeaking
+                          ? 'bg-amber-600/30 text-amber-300 border border-amber-500/40 hover:bg-amber-600/40'
+                          : isListening
+                          ? 'bg-rose-600 text-white border border-rose-500 animate-pulse shadow-rose-900/50'
+                          : isProcessingVoice
+                          ? 'bg-slate-800 text-slate-300 border border-slate-700'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 shadow-emerald-950/40'
+                      }`}
+                    >
+                      {operatorSpeaking ? (
+                        <>
+                          <Volume2 className="w-4 h-4 animate-bounce" />
+                          <span>AI Phonebot is Speaking (Tap to Talk)</span>
+                        </>
+                      ) : isListening ? (
+                        <>
+                          <Mic className="w-4 h-4 animate-pulse text-white" />
+                          <span>Listening to Your Voice... Speak Now</span>
+                        </>
+                      ) : isProcessingVoice ? (
+                        <>
+                          <Sparkles className="w-4 h-4 animate-spin text-rose-400" />
+                          <span>AI Phonebot Thinking...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-4 h-4" />
+                          <span>Tap to Talk to AI Phonebot</span>
+                        </>
+                      )}
+                    </button>
+
+                    <p className="text-[11px] text-slate-400 text-center">
+                      Speak naturally into your microphone. The AI Phonebot will listen and respond by voice.
+                    </p>
+                  </div>
+
+                  {/* Spoken Voice Shortcuts */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
+                      Spoken Question Shortcuts:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        'Are you open today?',
+                        'How do I book a tour?',
+                        "Tonight's prayer time in CT?",
+                        'Who is the architect?',
+                        'Is parking free?',
+                      ].map((prompt) => (
+                        <button
+                          key={prompt}
+                          type="button"
+                          onClick={() => {
+                            addTranscriptEntry('You (Voice Prompt)', prompt);
+                            handleUserVoiceInput(prompt);
+                          }}
+                          disabled={operatorSpeaking || isProcessingVoice}
+                          className="px-2.5 py-1 rounded-lg text-[11px] bg-slate-800/90 hover:bg-rose-950/60 text-slate-300 hover:text-rose-200 border border-slate-700/80 hover:border-rose-500/60 transition-all cursor-pointer text-left active:scale-95 disabled:opacity-50"
+                        >
+                          Ask: "{prompt}"
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

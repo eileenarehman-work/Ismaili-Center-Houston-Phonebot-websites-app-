@@ -68,29 +68,29 @@ export const VisitorInfoView: React.FC = () => {
           </a>
         </div>
 
-        {/* Feature Hero Card */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 via-[#004e6c] to-slate-950 text-white shadow-lg space-y-4">
-          <span className="text-xs font-bold tracking-widest uppercase text-teal-300">
+        {/* Feature Hero Card with Light Mode Shade & Dark Mode Sophistication */}
+        <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-sky-50 via-teal-50/70 to-emerald-50/60 dark:from-slate-900 dark:via-[#004e6c] dark:to-slate-950 text-slate-900 dark:text-white border border-sky-200/80 dark:border-slate-800 shadow-md space-y-4 transition-colors">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#007ba8] dark:text-teal-300">
             FIRST PURPOSE-BUILT ISMAILI CENTER IN THE UNITED STATES
           </span>
-          <h3 className="font-cinzel text-2xl sm:text-3xl font-bold tracking-wide">
+          <h3 className="font-cinzel text-2xl sm:text-3xl font-bold tracking-wide text-slate-900 dark:text-white">
             AN ARCHITECTURAL BEACON IN MONTROSE
           </h3>
-          <p className="text-sm sm:text-base text-slate-200 leading-relaxed max-w-3xl">
+          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed max-w-3xl">
             Designed by celebrated Iranian-British architect Farshid Moussavi with landscape design by Nelson Byrd Woltz. The center serves as an ambassadorial building that bridges cultures, fosters pluralism, and provides an open forum for intellectual exchange.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <div className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 backdrop-blur-sm flex items-center space-x-2">
-              <Layers className="w-3.5 h-3.5 text-teal-300" />
+            <div className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/90 dark:bg-white/10 text-[#006185] dark:text-white border border-sky-200 dark:border-white/20 shadow-xs backdrop-blur-xs flex items-center space-x-2">
+              <Layers className="w-3.5 h-3.5 text-[#007ba8] dark:text-teal-300" />
               <span>Farshid Moussavi Architecture</span>
             </div>
-            <div className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 backdrop-blur-sm flex items-center space-x-2">
-              <TreePine className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/90 dark:bg-white/10 text-emerald-800 dark:text-white border border-emerald-200 dark:border-white/20 shadow-xs backdrop-blur-xs flex items-center space-x-2">
+              <TreePine className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>11 Acres of Persian Charbagh Gardens</span>
             </div>
-            <div className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 backdrop-blur-sm flex items-center space-x-2">
-              <Landmark className="w-3.5 h-3.5 text-amber-300" />
+            <div className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/90 dark:bg-white/10 text-amber-800 dark:text-white border border-amber-200 dark:border-white/20 shadow-xs backdrop-blur-xs flex items-center space-x-2">
+              <Landmark className="w-3.5 h-3.5 text-amber-600 dark:text-amber-300" />
               <span>Triangular Shaded Verandahs</span>
             </div>
           </div>

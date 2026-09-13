@@ -131,6 +131,20 @@ class TelecomAudioEngine {
     }
   }
 
+  // Immediately terminate all ongoing tones and audio synthesis
+  stopAll() {
+    try {
+      if (this.ctx) {
+        if (this.ctx.state !== 'closed') {
+          this.ctx.close();
+        }
+        this.ctx = null;
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
   // Play hangup / busy tone (480Hz + 620Hz, 3 short bursts)
   playHangupTone() {
     try {

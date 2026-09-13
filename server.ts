@@ -144,6 +144,14 @@ function getKnowledgeBaseResponse(query: string): string {
   }
 }
 
+// Support both root and GitHub repository sub-path prefixes seamlessly
+app.use((req, _res, next) => {
+  if (req.url.startsWith('/Ismaili-Center-Houston-Phonebot-websites-app-')) {
+    req.url = req.url.slice('/Ismaili-Center-Houston-Phonebot-websites-app-'.length) || '/';
+  }
+  next();
+});
+
 // API Routes
 app.use(express.static(path.join(process.cwd(), "public")));
 
@@ -221,14 +229,20 @@ Domain Knowledge & Strict Guidelines:
    - Format answers cleanly with markdown headings, structured bullet points, and helpful links where appropriate.
    - Answer both short questions directly and complex architectural or cultural questions with deep, authoritative insight.`;
 
-      // Build contents supporting multi-turn conversation history
+      // Build contents supporting multi-turn conversation history (must start with role: "user")
       const contents: any[] = [];
       if (Array.isArray(history) && history.length > 0) {
+        let foundFirstUser = false;
         for (const item of history.slice(-8)) {
-          if (item?.role && item?.parts?.[0]?.text) {
+          if (item?.parts?.[0]?.text) {
+            const role = item.role === "assistant" || item.role === "model" ? "model" : "user";
+            if (!foundFirstUser && role !== "user") {
+              continue; // Drop initial assistant greetings so first item is guaranteed to be "user"
+            }
+            foundFirstUser = true;
             contents.push({
-              role: item.role === "assistant" || item.role === "model" ? "model" : "user",
-              parts: [{ text: item.parts[0].text }],
+              role,
+              parts: [{ text: String(item.parts[0].text) }],
             });
           }
         }

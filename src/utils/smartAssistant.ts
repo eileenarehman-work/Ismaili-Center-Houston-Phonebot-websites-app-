@@ -426,14 +426,14 @@ While every Ismaili Center houses a Jamatkhana within its complex, the two serve
   // 15. CONTACT INFO & OFFICIAL CHANNELS
   {
     id: 'contact_and_official',
-    keywords: ['contact', 'phone', 'call', 'number', 'email', 'website', 'official', 'hotline', 'representative'],
-    phrases: ['phone number', 'how to contact', 'official website', 'call the center', 'information desk'],
+    keywords: ['contact', 'phone', 'call', 'number', 'email', 'website', 'official', 'hotline', 'representative', 'operator'],
+    phrases: ['phone number', 'how to contact', 'official website', 'call the center', 'information desk', 'talk to operator', 'customer service'],
     title: 'Official Contact & Communication',
     generateResponse: () => ({
       text: `### Official Contact & Information Channels
 
 - **Dedicated Information Hotline**: **+1 (713) 522-2026**
-  *(You can also use our interactive Voice Hotline tab above with live DTMF touch-tone dialpad and voice interaction)*
+  *(You can also use our interactive Voice Hotline tab above with live DTMF touch-tone dialpad, live audio synthesis, and live AI operator)*
 - **Official Tour Booking**: [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/)
 - **Ismaili Center Houston Portal**: [ismailicenter.org/houston](https://ismailicenter.org/houston)
 - **Global Ismaili Community Portal**: [the.ismaili](https://the.ismaili)
@@ -442,6 +442,84 @@ While every Ismaili Center houses a Jamatkhana within its complex, the two serve
         'Try the Voice Hotline tab',
         'Book an architectural tour',
         'View the Jamatkhana schedule',
+      ],
+    }),
+  },
+
+  // 16. ARCHITECTURAL BEACON IN MONTROSE
+  {
+    id: 'architectural_beacon',
+    keywords: ['beacon', 'landmark', 'icon', 'montrose', 'allen', 'parkway', 'purpose-built', 'united states', 'first in us'],
+    phrases: ['architectural beacon', 'beacon in montrose', 'first in the united states', 'why in montrose', 'landmark in houston'],
+    title: 'An Architectural Beacon in Montrose',
+    generateResponse: () => ({
+      text: `### An Architectural Beacon in Montrose
+
+The **Ismaili Center Houston** stands as the **first purpose-built Ismaili Center in the United States** and the seventh in the world:
+
+- **A Civic & Cultural Beacon**: Located at the prominent intersection of Montrose Boulevard and Allen Parkway, adjacent to Buffalo Bayou Park.
+- **Architect**: Celebrated Iranian-British architect **Farshid Moussavi OBE, RA**, creating an inspiring contemporary monument celebrating Islamic architectural heritage in a 21st-century American context.
+- **Landscape**: 11 acres of public Persian *charbagh* gardens and native Texan forestry by **Nelson Byrd Woltz**.
+- **Civic Purpose**: Built as an ambassadorial building to bridge cultures, foster pluralism, host academic discourse, and provide an open forum for artistic and intellectual exchange.`,
+      followUps: [
+        'What are the visitor hours?',
+        'How do I book a tour?',
+        'Tell me about the 11-acre gardens',
+      ],
+    }),
+  },
+
+  // 17. VISIT DURATION, DINING & AMENITIES
+  {
+    id: 'visit_duration_and_amenities',
+    keywords: ['duration', 'long', 'time needed', 'spend', 'cafe', 'coffee', 'food', 'restaurant', 'eat', 'dining', 'restroom', 'amenities', 'gift'],
+    phrases: ['how long does a visit take', 'is there a cafe', 'where to eat', 'visit duration', 'how much time do i need'],
+    title: 'Visit Duration & Nearby Amenities',
+    generateResponse: () => ({
+      text: `### Planning Your Visit & Amenities
+
+- **Recommended Visit Duration**:
+  - **Guided Tour**: 45 minutes of in-depth architectural and civic presentation.
+  - **Gardens & Grounds**: 45 to 60 minutes for a peaceful stroll among the 11 acres of reflection pools, tree canopies, and shaded verandahs.
+  - **Total Recommended Time**: 1.5 to 2 hours.
+- **Food & Refreshments**:
+  - The Ismaili Center grounds are dedicated to cultural reflection, dialogue, and quiet contemplation. There is no commercial restaurant or café on-site.
+  - However, the Center is centrally situated in Houston's renowned **Montrose neighborhood**, which features some of the city's finest cafés, bistros, and restaurants within minutes.
+- **Restrooms & Accessibility**:
+  - Fully accessible modern ADA restrooms and family facilities are available on-site for visitors.`,
+      followUps: [
+        'What are the visitor hours?',
+        'Where is parking located?',
+        'How do I book free tour tickets?',
+      ],
+    }),
+  },
+
+  // 18. GREETING & AMBASSADOR CAPABILITIES
+  {
+    id: 'ambassador_capabilities',
+    keywords: ['who are you', 'what are you', 'what can you do', 'help', 'introduce', 'about yourself', 'operator', 'capabilities'],
+    phrases: ['who are you', 'what can you do', 'help me', 'introduce yourself', 'what is this app'],
+    title: 'Ismaili Center AI Ambassador Capabilities',
+    generateResponse: () => ({
+      text: `### Peace be upon you! I am your AI Ambassador for the Ismaili Center Houston
+
+I am designed to assist visitors, scholars, architecture enthusiasts, and community members with authoritative, real-time knowledge about the Center:
+
+- **Visitor Hours & Central Time Schedules**: Up-to-the-minute status on public visiting days (Tue, Thu, Sat, Sun) in Houston Central Time.
+- **Guided Architectural Tours**: Guidance and links to reserve free 45-minute tours at [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/).
+- **Farshid Moussavi Architecture**: Explanations of shaded triangular verandahs, ceramic *mashrabiya* screens, and sustainable design.
+- **11-Acre Persian Gardens**: Details on Nelson Byrd Woltz's landscaping, reflection pools, and native Texas plants.
+- **Jamatkhana Prayer Timings**: Daily Bandagi, Morning Dua, and Evening Prayer hours in Central Time.
+- **Location, Parking & Accessibility**: Montrose Blvd & Allen Pkwy, complimentary on-site parking, ADA access, and family guidelines.
+- **Interactive Telephony Hotline**: Full support for our voice hotline on +1 (713) 522-2026.
+
+What would you like to explore today?`,
+      followUps: [
+        'What are the visitor hours?',
+        'How do I book a tour?',
+        'Who is the architect?',
+        'What is tonight\'s prayer schedule?',
       ],
     }),
   },
@@ -549,36 +627,66 @@ export async function getSmartAssistantResponse(
     };
   }
 
-  // 1. Try server-side /api/chat endpoint
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+  // Detect whether running in a static GitHub environment (GitHub Pages or codespace)
+  const isStaticGitHubHosting = typeof window !== 'undefined' && 
+    (window.location.hostname.endsWith('github.io') || 
+     window.location.hostname.includes('github.dev') ||
+     window.location.protocol === 'file:');
 
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: cleanMessage, history }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data.reply) {
-        return {
-          reply: data.reply,
-          source: data.source === 'gemini' ? 'gemini-server' : 'knowledge-engine',
-          suggestedFollowUps: data.suggestedFollowUps || [
-            'How do I book a tour?',
-            'What are the visitor hours?',
-            'Who designed the building?',
-          ],
-        };
+  // Sanitize history so that Gemini API never receives a first turn with role "model"
+  const sanitizedHistory: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+  if (Array.isArray(history) && history.length > 0) {
+    let foundFirstUser = false;
+    for (const item of history.slice(-8)) {
+      if (item?.parts?.[0]?.text) {
+        const role = item.role === 'model' || item.role === 'assistant' ? 'model' : 'user';
+        if (!foundFirstUser && role !== 'user') {
+          continue; // drop initial model greeting
+        }
+        foundFirstUser = true;
+        sanitizedHistory.push({ role, parts: [{ text: item.parts[0].text }] });
       }
     }
-  } catch (_serverErr) {
-    // Server is unreachable (e.g. static GitHub Pages hosting or network interruption)
+  }
+
+  // 1. If NOT on static GitHub Pages, try server-side /api/chat with a fast 3.5s timeout
+  if (!isStaticGitHubHosting) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      // Support relative base if deployed under custom subpath
+      const apiEndpoint = typeof window !== 'undefined' && window.location.pathname.includes('Ismaili-Center-Houston-Phonebot-websites-app-')
+        ? '/Ismaili-Center-Houston-Phonebot-websites-app-/api/chat'
+        : '/api/chat';
+
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: cleanMessage, history: sanitizedHistory }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const contentType = response.headers.get('content-type') || '';
+      if (response.ok && contentType.includes('application/json')) {
+        const data = await response.json();
+        if (data && data.reply) {
+          return {
+            reply: data.reply,
+            source: data.source === 'gemini' ? 'gemini-server' : 'knowledge-engine',
+            suggestedFollowUps: data.suggestedFollowUps || [
+              'How do I book a tour?',
+              'What are the visitor hours?',
+              'Who designed the building?',
+            ],
+          };
+        }
+      }
+    } catch (_serverErr) {
+      // Unreachable server, fall through cleanly
+    }
   }
 
   // 2. Check for client-side VITE_GEMINI_API_KEY (for static GitHub deployments with Vite env secrets)
@@ -589,14 +697,19 @@ export async function getSmartAssistantResponse(
       
       const systemInstruction = `You are the official digital ambassador for the Ismaili Center Houston. All schedules are strictly in US Central Time (America/Chicago). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Admission is free. Guided tours can be booked at https://ismailicenter.org/tour-booking/. Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays). Architect: Farshid Moussavi. Landscape: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX. Provide polite, factual, beautifully formatted responses with markdown.`;
 
+      const contents = [
+        ...sanitizedHistory,
+        { role: 'user', parts: [{ text: cleanMessage }] }
+      ];
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
       const response = await fetch(geminiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [
-            ...(history || []),
-            { role: 'user', parts: [{ text: cleanMessage }] }
-          ],
+          contents,
           systemInstruction: {
             parts: [{ text: systemInstruction }]
           },
@@ -605,7 +718,10 @@ export async function getSmartAssistantResponse(
             maxOutputTokens: 900,
           }
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -627,6 +743,6 @@ export async function getSmartAssistantResponse(
     }
   }
 
-  // 3. Guaranteed comprehensive local smart knowledge engine
+  // 3. Guaranteed instant comprehensive smart knowledge engine (works 100% on GitHub & everywhere with 0 latency)
   return queryKnowledgeEngine(cleanMessage);
 }

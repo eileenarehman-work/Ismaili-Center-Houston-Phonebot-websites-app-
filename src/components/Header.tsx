@@ -30,10 +30,12 @@ interface TabConfig {
   icon: React.ReactNode;
   shortcut: string;
   activeClass: string;
+  inactiveClass: string;
   inactiveHoverClass: string;
   iconColorClass: string;
   badgeActiveClass: string;
   badgeInactiveClass: string;
+  dotColorClass: string;
   colorName: string;
 }
 
@@ -55,11 +57,13 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <Bot className="w-4 h-4" />,
       shortcut: '1',
       colorName: 'Sky Blue',
-      activeClass: 'bg-sky-600 text-white shadow-sm shadow-sky-600/30 ring-1 ring-sky-500',
-      inactiveHoverClass: 'hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-700 dark:hover:text-sky-300',
+      activeClass: 'bg-sky-600 text-white shadow-md shadow-sky-600/25 ring-2 ring-sky-500',
+      inactiveClass: 'bg-sky-50/70 dark:bg-sky-950/30 text-sky-900 dark:text-sky-200 border border-sky-200/80 dark:border-sky-800/60',
+      inactiveHoverClass: 'hover:bg-sky-100/80 dark:hover:bg-sky-900/50 hover:border-sky-400',
       iconColorClass: 'text-sky-600 dark:text-sky-400',
       badgeActiveClass: 'bg-white/20 text-white',
-      badgeInactiveClass: 'bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300',
+      badgeInactiveClass: 'bg-sky-200/70 dark:bg-sky-800/60 text-sky-800 dark:text-sky-200',
+      dotColorClass: 'bg-sky-500',
     },
     {
       id: 'hotline',
@@ -67,11 +71,13 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <PhoneCall className="w-4 h-4" />,
       shortcut: '2',
       colorName: 'Rose Coral',
-      activeClass: 'bg-rose-600 text-white shadow-sm shadow-rose-600/30 ring-1 ring-rose-500',
-      inactiveHoverClass: 'hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-300',
+      activeClass: 'bg-rose-600 text-white shadow-md shadow-rose-600/25 ring-2 ring-rose-500',
+      inactiveClass: 'bg-rose-50/70 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200 border border-rose-200/80 dark:border-rose-800/60',
+      inactiveHoverClass: 'hover:bg-rose-100/80 dark:hover:bg-rose-900/50 hover:border-rose-400',
       iconColorClass: 'text-rose-600 dark:text-rose-400',
       badgeActiveClass: 'bg-white/20 text-white',
-      badgeInactiveClass: 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300',
+      badgeInactiveClass: 'bg-rose-200/70 dark:bg-rose-800/60 text-rose-800 dark:text-rose-200',
+      dotColorClass: 'bg-rose-500',
     },
     {
       id: 'schedule',
@@ -79,11 +85,13 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <Clock className="w-4 h-4" />,
       shortcut: '3',
       colorName: 'Emerald Green',
-      activeClass: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-1 ring-emerald-500',
-      inactiveHoverClass: 'hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300',
+      activeClass: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500',
+      inactiveClass: 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/60',
+      inactiveHoverClass: 'hover:bg-emerald-100/80 dark:hover:bg-emerald-900/50 hover:border-emerald-400',
       iconColorClass: 'text-emerald-600 dark:text-emerald-400',
       badgeActiveClass: 'bg-white/20 text-white',
-      badgeInactiveClass: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300',
+      badgeInactiveClass: 'bg-emerald-200/70 dark:bg-emerald-800/60 text-emerald-800 dark:text-emerald-200',
+      dotColorClass: 'bg-emerald-500',
     },
     {
       id: 'visitor',
@@ -91,11 +99,13 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <Info className="w-4 h-4" />,
       shortcut: '4',
       colorName: 'Warm Amber',
-      activeClass: 'bg-amber-600 text-white shadow-sm shadow-amber-600/30 ring-1 ring-amber-500',
-      inactiveHoverClass: 'hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-300',
+      activeClass: 'bg-amber-600 text-white shadow-md shadow-amber-600/25 ring-2 ring-amber-500',
+      inactiveClass: 'bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/60',
+      inactiveHoverClass: 'hover:bg-amber-100/80 dark:hover:bg-amber-900/50 hover:border-amber-400',
       iconColorClass: 'text-amber-600 dark:text-amber-400',
       badgeActiveClass: 'bg-white/20 text-white',
-      badgeInactiveClass: 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300',
+      badgeInactiveClass: 'bg-amber-200/70 dark:bg-amber-800/60 text-amber-800 dark:text-amber-200',
+      dotColorClass: 'bg-amber-500',
     },
     {
       id: 'videos',
@@ -103,11 +113,13 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <Tv className="w-4 h-4" />,
       shortcut: '5',
       colorName: 'Royal Purple',
-      activeClass: 'bg-purple-600 text-white shadow-sm shadow-purple-600/30 ring-1 ring-purple-500',
-      inactiveHoverClass: 'hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-300',
+      activeClass: 'bg-purple-600 text-white shadow-md shadow-purple-600/25 ring-2 ring-purple-500',
+      inactiveClass: 'bg-purple-50/70 dark:bg-purple-950/30 text-purple-900 dark:text-purple-200 border border-purple-200/80 dark:border-purple-800/60',
+      inactiveHoverClass: 'hover:bg-purple-100/80 dark:hover:bg-purple-900/50 hover:border-purple-400',
       iconColorClass: 'text-purple-600 dark:text-purple-400',
       badgeActiveClass: 'bg-white/20 text-white',
-      badgeInactiveClass: 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300',
+      badgeInactiveClass: 'bg-purple-200/70 dark:bg-purple-800/60 text-purple-800 dark:text-purple-200',
+      dotColorClass: 'bg-purple-500',
     },
   ];
 
@@ -198,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Desktop Navigation Tabs with Unique Colors for Usability & Engagement */}
+        {/* Desktop Navigation Tabs with Unique Signature Colors for Usability & Engagement */}
         <nav className="hidden md:flex items-center space-x-2 py-2 border-t border-slate-200/60 dark:border-slate-800 overflow-x-auto scrollbar-none">
           {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
@@ -210,9 +222,10 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer ${
                   isActive
                     ? tab.activeClass
-                    : `text-slate-600 dark:text-slate-300 ${tab.inactiveHoverClass}`
+                    : `${tab.inactiveClass} ${tab.inactiveHoverClass}`
                 }`}
               >
+                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : tab.dotColorClass}`} />
                 <span className={isActive ? 'text-white' : tab.iconColorClass}>
                   {tab.icon}
                 </span>
@@ -265,10 +278,11 @@ export const Header: React.FC<HeaderProps> = ({
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                     isActive
                       ? tab.activeClass
-                      : `text-slate-700 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-800`
+                      : `${tab.inactiveClass} ${tab.inactiveHoverClass}`
                   }`}
                 >
                   <div className="flex items-center space-x-3">
+                    <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-white' : tab.dotColorClass}`} />
                     <span className={isActive ? 'text-white' : tab.iconColorClass}>
                       {tab.icon}
                     </span>
