@@ -5,7 +5,8 @@ export interface ChatMessage {
   sender: 'user' | 'assistant' | 'system';
   text: string;
   timestamp: string;
-  source?: 'gemini' | 'offline' | 'offline-fallback';
+  source?: 'gemini' | 'gemini-server' | 'gemini-client' | 'knowledge-engine' | 'offline' | 'offline-fallback';
+  suggestedFollowUps?: string[];
 }
 
 export interface VideoItem {

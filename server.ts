@@ -38,9 +38,13 @@ function getKnowledgeBaseResponse(query: string): string {
     q.includes("visit") ||
     q.includes("open") ||
     q.includes("hour") ||
-    q.includes("when")
+    q.includes("when") ||
+    q.includes("admission") ||
+    q.includes("ticket") ||
+    q.includes("cost") ||
+    q.includes("free")
   ) {
-    return "The Ismaili Center Houston building is open to visitors on **Tuesdays, Thursdays, Saturdays, and Sundays** from **10:00 AM to 4:00 PM** (The 11-acre gardens open from 8:00 AM to 4:00 PM on visiting days). Admission is completely free! You can also reserve guided 45-minute architectural tours at: https://ismailicenter.org/tour-booking/";
+    return "The Ismaili Center Houston is open to the public on **Tuesdays, Thursdays, Saturdays, and Sundays**:\n\n- **Building & Exhibition Spaces**: 10:00 AM – 4:00 PM Central Time\n- **11-Acre Public Gardens**: 8:00 AM – 4:00 PM Central Time\n- **Admission**: Completely free of charge!\n\nGuided 45-minute architectural tours are available during visiting days. To guarantee your spot, please reserve online in advance at [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/).";
   } else if (
     q.includes("schedule") ||
     q.includes("time") ||
@@ -49,41 +53,94 @@ function getKnowledgeBaseResponse(query: string): string {
     q.includes("bandagi") ||
     q.includes("jamatkhana")
   ) {
-    return "The official Jamatkhana prayer schedule is:\n- **Bandagi**: 4:00 AM – 5:00 AM daily\n- **Morning Dua**: 5:00 AM – 5:30 AM daily\n- **Evening Prayer**: 7:30 PM on Fridays; 7:00 PM on Mon–Thu, Sat & Sun.\n\nPlease note that while the prayer hall is reserved for congregational worship, all visitor spaces, gardens, and exhibition areas are open on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM.";
+    return "The congregational Jamatkhana schedule (**all times in US Central Time**):\n\n- **Bandagi (Quiet Meditation)**: 4:00 AM – 5:00 AM daily\n- **Morning Dua**: 5:00 AM – 5:30 AM daily\n- **Evening Prayer**: 7:00 PM (Monday–Thursday, Saturday & Sunday); **7:30 PM on Fridays**\n\n*Visitor Note*: The Jamatkhana prayer hall is designated for community worship, while the civic auditorium, exhibition halls, shaded verandas, and 11 acres of gardens are open to all visitors on open days.";
   } else if (
     q.includes("architect") ||
     q.includes("farshid") ||
     q.includes("moussavi") ||
     q.includes("building") ||
     q.includes("garden") ||
-    q.includes("design")
+    q.includes("design") ||
+    q.includes("landscape") ||
+    q.includes("verandah") ||
+    q.includes("veranda")
   ) {
-    return "The Ismaili Center Houston was designed by acclaimed Iranian-British architect **Farshid Moussavi** (Farshid Moussavi Architecture), marking her first cultural project in the United States. The 11 acres of lush Persian-inspired charbagh gardens were designed by **Nelson Byrd Woltz** Landscape Architects. Key design features include shaded triangular stone verandahs, expansive ceramic latticework, sustainable native landscaping, and civic amphitheaters.";
-  } else if (q.includes("aga khan")) {
-    return "His Highness the Aga Khan is the 49th hereditary Imam (spiritual leader) of the global Shia Imami Ismaili Muslims and founder of the Aga Khan Development Network (AKDN). He commissioned the Ismaili Center Houston as a permanent ambassadorial bridge for civic dialogue, pluralism, and cross-cultural understanding.";
+    return "### Architecture & Landscape Design\n\n- **Architect**: Renowned Iranian-British architect **Farshid Moussavi OBE, RA** (Farshid Moussavi Architecture). This marks her first cultural building in the United States.\n- **Landscape Architects**: **Nelson Byrd Woltz** Landscape Architects, who designed the 11-acre Persian-inspired *charbagh* (four-fold) gardens.\n- **Architectural Highlights**:\n  - **Triangular Shaded Verandahs**: Expansive shaded outdoor porticos that catch Gulf Coast breezes and provide natural thermal cooling against Houston heat.\n  - **Geometric Ceramic Screens**: Modern interpretations of Islamic *mashrabiya* and *jali* latticework that filter daylight into soft geometric patterns.\n  - **Native Texas Ecology**: Over 100 species of drought-tolerant native Texas plants and trees integrated with peaceful water reflection basins.\n  - **Octagonal Motif**: The official emblem features an 8-fold interlaced knot rosette, symbolizing harmony, cosmic order, and infinite unity.";
+  } else if (q.includes("aga khan") || q.includes("hazar imam")) {
+    return "### His Highness the Aga Khan\n\nHis Highness the Aga Khan is the **49th hereditary Imam (spiritual leader)** of the world's Shia Imami Ismaili Muslims, tracing direct lineage to Prophet Muhammad (peace be upon him and his family) through his daughter Fatima and cousin/son-in-law Ali, the first Shia Imam.\n\nHe is the founder and chairman of the **Aga Khan Development Network (AKDN)**, one of the world's largest private international development organizations dedicated to improving quality of life in Africa, Asia, and the Middle East regardless of faith or origin. He commissioned the Ismaili Center Houston as a gift to the city to serve as an ambassadorial bridge of understanding, pluralism, and intellectual exchange.";
   } else if (
     q.includes("faith") ||
     q.includes("ismaili") ||
     q.includes("who are") ||
-    q.includes("shia")
+    q.includes("shia") ||
+    q.includes("tradition") ||
+    q.includes("islam")
   ) {
-    return "Ismailis belong to the Shia branch of Islam, with a history spanning over a millennium. The community is culturally diverse and global, united in their allegiance to the living Imam. Ismaili traditions place paramount emphasis on education, intellectual inquiry, ethical stewardship, gender equity, and volunteer service to society.";
+    return "### The Ismaili Shia Muslim Community\n\nThe Ismailis are a global, culturally diverse community living in over 30 countries. As Shia Muslims, they affirm the fundamental Islamic shahada (declaration of faith) and follow the spiritual guidance of their hereditary Imam.\n\nCore tenets of the Ismaili tradition include:\n- **Intellectual Inquiry & Education**: Fostering reason, science, and lifelong learning.\n- **Ethics of Compassion & Service**: A strong commitment to voluntary service (*seva*) and philanthropy.\n- **Pluralism**: Respecting and celebrating diversity as a source of strength.\n- **Stewardship**: Responsibility for environmental conservation and human dignity.";
+  } else if (
+    q.includes("location") ||
+    q.includes("address") ||
+    q.includes("where") ||
+    q.includes("parking") ||
+    q.includes("directions") ||
+    q.includes("montrose")
+  ) {
+    return "### Location & Visitor Access\n\n- **Address**: Montrose Boulevard & Allen Parkway, Houston, Texas 77019\n- **Neighborhood**: Located in the cultural heart of Houston's Montrose district, directly adjacent to Buffalo Bayou Park.\n- **Parking**: On-site complimentary visitor parking is available during public visiting hours.\n- **Accessibility**: All public spaces, elevators, verandas, and gardens are fully ADA accessible.\n- **Bicycle Access**: Direct trail connections to the Buffalo Bayou Park hike and bike trail network with dedicated bike racks.";
+  } else if (
+    q.includes("dress") ||
+    q.includes("etiquette") ||
+    q.includes("wear") ||
+    q.includes("shoes")
+  ) {
+    return "### Visitor Etiquette & Guidelines\n\n- **Attire**: Modest, comfortable casual clothing is recommended. Shoulders and knees should be covered when entering indoor community spaces.\n- **Footwear**: Comfortable walking shoes are advised to enjoy the 11 acres of landscaped gardens. Shoes may need to be removed in designated contemplative spaces.\n- **Photography**: Non-commercial photography is welcomed in outdoor gardens, courtyards, and public exhibition verandas. Tripods and commercial shoots require prior approval.";
+  } else if (
+    q.includes("difference") ||
+    q.includes("jamatkhana vs") ||
+    q.includes("distinction")
+  ) {
+    return "### Distinction: Jamatkhana vs. Ismaili Center\n\n- **The Jamatkhana**: A consecrated spiritual space reserved for members of the Shia Ismaili Muslim community for daily prayers, meditation, and religious observances.\n- **The Ismaili Center**: An ambassadorial civic institution open to the entire public. It includes cultural exhibition galleries, a civic auditorium, seminar rooms, and 11 acres of public gardens built to foster interfaith understanding, pluralism, and intellectual dialogue.";
+  } else if (
+    q.includes("non-muslim") ||
+    q.includes("anyone") ||
+    q.includes("everyone") ||
+    q.includes("can i visit")
+  ) {
+    return "### Yes! All Visitors Are Warmly Welcome\n\nThe Ismaili Center Houston is expressly designed as an open civic institution for the entire Houston and global community. People of all faiths, traditions, and backgrounds are invited to explore the building and gardens during public visiting hours on **Tuesdays, Thursdays, Saturdays, and Sundays** (10:00 AM – 4:00 PM CT; Gardens open at 8:00 AM CT). Admission and guided tours are completely free of charge!";
+  } else if (
+    q.includes("other centers") ||
+    q.includes("worldwide") ||
+    q.includes("london") ||
+    q.includes("toronto") ||
+    q.includes("lisbon") ||
+    q.includes("dubai") ||
+    q.includes("dushanbe") ||
+    q.includes("vancouver")
+  ) {
+    return "### The Global Network of Ismaili Centers\n\nThe Houston Center is the first in the United States and the seventh in the world:\n\n1. **London, UK** (1985)\n2. **Vancouver, Canada** (1985)\n3. **Lisbon, Portugal** (1998)\n4. **Dubai, UAE** (2008)\n5. **Dushanbe, Tajikistan** (2009)\n6. **Toronto, Canada** (2014, with the Aga Khan Museum & Park)\n7. **Houston, Texas, USA** (opened 2025, designed by Farshid Moussavi)";
+  } else if (
+    q.includes("ada") ||
+    q.includes("wheelchair") ||
+    q.includes("stroller") ||
+    q.includes("family") ||
+    q.includes("kids") ||
+    q.includes("children")
+  ) {
+    return "### Accessibility & Families\n\n- **100% ADA Compliant**: Paved, accessible garden pathways, elevator access to all civic levels, and accessible family restrooms.\n- **Families & Children**: Strollers are welcome in public galleries and on garden paths. The serene water features and native Texas landscapes offer an engaging, welcoming experience for visitors of all ages.";
+  } else if (
+    q.includes("greeting") ||
+    q.includes("ya ali madad") ||
+    q.includes("mawla ali madad")
+  ) {
+    return "### Traditional Ismaili Greetings\n\n- **\"Ya Ali Madad\"** (May Ali assist you) is the traditional greeting among Shia Ismaili Muslims.\n- The traditional reply is **\"Mawla Ali Madad\"** (May the Lord Ali assist you).\n- Visitors are always greeted with a warm **\"Welcome to the Ismaili Center!\"**";
   } else if (
     q.includes("video") ||
     q.includes("youtube") ||
     q.includes("watch") ||
     q.includes("media")
   ) {
-    return "You can watch curated official video documentaries—including the Spaces tour, Inauguration Ceremony, and global greetings—in our **Videos & Media** section or directly on 'The Ismaili' official YouTube channel.";
-  } else if (
-    q.includes("location") ||
-    q.includes("address") ||
-    q.includes("where") ||
-    q.includes("houston")
-  ) {
-    return "The Ismaili Center Houston is located in the vibrant Montrose district of Houston, Texas, situated on an 11-acre green campus along Montrose Boulevard and Allen Parkway near Buffalo Bayou Park.";
+    return "You can explore official documentaries, architectural tours, and historic ceremonies in our **Videos & Media** tab, or directly on [The Ismaili Official YouTube Channel](https://www.youtube.com/@TheIsmaili).";
   } else {
-    return "Welcome to the Ismaili Center Houston guide! The center is open to the public on **Tuesdays, Thursdays, Saturdays, and Sundays** (Building: 10:00 AM – 4:00 PM; Gardens: 8:00 AM – 4:00 PM). Admission is free. You can book architectural tours at https://ismailicenter.org/tour-booking/ or ask about schedules, architecture, and visitor amenities.";
+    return "Welcome to the **Ismaili Center Houston Guide**! The center is open to the public on **Tuesdays, Thursdays, Saturdays, and Sundays** from **10:00 AM to 4:00 PM Central Time** (Gardens from 8:00 AM to 4:00 PM). Admission is completely free.\n\nI can assist you with:\n- Booking guided architectural tours ([ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/))\n- Today's Jamatkhana prayer times in Central Time\n- Architect Farshid Moussavi's design and the 11-acre gardens\n- Directions, parking, and visitor etiquette\n- The history and ethics of the Ismaili Shia Muslim community";
   }
 }
 
@@ -103,7 +160,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.post("/api/chat", async (req, res) => {
-  const { message, userKey } = req.body;
+  const { message, history, userKey } = req.body;
   if (!message || typeof message !== "string") {
     res.status(400).json({ error: "A message string is required." });
     return;
@@ -127,37 +184,71 @@ app.post("/api/chat", async (req, res) => {
         },
       });
 
-      const systemInstruction = `You are the courteous, professional, and knowledgeable AI Ambassador for the Ismaili Center Houston.
-Domain Knowledge:
-1. ALWAYS inform users of visitor opening hours when asked about visiting, opening times, or tours:
-   - Building visitor hours: Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM.
-   - Gardens hours: 8:00 AM to 4:00 PM on visiting days.
-   - Admission is completely free.
-2. For tour bookings, refer users to the official booking portal: https://ismailicenter.org/tour-booking/
-3. Schedule reference:
-   - Bandagi: 4:00 AM - 5:00 AM daily
-   - Morning Dua: 5:00 AM - 5:30 AM daily
-   - Evening Prayer: 7:30 PM on Fridays; 7:00 PM on Monday-Thursday, Saturday, and Sunday.
-   - IMPORTANT: The prayer hall is reserved for congregational worship. All civic, garden, and exhibition spaces are open to the general public.
-   - NEVER give theological commentary, subjective interpretations, or ritual descriptions of Islamic prayers. ONLY provide scheduled times if asked.
-4. Architecture & Design:
-   - Architect: Farshid Moussavi (Farshid Moussavi Architecture), her first cultural building in the US.
-   - Landscape: 11 acres of Persian-inspired gardens designed by Nelson Byrd Woltz.
-   - Located on Montrose Boulevard in Houston, Texas.
-   - Key features: Triangular stone verandahs, Islamic geometric lattices, environmental sustainability, civic auditorium, and exhibition spaces.
-5. Tone: Dignified, warm, clear, and professional. Format with clean markdown (bullet points, bold highlights, URLs). Keep answers concise and helpful.`;
+      const systemInstruction = `You are the courteous, erudite, and highly articulate AI Ambassador for the Ismaili Center Houston.
+Your role is to assist visitors, scholars, architecture enthusiasts, and community members with rich, accurate, and welcoming answers.
 
-      // 2.5-second snappy timeout promise
+Domain Knowledge & Strict Guidelines:
+1. Timezone & Central Time:
+   - All timings for the Ismaili Center Houston are strictly in US Central Time (America/Chicago - CDT during summer, CST during winter).
+   - If asked about time or prayer schedules, always clarify that times are in Central Time (CT).
+
+2. Visitor Hours & Admission:
+   - Building & Exhibitions: Open to all visitors on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time.
+   - 11-Acre Gardens: Open from 8:00 AM to 4:00 PM Central Time on visitor days (Tue, Thu, Sat, Sun).
+   - Admission is completely FREE of charge.
+   - Guided Tours: Recommend reserving 45-minute guided architectural tours at the official portal: https://ismailicenter.org/tour-booking/
+
+3. Congregational Jamatkhana Prayer Times (in Central Time):
+   - Bandagi (Early Morning Meditation): 4:00 AM – 5:00 AM daily
+   - Morning Dua: 5:00 AM – 5:30 AM daily
+   - Evening Prayer: 7:00 PM (Monday–Thursday, Saturday, Sunday); 7:30 PM on Fridays
+   - SACRED RESPECT: The prayer hall is reserved exclusively for congregational worship. All civic, garden, theater, social, and exhibition spaces are open to the general public.
+   - NEVER give theological speculation, subjective interpretations, or ritual debate of Islamic prayers. State scheduled times respectfully and factually.
+
+4. Architecture, Gardens & Sustainability:
+   - Building Architect: Farshid Moussavi OBE, RA (Farshid Moussavi Architecture), her first cultural commission in North America.
+   - Landscape Architects: Nelson Byrd Woltz (11 acres of Persian-inspired charbagh gardens, reflection pools, native Texas plant canopy).
+   - Key Features: Shaded triangular stone verandahs catching natural Gulf breezes, intricate ceramic geometric latticework (modern reinterpretations of mashrabiya/jali screens), high environmental sustainability, civic auditorium, black-box theater, and education wings.
+   - Location: Situated in Montrose at the corner of Montrose Boulevard and Allen Parkway in Houston, TX 77019, adjacent to Buffalo Bayou Park.
+
+5. Leadership & Community Context:
+   - His Highness the Aga Khan is the 49th hereditary Imam of Shia Imami Ismaili Muslims and founder of the Aga Khan Development Network (AKDN).
+   - Ismaili tradition centers on intellect, faith, pluralism, education, and voluntary civic service.
+   - The Center serves as an ambassadorial building to build bridges of understanding across Houston and the United States.
+
+6. Response Quality & Demeanor:
+   - Respond with warmth, intellectual clarity, and precision.
+   - Format answers cleanly with markdown headings, structured bullet points, and helpful links where appropriate.
+   - Answer both short questions directly and complex architectural or cultural questions with deep, authoritative insight.`;
+
+      // Build contents supporting multi-turn conversation history
+      const contents: any[] = [];
+      if (Array.isArray(history) && history.length > 0) {
+        for (const item of history.slice(-8)) {
+          if (item?.role && item?.parts?.[0]?.text) {
+            contents.push({
+              role: item.role === "assistant" || item.role === "model" ? "model" : "user",
+              parts: [{ text: item.parts[0].text }],
+            });
+          }
+        }
+      }
+      contents.push({
+        role: "user",
+        parts: [{ text: message }],
+      });
+
+      // 10-second timeout promise for thoughtful generation
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Gemini API request timed out")), 2500)
+        setTimeout(() => reject(new Error("Gemini API request timed out")), 10000)
       );
 
       const generatePromise = client.models.generateContent({
         model: "gemini-3.8-flash",
-        contents: message,
+        contents,
         config: {
           systemInstruction,
-          temperature: 0.7,
+          temperature: 0.65,
         },
       });
 
@@ -166,7 +257,7 @@ Domain Knowledge:
       res.json({ reply: replyText, source: "gemini" });
       return;
     } catch (err: any) {
-      console.warn("Gemini API call failed, using fallback knowledge base:", err?.message || err);
+      console.warn("Gemini API call error, falling back to rich knowledge base:", err?.message || err);
       const fallbackReply = getKnowledgeBaseResponse(message);
       res.json({ reply: fallbackReply, source: "offline-fallback" });
       return;

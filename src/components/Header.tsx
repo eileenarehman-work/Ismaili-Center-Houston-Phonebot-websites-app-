@@ -21,6 +21,20 @@ interface HeaderProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   upcomingSessionText: string;
+  centralTimeDisplay?: string;
+}
+
+interface TabConfig {
+  id: NavigationTab;
+  label: string;
+  icon: React.ReactNode;
+  shortcut: string;
+  activeClass: string;
+  inactiveHoverClass: string;
+  iconColorClass: string;
+  badgeActiveClass: string;
+  badgeInactiveClass: string;
+  colorName: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -29,15 +43,72 @@ export const Header: React.FC<HeaderProps> = ({
   isDarkMode,
   onToggleTheme,
   upcomingSessionText,
+  centralTimeDisplay,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const tabs: { id: NavigationTab; label: string; icon: React.ReactNode; shortcut: string }[] = [
-    { id: 'assistant', label: 'AI Assistant', icon: <Bot className="w-4 h-4" />, shortcut: '1' },
-    { id: 'hotline', label: 'Voice Hotline', icon: <PhoneCall className="w-4 h-4" />, shortcut: '2' },
-    { id: 'schedule', label: 'Jamatkhana Schedule', icon: <Clock className="w-4 h-4" />, shortcut: '3' },
-    { id: 'visitor', label: 'Visitor Info', icon: <Info className="w-4 h-4" />, shortcut: '4' },
-    { id: 'videos', label: 'Videos & Media', icon: <Tv className="w-4 h-4" />, shortcut: '5' },
+  // Each tab configured with distinct signature colors for enhanced usability and engagement
+  const tabs: TabConfig[] = [
+    {
+      id: 'assistant',
+      label: 'AI Assistant',
+      icon: <Bot className="w-4 h-4" />,
+      shortcut: '1',
+      colorName: 'Sky Blue',
+      activeClass: 'bg-sky-600 text-white shadow-sm shadow-sky-600/30 ring-1 ring-sky-500',
+      inactiveHoverClass: 'hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-700 dark:hover:text-sky-300',
+      iconColorClass: 'text-sky-600 dark:text-sky-400',
+      badgeActiveClass: 'bg-white/20 text-white',
+      badgeInactiveClass: 'bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300',
+    },
+    {
+      id: 'hotline',
+      label: 'Voice Hotline',
+      icon: <PhoneCall className="w-4 h-4" />,
+      shortcut: '2',
+      colorName: 'Rose Coral',
+      activeClass: 'bg-rose-600 text-white shadow-sm shadow-rose-600/30 ring-1 ring-rose-500',
+      inactiveHoverClass: 'hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-300',
+      iconColorClass: 'text-rose-600 dark:text-rose-400',
+      badgeActiveClass: 'bg-white/20 text-white',
+      badgeInactiveClass: 'bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300',
+    },
+    {
+      id: 'schedule',
+      label: 'Jamatkhana Schedule',
+      icon: <Clock className="w-4 h-4" />,
+      shortcut: '3',
+      colorName: 'Emerald Green',
+      activeClass: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-1 ring-emerald-500',
+      inactiveHoverClass: 'hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300',
+      iconColorClass: 'text-emerald-600 dark:text-emerald-400',
+      badgeActiveClass: 'bg-white/20 text-white',
+      badgeInactiveClass: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300',
+    },
+    {
+      id: 'visitor',
+      label: 'Visitor Info',
+      icon: <Info className="w-4 h-4" />,
+      shortcut: '4',
+      colorName: 'Warm Amber',
+      activeClass: 'bg-amber-600 text-white shadow-sm shadow-amber-600/30 ring-1 ring-amber-500',
+      inactiveHoverClass: 'hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-300',
+      iconColorClass: 'text-amber-600 dark:text-amber-400',
+      badgeActiveClass: 'bg-white/20 text-white',
+      badgeInactiveClass: 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300',
+    },
+    {
+      id: 'videos',
+      label: 'Videos & Media',
+      icon: <Tv className="w-4 h-4" />,
+      shortcut: '5',
+      colorName: 'Royal Purple',
+      activeClass: 'bg-purple-600 text-white shadow-sm shadow-purple-600/30 ring-1 ring-purple-500',
+      inactiveHoverClass: 'hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-300',
+      iconColorClass: 'text-purple-600 dark:text-purple-400',
+      badgeActiveClass: 'bg-white/20 text-white',
+      badgeInactiveClass: 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300',
+    },
   ];
 
   return (
@@ -55,15 +126,30 @@ export const Header: React.FC<HeaderProps> = ({
             <Logo size="md" />
           </div>
 
-          {/* Quick status pill - desktop only */}
+          {/* Quick status pills - Central Time & Next Session (desktop) */}
           <div className="hidden lg:flex items-center space-x-3">
+            {/* Central Time indicator */}
+            {centralTimeDisplay && (
+              <div 
+                className="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-1.5 text-xs text-slate-600 dark:text-slate-300"
+                title="Current time in Houston (Central Time)"
+              >
+                <Clock className="w-3.5 h-3.5 text-[#007ba8] dark:text-teal-400" />
+                <span className="font-semibold text-slate-800 dark:text-slate-100 font-mono">
+                  {centralTimeDisplay}
+                </span>
+              </div>
+            )}
+
+            {/* Next prayer countdown pill */}
             <div 
               onClick={() => onSelectTab('schedule')}
-              className="cursor-pointer px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2 text-xs hover:border-[#007ba8] transition-colors"
+              className="cursor-pointer px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2 text-xs hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors"
+              title="Next congregational prayer in Houston Central Time"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 dark:text-slate-400 font-medium">Next Session:</span>
-              <span className="text-[#007ba8] dark:text-teal-400 font-semibold">{upcomingSessionText}</span>
+              <span className="text-slate-500 dark:text-slate-400 font-medium">Next:</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{upcomingSessionText}</span>
             </div>
 
             <a
@@ -112,8 +198,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Desktop Navigation Tabs with Keyboard Shortcuts */}
-        <nav className="hidden md:flex items-center space-x-1.5 py-2 border-t border-slate-200/60 dark:border-slate-800 overflow-x-auto scrollbar-none">
+        {/* Desktop Navigation Tabs with Unique Colors for Usability & Engagement */}
+        <nav className="hidden md:flex items-center space-x-2 py-2 border-t border-slate-200/60 dark:border-slate-800 overflow-x-auto scrollbar-none">
           {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
             return (
@@ -121,19 +207,19 @@ export const Header: React.FC<HeaderProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => onSelectTab(tab.id)}
-                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-[#007ba8] text-white shadow-sm ring-1 ring-[#007ba8]'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
+                    ? tab.activeClass
+                    : `text-slate-600 dark:text-slate-300 ${tab.inactiveHoverClass}`
                 }`}
               >
-                <span>{tab.icon}</span>
+                <span className={isActive ? 'text-white' : tab.iconColorClass}>
+                  {tab.icon}
+                </span>
                 <span>{tab.label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-medium ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                    isActive ? tab.badgeActiveClass : tab.badgeInactiveClass
                   }`}
                 >
                   {tab.shortcut}
@@ -147,33 +233,25 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-[#f7f6f2] dark:bg-[#0b1320] px-4 pt-3 pb-6 space-y-3 shadow-xl">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/70 text-xs text-slate-600 dark:text-slate-300">
-            <span className="font-semibold text-slate-800 dark:text-slate-100">Appearance:</span>
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 font-semibold text-slate-800 dark:text-white border border-slate-200 dark:border-slate-600 shadow-xs"
-            >
-              {isDarkMode ? (
-                <>
-                  <Sun className="w-4 h-4 text-amber-400" />
-                  <span>Switch to Light Mode</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-4 h-4 text-indigo-600" />
-                  <span>Switch to Dark Mode</span>
-                </>
-              )}
-            </button>
-          </div>
+          {/* Central Time in Mobile Drawer */}
+          {centralTimeDisplay && (
+            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/70 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between">
+              <span className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#007ba8]" />
+                Houston Central Time:
+              </span>
+              <span className="font-mono font-bold text-slate-900 dark:text-white">
+                {centralTimeDisplay}
+              </span>
+            </div>
+          )}
 
           <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/70 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between">
             <span className="font-semibold text-slate-800 dark:text-slate-100">Next Prayer:</span>
-            <span className="text-[#007ba8] dark:text-teal-400 font-bold">{upcomingSessionText}</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-bold">{upcomingSessionText}</span>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {tabs.map((tab) => {
               const isActive = currentTab === tab.id;
               return (
@@ -184,17 +262,25 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab(tab.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#007ba8] text-white'
-                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800'
+                      ? tab.activeClass
+                      : `text-slate-700 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-800`
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    {tab.icon}
+                    <span className={isActive ? 'text-white' : tab.iconColorClass}>
+                      {tab.icon}
+                    </span>
                     <span>{tab.label}</span>
                   </div>
-                  <span className="text-xs opacity-60 font-mono">[{tab.shortcut}]</span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded font-mono ${
+                      isActive ? tab.badgeActiveClass : tab.badgeInactiveClass
+                    }`}
+                  >
+                    {tab.shortcut}
+                  </span>
                 </button>
               );
             })}

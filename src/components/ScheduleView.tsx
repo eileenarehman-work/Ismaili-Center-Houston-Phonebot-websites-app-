@@ -15,16 +15,18 @@ import {
 interface ScheduleViewProps {
   upcomingSessionText: string;
   upcomingSessionName: string;
+  centralTimeDisplay?: string;
 }
 
 export const ScheduleView: React.FC<ScheduleViewProps> = ({
   upcomingSessionText,
   upcomingSessionName,
+  centralTimeDisplay,
 }) => {
   const [copied, setCopied] = useState(false);
 
   const copySchedule = () => {
-    const text = `Ismaili Center Houston - Jamatkhana Prayer Schedule:\n- Bandagi: 4:00 AM – 5:00 AM daily\n- Morning Dua: 5:00 AM – 5:30 AM daily\n- Evening Prayer: 7:00 PM (Mon-Thu, Sat, Sun); 7:30 PM (Fridays)\n\nVisitor Hours: Tuesdays, Thursdays, Saturdays, and Sundays (Building: 10:00 AM – 4:00 PM; Gardens: 8:00 AM – 4:00 PM). Tours: https://ismailicenter.org/tour-booking/`;
+    const text = `Ismaili Center Houston - Jamatkhana Prayer Schedule (Central Time):\n- Bandagi: 4:00 AM – 5:00 AM daily CT\n- Morning Dua: 5:00 AM – 5:30 AM daily CT\n- Evening Prayer: 7:00 PM (Mon-Thu, Sat, Sun); 7:30 PM (Fridays) CT\n\nVisitor Hours: Tuesdays, Thursdays, Saturdays, and Sundays (Building: 10:00 AM – 4:00 PM CT; Gardens: 8:00 AM – 4:00 PM CT). Tours: https://ismailicenter.org/tour-booking/`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -32,7 +34,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Card with Countdown */}
+      {/* Top Banner Card with Countdown & Central Time */}
       <div className="bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
           <div>
@@ -45,22 +47,39 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-slate-400" />
-              <span>Ismaili Center Houston &bull; Central Time (CT)</span>
+              <span>Ismaili Center Houston &bull; Catered strictly to <strong>US Central Time (CT)</strong></span>
             </p>
           </div>
 
-          {/* Real-time upcoming countdown pill */}
-          <div className="flex items-center space-x-4 bg-teal-50 dark:bg-teal-950/40 border border-teal-200/80 dark:border-teal-900/50 rounded-2xl p-4 shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-[#007ba8] text-white flex items-center justify-center shadow-xs">
-              <Hourglass className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-                {upcomingSessionName}
-              </span>
-              <span className="text-lg font-bold text-[#007ba8] dark:text-teal-300 font-mono">
-                {upcomingSessionText}
-              </span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            {/* Live Houston Central Time Clock */}
+            {centralTimeDisplay && (
+              <div className="flex items-center space-x-3 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-2xl px-4 py-3 shadow-xs">
+                <Clock className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                <div>
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                    Houston Central Time
+                  </span>
+                  <span className="text-base font-bold text-slate-900 dark:text-white font-mono">
+                    {centralTimeDisplay}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Real-time upcoming countdown pill */}
+            <div className="flex items-center space-x-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/50 rounded-2xl p-4 shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <Hourglass className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
+                  {upcomingSessionName}
+                </span>
+                <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300 font-mono">
+                  {upcomingSessionText}
+                </span>
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types.ts';
+import { formatCentralTimestamp } from '../utils/time.ts';
+import { getSmartAssistantResponse, queryKnowledgeEngine } from '../utils/smartAssistant.ts';
 import { 
   Bot, 
   User, 
@@ -11,7 +13,8 @@ import {
   Trash2, 
   Sparkles,
   ExternalLink,
-  Info
+  Info,
+  Cpu
 } from 'lucide-react';
 
 interface AIAssistantViewProps {
@@ -23,9 +26,15 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
     {
       id: 'welcome',
       sender: 'assistant',
-      text: "Welcome to the **Ismaili Center Houston Guide**! How may I assist you today? You can inquire about visitor hours, book architectural tours, check prayer timings, learn about architect Farshid Moussavi's design, or explore official media.",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      source: 'offline',
+      text: "Welcome to the **Ismaili Center Houston Ambassador**! How may I assist you today? You can inquire about visiting hours, reservation of guided architectural tours, congregational prayer timings (in Central Time), the groundbreaking design by Farshid Moussavi, or the 11-acre gardens by Nelson Byrd Woltz.",
+      timestamp: formatCentralTimestamp(),
+      source: 'knowledge-engine',
+      suggestedFollowUps: [
+        'What are the visitor hours?',
+        'How do I book a tour?',
+        'What is the prayer schedule?',
+        'Who is the architect?',
+      ],
     },
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -90,7 +99,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
     { label: 'Architecture & Gardens', query: 'Who designed the building and gardens?' },
     { label: 'Who is the Aga Khan?', query: 'Who is His Highness the Aga Khan?' },
     { label: 'About the Ismaili Faith', query: 'What is the Ismaili Shia Muslim faith and tradition?' },
-    { label: 'Location & Montrose', query: 'Where is the Ismaili Center located in Houston?' },
+    { label: 'Location', query: 'Where is the Ismaili Center located in Houston?' },
   ];
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -101,62 +110,45 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
       id: `user-${Date.now()}`,
       sender: 'user',
       text: query,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: formatCentralTimestamp(),
     };
+
+    const currentHistory = messages.slice(-6).map((m) => ({
+      role: m.sender === 'user' ? 'user' : 'model',
+      parts: [{ text: m.text }],
+    }));
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: query }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await getSmartAssistantResponse(query, currentHistory);
       const botMessage: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'assistant',
-        text: data.reply,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        source: data.source,
+        text: response.reply,
+        timestamp: formatCentralTimestamp(),
+        source: response.source,
+        suggestedFollowUps: response.suggestedFollowUps,
       };
 
       setMessages((prev) => [...prev, botMessage]);
-    } catch (err) {
-      // Local fallback in case network call fails
-      const fallbackText = getOfflineFallback(query);
+    } catch (_err) {
+      // Local knowledge engine backup guaranteed to never fail
+      const localResponse = queryKnowledgeEngine(query);
       const botMessage: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'assistant',
-        text: fallbackText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        source: 'offline-fallback',
+        text: localResponse.reply,
+        timestamp: formatCentralTimestamp(),
+        source: 'knowledge-engine',
+        suggestedFollowUps: localResponse.suggestedFollowUps,
       };
       setMessages((prev) => [...prev, botMessage]);
     } finally {
       setIsTyping(false);
     }
-  };
-
-  const getOfflineFallback = (query: string): string => {
-    const q = query.toLowerCase();
-    if (q.includes('tour') || q.includes('book') || q.includes('visit') || q.includes('hour') || q.includes('open')) {
-      return "The Ismaili Center Houston is open to visitors on **Tuesdays, Thursdays, Saturdays, and Sundays** from **10:00 AM to 4:00 PM** (Gardens open 8:00 AM to 4:00 PM). Admission is free! You can reserve a guided architectural tour at: https://ismailicenter.org/tour-booking/";
-    }
-    if (q.includes('schedule') || q.includes('prayer') || q.includes('dua') || q.includes('bandagi')) {
-      return "The Jamatkhana schedule is:\n- **Bandagi**: 4:00 AM – 5:00 AM\n- **Morning Dua**: 5:00 AM – 5:30 AM\n- **Evening Prayer**: 7:30 PM on Fridays; 7:00 PM on Mon–Thu, Sat & Sun.\n\nPlease note: Prayer halls are reserved for congregational worship. All civic and exhibition spaces are open to the public.";
-    }
-    if (q.includes('architect') || q.includes('moussavi') || q.includes('garden')) {
-      return "The building was designed by celebrated architect **Farshid Moussavi** (FMA), and the 11 acres of Persian-inspired gardens were landscaped by **Nelson Byrd Woltz**. It is the first purpose-built Ismaili Center in the United States.";
-    }
-    return "The Ismaili Center Houston is located in Montrose, Houston. The building is open to visitors on **Tuesdays, Thursdays, Saturdays, and Sundays** from 10:00 AM to 4:00 PM. Book guided tours at https://ismailicenter.org/tour-booking/";
   };
 
   const toggleMic = () => {
@@ -192,11 +184,24 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
     const cleanText = text
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/https?:\/\/[^\s]+/g, 'on the official website')
-      .replace(/[-*]\s+/g, '');
+      .replace(/[-*#]\s+/g, '')
+      .replace(/\n+/g, '. ');
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.0;
+    utterance.rate = 0.98;
     utterance.pitch = 1.0;
+
+    // Select a premium natural English voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const naturalVoice = voices.find(v => 
+      (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Karen')) &&
+      v.lang.startsWith('en')
+    ) || voices.find(v => v.lang.startsWith('en'));
+
+    if (naturalVoice) {
+      utterance.voice = naturalVoice;
+    }
+
     utterance.onend = () => setSpeakingMsgId(null);
     utterance.onerror = () => setSpeakingMsgId(null);
 
@@ -214,7 +219,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
         id: `welcome-${Date.now()}`,
         sender: 'assistant',
         text: "Chat cleared. What else would you like to know about the Ismaili Center Houston?",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: formatCentralTimestamp(),
         source: 'offline',
       },
     ]);
@@ -287,7 +292,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
               </h2>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse" />
-                Active Guide
+                Smart Ambassador Ready
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -354,6 +359,28 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
                   {renderFormattedContent(msg.text)}
                 </div>
 
+                {/* Suggested follow-up query chips */}
+                {!isUser && msg.suggestedFollowUps && msg.suggestedFollowUps.length > 0 && (
+                  <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-700/70">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5 flex items-center">
+                      <Sparkles className="w-2.5 h-2.5 mr-1 text-[#007ba8]" />
+                      Suggested Follow-ups:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {msg.suggestedFollowUps.map((chip, cIdx) => (
+                        <button
+                          key={cIdx}
+                          type="button"
+                          onClick={() => handleSendMessage(chip)}
+                          className="text-[11px] px-2.5 py-1 rounded-full bg-white dark:bg-slate-700/90 hover:bg-[#007ba8] hover:text-white dark:hover:bg-[#007ba8] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 transition-all font-medium cursor-pointer shadow-2xs hover:shadow-xs"
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Footer metadata & Audio speak control */}
                 <div
                   className={`mt-2 pt-1.5 flex items-center justify-between text-[11px] border-t ${
@@ -362,7 +389,18 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
                       : 'border-slate-200/60 dark:border-slate-700/60 text-slate-400 dark:text-slate-400'
                   }`}
                 >
-                  <span className="font-mono">{msg.timestamp}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-mono">{msg.timestamp}</span>
+                    {!isUser && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wide bg-slate-200/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
+                        {msg.source === 'gemini-server' || msg.source === 'gemini'
+                          ? 'Gemini Cloud'
+                          : msg.source === 'gemini-client'
+                          ? 'Gemini Client'
+                          : 'Smart Knowledge Base'}
+                      </span>
+                    )}
+                  </div>
 
                   {!isUser && (
                     <div className="flex items-center space-x-2">

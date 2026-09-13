@@ -7,6 +7,7 @@ import { ScheduleView } from './components/ScheduleView.tsx';
 import { VisitorInfoView } from './components/VisitorInfoView.tsx';
 import { VideosView } from './components/VideosView.tsx';
 import { Footer } from './components/Footer.tsx';
+import { calculateCentralPrayerCountdown, getCentralTimeInfo } from './utils/time.ts';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('assistant');
@@ -21,6 +22,7 @@ export default function App() {
 
   const [upcomingSessionName, setUpcomingSessionName] = useState<string>('Upcoming Session');
   const [upcomingSessionText, setUpcomingSessionText] = useState<string>('Calculating...');
+  const [centralTimeDisplay, setCentralTimeDisplay] = useState<string>('');
 
   // Theme synchronization with HTML and Body class
   useEffect(() => {
@@ -35,63 +37,20 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // Real-time calculation of Jamatkhana prayer session countdown
+  // Real-time calculation of Jamatkhana prayer session countdown catered to Central Time (Houston, TX)
   useEffect(() => {
     const calculateCountdown = () => {
-      const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const countdown = calculateCentralPrayerCountdown();
+      const timeInfo = getCentralTimeInfo();
 
-      const bandagiStart = 4 * 60; // 4:00 AM
-      const bandagiEnd = 5 * 60;   // 5:00 AM
-      const morningStart = 5 * 60; // 5:00 AM
-      const morningEnd = 5 * 60 + 30; // 5:30 AM
-      const isFriday = now.getDay() === 5;
-      const eveningStart = isFriday ? 19 * 60 + 30 : 19 * 60; // 7:30 PM on Fri, 7:00 PM other days
-      const eveningEnd = eveningStart + 45; // ~45 mins assembly
-
-      let name = '';
-      let diffMinutes = 0;
-      let isActive = false;
-
-      if (currentMinutes < bandagiStart) {
-        name = 'Bandagi';
-        diffMinutes = bandagiStart - currentMinutes;
-      } else if (currentMinutes >= bandagiStart && currentMinutes < bandagiEnd) {
-        name = 'Bandagi';
-        diffMinutes = bandagiEnd - currentMinutes;
-        isActive = true;
-      } else if (currentMinutes < morningStart) {
-        name = 'Morning Dua';
-        diffMinutes = morningStart - currentMinutes;
-      } else if (currentMinutes >= morningStart && currentMinutes < morningEnd) {
-        name = 'Morning Dua';
-        diffMinutes = morningEnd - currentMinutes;
-        isActive = true;
-      } else if (currentMinutes < eveningStart) {
-        name = 'Evening Prayer';
-        diffMinutes = eveningStart - currentMinutes;
-      } else if (currentMinutes >= eveningStart && currentMinutes < eveningEnd) {
-        name = 'Evening Prayer';
-        diffMinutes = eveningEnd - currentMinutes;
-        isActive = true;
-      } else {
-        name = "Tomorrow's Bandagi";
-        diffMinutes = 24 * 60 - currentMinutes + bandagiStart;
-      }
-
-      const hrs = Math.floor(diffMinutes / 60);
-      const mins = diffMinutes % 60;
-      let text = isActive ? 'Active (Ends in ' : 'Starts in ';
-      if (hrs > 0) text += `${hrs}h `;
-      text += `${mins}m`;
-      if (isActive) text += ')';
-
-      setUpcomingSessionName(name);
-      setUpcomingSessionText(text);
+      setUpcomingSessionName(countdown.name);
+      setUpcomingSessionText(countdown.timeText);
+      setCentralTimeDisplay(timeInfo.displayTime);
     };
 
     calculateCountdown();
-    const interval = setInterval(calculateCountdown, 30000);
+    // Update every 5 seconds for real-time accuracy and ticking clock
+    const interval = setInterval(calculateCountdown, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -123,6 +82,7 @@ export default function App() {
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode((prev) => !prev)}
         upcomingSessionText={upcomingSessionText}
+        centralTimeDisplay={centralTimeDisplay}
       />
 
       {/* Main Container */}
@@ -135,6 +95,7 @@ export default function App() {
           <ScheduleView
             upcomingSessionText={upcomingSessionText}
             upcomingSessionName={upcomingSessionName}
+            centralTimeDisplay={centralTimeDisplay}
           />
         )}
         {currentTab === 'visitor' && <VisitorInfoView />}
