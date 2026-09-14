@@ -27,14 +27,14 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
     {
       id: 'welcome',
       sender: 'assistant',
-      text: "Welcome to the **Ismaili Center Houston Ambassador**! How may I assist you today? You can inquire about visiting hours, reservation of guided architectural tours, congregational prayer timings (in Central Time), the groundbreaking design by Farshid Moussavi, or the 11-acre gardens by Nelson Byrd Woltz.",
+      text: "Welcome to the **Ismaili Center Houston AI Assistant**! I am an automated computer helper, not human staff. Ask me about visiting hours, free guided tours, prayer times in Houston Central Time, or our gardens and building. If I cannot answer your question, please call our official human staff line at **+1 (713) 522-2026**.",
       timestamp: formatCentralTimestamp(),
       source: 'knowledge-engine',
       suggestedFollowUps: [
         'What are the visitor hours?',
-        'How do I book a tour?',
+        'How do I book a free tour?',
         'What is the prayer schedule?',
-        'Who is the architect?',
+        'Where is the free parking?',
       ],
     },
   ]);
@@ -282,28 +282,38 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Ismaili Center Assistant
+                Ismaili Center AI Assistant
               </h2>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse" />
-                Smart Ambassador Ready
+                Computer Helper
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Inquiries regarding hours, tours, architecture, and prayer times
+              Automated answers for visiting hours, prayer times, free tours, and directions
             </p>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={clearChat}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
-          title="Clear chat history"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          <span>Clear</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <a
+            href="tel:+17135222026"
+            className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition-colors"
+            title="Call the real human staff phone line"
+          >
+            <span>Staff: +1 (713) 522-2026</span>
+          </a>
+
+          <button
+            type="button"
+            onClick={clearChat}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+            title="Clear chat history"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Clear</span>
+          </button>
+        </div>
       </div>
 
       {/* Suggested Quick Inquiries Chip Bar */}

@@ -432,16 +432,15 @@ While every Ismaili Center houses a Jamatkhana within its complex, the two serve
     generateResponse: () => ({
       text: `### Official Contact & Information Channels
 
-- **Dedicated Information Hotline**: **+1 (713) 522-2026**
-  *(You can also use our interactive Voice Hotline tab above with live DTMF touch-tone dialpad, live audio synthesis, and live AI operator)*
+- **Official Human Information Line**: If your questions are not answered by this AI assistant, please call human staff at **+1 (713) 522-2026**
 - **Official Tour Booking**: [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/)
 - **Ismaili Center Houston Portal**: [ismailicenter.org/houston](https://ismailicenter.org/houston)
 - **Global Ismaili Community Portal**: [the.ismaili](https://the.ismaili)
 - **Official YouTube**: [The Ismaili Channel](https://www.youtube.com/@TheIsmaili)`,
       followUps: [
-        'Try the Voice Hotline tab',
+        'Try the AI Phonebot tab',
         'Book an architectural tour',
-        'View the Jamatkhana schedule',
+        'View prayer times',
       ],
     }),
   },
@@ -511,8 +510,8 @@ I am designed to assist visitors, scholars, architecture enthusiasts, and commun
 - **Farshid Moussavi Architecture**: Explanations of shaded triangular verandahs, ceramic *mashrabiya* screens, and sustainable design.
 - **11-Acre Persian Gardens**: Details on Nelson Byrd Woltz's landscaping, reflection pools, and native Texas plants.
 - **Jamatkhana Prayer Timings**: Daily Bandagi, Morning Dua, and Evening Prayer hours in Central Time.
-- **Location, Parking & Accessibility**: Montrose Blvd & Allen Pkwy, complimentary on-site parking, ADA access, and family guidelines.
-- **Interactive Telephony Hotline**: Full support for our voice hotline on +1 (713) 522-2026.
+- **Location, Parking & Accessibility**: Montrose Blvd & Allen Pkwy, free parking, wheelchair access, and family guidelines.
+- **AI Voice Assistant (Phonebot)**: Automated computer voice answers. If the AI cannot answer your questions, call the official staff line on +1 (713) 522-2026.
 
 What would you like to explore today?`,
       followUps: [
@@ -593,7 +592,7 @@ The **Ismaili Center Houston** is the first purpose-built Ismaili Center in the 
 - **Architectural Tours**: Free 45-minute guided tours are available at [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/).
 - **Architecture**: Designed by Farshid Moussavi OBE, RA, featuring triangular shaded verandahs and geometric ceramic screens.
 - **Jamatkhana Prayer**: Bandagi (4:00–5:00 AM CT), Morning Dua (5:00–5:30 AM CT), Evening Prayer (7:00 PM Mon–Thu/Sat/Sun; 7:30 PM Fridays CT).
-- **Dedicated Information Line**: If you have any further questions, please call **+1 (713) 522-2026**.
+- **Human Staff Phone**: If your questions are not answered by this AI assistant, please call human staff at **+1 (713) 522-2026**.
 
 How may I assist you further today?`,
     source: 'knowledge-engine',
@@ -767,19 +766,22 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
     q.includes('repeat') ||
     q.includes('menu')
   ) {
-    reply = "Thank you for reaching the Ismaili Center Houston's Official Phonebot. To speak directly with me press 1, for hours press 2, for prayer press 3, for tours press 4, for directions and parking press 5, for architecture press 6, or press 0 for our dedicated Information Line at 713-522-2026.";
+    reply = "Hello! Welcome to the Ismaili Center Houston AI Phonebot. I am an automated computer helper, not a human. To talk with me, press 1. For visiting hours, press 2. For prayer times, press 3. For free tours, press 4. For directions and parking, press 5. If the AI cannot answer your question, call our human staff at 713-522-2026.";
   } else if (
     q === '0' ||
     q === 'zero' ||
     q === 'press 0' ||
     q === 'press zero' ||
     q.includes('information line') ||
+    q.includes('human') ||
+    q.includes('person') ||
+    q.includes('staff') ||
     q.includes('operator') ||
     q.includes('representative') ||
     q.includes('agent') ||
     q.includes('phone number')
   ) {
-    reply = "You can contact our dedicated Information Line directly at +1 (713) 522-2026 for personalized assistance. You can also press 1 to continue speaking with me.";
+    reply = "If the AI cannot answer your question, or if you need to speak with human staff, please call our official staff phone number at +1 (713) 522-2026. You can also press 1 to keep talking with me.";
   } else if (
     q.includes('non-muslim') ||
     q.includes('anyone') ||
@@ -797,8 +799,8 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
   ) {
     reply = "The Ismailis belong to the Shia branch of Islam and live in over thirty countries worldwide. Our community places a strong emphasis on education, intellectual inquiry, voluntary service, and fostering mutual respect across diverse cultures.";
   } else {
-    // If the AI cannot answer a question, refer to the dedicated Information Line
-    reply = "I'm sorry, I couldn't find an answer to that. Please call our dedicated Information Line at +1 (713) 522-2026 for further assistance. You can also press 1 to speak directly with me, or ask about our visiting hours, prayer times, or tours.";
+    // If the AI cannot answer a question, refer to the human staff Information Line
+    reply = "I am sorry, I do not know the answer to that question. Please call our human staff at the official Information Line at +1 (713) 522-2026. They will be happy to assist you. You can also press 1 to ask me another question.";
   }
 
   return {
@@ -907,16 +909,22 @@ export async function getSmartAssistantResponse(
       const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${clientKey.trim()}`;
       
       const systemInstruction = isPhoneMode
-        ? `You are the official AI Phonebot Ambassador for the Ismaili Center Houston speaking to a caller on the phone.
+        ? `You are an automated AI Phonebot helper for the Ismaili Center Houston. You are an AI computer assistant, NOT a human.
 Rules:
-- Speak in warm, smooth, connected sentences in a professional, clear American phone manner.
-- Do NOT use bullet points, numbered lists, asterisks, hashtags, or markdown formatting.
-- Keep the response short (2 to 4 smooth sentences) while covering all needed information.
-- Always specify Central Time for hours or prayers.
-- Refer tour reservations to ismailicenter dot org.
-- CRITICAL FALLBACK: If you do not know the answer or cannot answer the question, say: "I'm sorry, I couldn't find an answer to that. Please call our dedicated Information Line at +1 (713) 522-2026 for further assistance."`
-        : `You are the official digital ambassador for the Ismaili Center Houston. All schedules are strictly in US Central Time (America/Chicago). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Admission is free. Guided tours can be booked at https://ismailicenter.org/tour-booking/. Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays). Architect: Farshid Moussavi. Landscape: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX. Provide polite, factual, beautifully formatted responses with markdown.
-- CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, advise the user to contact the dedicated Information Line at +1 (713) 522-2026.`;
+- Speak in simple, friendly, easy-to-understand English so immigrants and visitors can easily understand.
+- Use short, clear sentences. Avoid difficult words.
+- Do NOT use bullet points, numbered lists, asterisks, hashtags, or markdown symbols.
+- Keep answers concise (2 to 3 simple sentences).
+- Always say times are in Houston Central Time.
+- CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, say: "I am sorry, I do not know the answer to that question. Please call our human staff at the official Information Line at +1 (713) 522-2026. They will be happy to assist you."`
+        : `You are the digital AI assistant for the Ismaili Center Houston. You are an automated AI computer program, NOT a human staff member.
+Rules:
+- Use clear, simple, accessible words so that all visitors, including immigrants and non-native English speakers, can easily understand.
+- All schedules are strictly in US Central Time (Houston, TX). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Entry is free. Free tours can be booked at https://ismailicenter.org/tour-booking/.
+- Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays).
+- Building design: Farshid Moussavi. Gardens: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX.
+- Provide polite, warm, simple responses formatted with markdown.
+- CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, advise the user to contact the official human staff Information Line at +1 (713) 522-2026.`;
 
       const contents = [
         ...sanitizedHistory,

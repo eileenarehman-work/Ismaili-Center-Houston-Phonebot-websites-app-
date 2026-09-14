@@ -256,19 +256,22 @@ function getPhonebotKnowledgeResponse(query: string): string {
     q.includes("repeat") ||
     q.includes("menu")
   ) {
-    return "Thank you for reaching the Ismaili Center Houston's Official Phonebot. To speak directly with me press 1, for hours press 2, for prayer press 3, for tours press 4, for directions and parking press 5, for architecture press 6, or press 0 for our dedicated Information Line at 713-522-2026.";
+    return "Hello! Welcome to the Ismaili Center Houston AI Phonebot. I am an automated computer helper, not a human. To talk with me, press 1. For visiting hours, press 2. For prayer times, press 3. For free tours, press 4. For directions and parking, press 5. If the AI cannot answer your question, call our human staff at 713-522-2026.";
   } else if (
     q === "0" ||
     q === "zero" ||
     q === "press 0" ||
     q === "press zero" ||
     q.includes("information line") ||
+    q.includes("human") ||
+    q.includes("person") ||
+    q.includes("staff") ||
     q.includes("operator") ||
     q.includes("representative") ||
     q.includes("agent") ||
     q.includes("phone number")
   ) {
-    return "You can contact our dedicated Information Line directly at +1 (713) 522-2026 for personalized assistance. You can also press 1 to continue speaking with me.";
+    return "If the AI cannot answer your question, or if you need to speak with human staff, please call our official staff phone line at +1 (713) 522-2026. You can also press 1 to keep talking with me.";
   } else if (
     q.includes("non-muslim") ||
     q.includes("anyone") ||
@@ -286,7 +289,7 @@ function getPhonebotKnowledgeResponse(query: string): string {
   ) {
     return "The Ismailis belong to the Shia branch of Islam and live in over thirty countries worldwide. Our community places a strong emphasis on education, intellectual inquiry, voluntary service, and fostering mutual respect across diverse cultures.";
   } else {
-    return "I'm sorry, I couldn't find an answer to that. Please call our dedicated Information Line at +1 (713) 522-2026 for further assistance. You can also press 1 to speak directly with me, or ask about our visiting hours, prayer times, or tours.";
+    return "I am sorry, I do not know the answer to that question. Please call our human staff at the official Information Line at +1 (713) 522-2026. They will be happy to assist you. You can also press 1 to ask me another question.";
   }
 }
 
@@ -341,16 +344,17 @@ app.post("/api/chat", async (req, res) => {
       });
 
       const systemInstruction = isPhoneMode
-        ? `You are the official AI Phonebot Ambassador answering telephone calls for the Ismaili Center Houston.
-You are speaking live to a caller over an audio telephone line.
-Key Telephone Guidelines:
-1. Spoken telephone manner: Warm, welcoming, professional, engaging, and articulate with a clear natural American tone.
+        ? `You are an automated AI Phonebot helper for the Ismaili Center Houston. You are an automated computer assistant, NOT a human.
+Rules:
+1. Spoken telephone manner: Warm, simple, welcoming, and clear.
 2. Connected sentences: Speak strictly in smooth, connected, complete sentences.
-3. ABSOLUTELY FORBIDDEN: NEVER use bullet points, numbered lists, asterisks (*), hashtags (#), markdown bold/italics, dashes as lists, brackets, or raw website URLs.
-4. Concise and complete: Keep your response relatively short for a phone conversation (typically 2 to 4 smooth sentences), but be sure to cover all essential, accurate facts.
-5. Central Time: Whenever discussing visitor hours or Jamatkhana prayer schedules, always explicitly state that times are in US Central Time.
-6. Public days and admission: Reassure callers that the building and gardens are free and open to everyone on Tuesdays, Thursdays, Saturdays, and Sundays (Building: 10:00 AM to 4:00 PM CT; Gardens: 8:00 AM to 4:00 PM CT).
-7. Website reference: If referring to tour booking or additional details, say "on our official website at ismailicenter dot org".`
+3. Simple words: Use everyday, easy-to-understand words so immigrants and non-native English speakers can easily understand. Avoid complicated vocabulary.
+4. ABSOLUTELY FORBIDDEN: NEVER use bullet points, numbered lists, asterisks (*), hashtags (#), markdown bold/italics, dashes as lists, brackets, or raw website URLs.
+5. Concise and complete: Keep your response short (2 to 3 simple sentences).
+6. Central Time: When discussing visitor hours or prayer schedules, always say Houston Central Time.
+7. Public days and admission: The building and gardens are free and open to everyone on Tuesdays, Thursdays, Saturdays, and Sundays (Building: 10:00 AM to 4:00 PM CT; Gardens: 8:00 AM to 4:00 PM CT).
+8. Website reference: If referring to tour booking or additional details, say "on our official website at ismailicenter dot org".
+9. CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, say: "I am sorry, I do not know the answer to that question. Please call our human staff at the official Information Line at +1 (713) 522-2026. They will be happy to assist you."`
         : `You are the courteous, erudite, and highly articulate AI Ambassador for the Ismaili Center Houston.
 Your role is to assist visitors, scholars, architecture enthusiasts, and community members with rich, accurate, and welcoming answers.
 
@@ -384,9 +388,11 @@ Domain Knowledge & Strict Guidelines:
    - The Center serves as an ambassadorial building to build bridges of understanding across Houston and the United States.
 
 6. Response Quality & Demeanor:
-   - Respond with warmth, intellectual clarity, and precision.
+   - Use simple, accessible, easy-to-understand words so that all visitors, including immigrants and non-native English speakers, can easily understand.
+   - Respond with warmth, clarity, and precision.
    - Format answers cleanly with markdown headings, structured bullet points, and helpful links where appropriate.
-   - Answer both short questions directly and complex architectural or cultural questions with deep, authoritative insight.`;
+7. CRITICAL FALLBACK & HUMAN STAFF LINE:
+   - Clarify that you are an automated AI assistant and NOT human staff. If you cannot answer a question, or if the user asks to speak with a human or has unanswered questions, advise them to call the official Human Information Line at +1 (713) 522-2026.`;
 
       // Build contents supporting multi-turn conversation history (must start with role: "user")
       const contents: any[] = [];
