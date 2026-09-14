@@ -124,8 +124,8 @@ Guided 45-minute architectural tours run throughout open days. Admission is comp
 The Jamatkhana within the Ismaili Center Houston observes the following daily congregational schedule:
 
 - **Bandagi (Early Morning Silent Meditation)**: **4:00 AM – 5:00 AM** daily CT
-- **Morning Dua (Subha Jo Niyaz)**: **5:00 AM – 5:30 AM** daily CT
-- **Evening Prayer (Sanjhi Dua)**:
+- **Morning Dua**: **5:00 AM – 5:30 AM** daily CT
+- **Evening Prayer**:
   - **Monday through Thursday, Saturday & Sunday**: **7:00 PM** CT
   - **Fridays**: **7:30 PM** CT
 
@@ -574,7 +574,7 @@ export function queryKnowledgeEngine(rawQuery: string): AssistantResponse {
     }
 
     return {
-      reply: finalReply,
+      reply: stripUnwantedPhrases(finalReply),
       source: 'knowledge-engine',
       suggestedFollowUps: generated.followUps,
     };
@@ -582,7 +582,7 @@ export function queryKnowledgeEngine(rawQuery: string): AssistantResponse {
 
   // Graceful conversational fallback
   return {
-    reply: `### Welcome to the Ismaili Center Houston Ambassador
+    reply: stripUnwantedPhrases(`### Welcome to the Ismaili Center Houston Ambassador
 
 The **Ismaili Center Houston** is the first purpose-built Ismaili Center in the United States, located in the Montrose district (Montrose Blvd & Allen Parkway).
 
@@ -594,7 +594,7 @@ The **Ismaili Center Houston** is the first purpose-built Ismaili Center in the 
 - **Jamatkhana Prayer**: Bandagi (4:00–5:00 AM CT), Morning Dua (5:00–5:30 AM CT), Evening Prayer (7:00 PM Mon–Thu/Sat/Sun; 7:30 PM Fridays CT).
 - **Human Staff Phone**: If your questions are not answered by this AI assistant, please call human staff at **+1 (713) 522-2026**.
 
-How may I assist you further today?`,
+How may I assist you further today?`),
     source: 'knowledge-engine',
     suggestedFollowUps: [
       'What are the visitor hours?',
@@ -606,13 +606,27 @@ How may I assist you further today?`,
 }
 
 /**
+ * Strips unwanted prayer phrases ("Subha Jo Niyaz" and "Sanjhi Dua") from ALL responses.
+ */
+export function stripUnwantedPhrases(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/\s*\(\s*Subha\s+Jo\s+Niyaz\s*\)/gi, '')
+    .replace(/\s*\(\s*Sanjhi\s+Dua\s*\)/gi, '')
+    .replace(/\bSubha\s+Jo\s+Niyaz\b/gi, '')
+    .replace(/\bSanjhi\s+Dua\b/gi, '')
+    .replace(/[ \t]{2,}/g, ' ');
+}
+
+/**
  * Clean text specifically for spoken voice / telephone manner:
  * Strips all markdown, symbols like *, bullets, headers, URLs, and awkward punctuation.
  * Ensures the Web Speech API never reads out "asterisk", "bullet", "hash", or raw links.
  */
 export function cleanSpokenPhoneText(text: string): string {
   if (!text) return '';
-  return text
+  const sanitized = stripUnwantedPhrases(text);
+  return sanitized
     // Replace markdown links with spoken phrase
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 on our website at ismailicenter dot org')
     // Remove bold and italics
@@ -885,7 +899,8 @@ export async function getSmartAssistantResponse(
       if (response.ok && contentType.includes('application/json')) {
         const data = await response.json();
         if (data && data.reply) {
-          const finalReply = isPhoneMode ? cleanSpokenPhoneText(data.reply) : data.reply;
+          const raw = stripUnwantedPhrases(data.reply);
+          const finalReply = isPhoneMode ? cleanSpokenPhoneText(raw) : raw;
           return {
             reply: finalReply,
             source: data.source === 'gemini' ? 'gemini-server' : 'knowledge-engine',
@@ -916,12 +931,14 @@ Rules:
 - Do NOT use bullet points, numbered lists, asterisks, hashtags, or markdown symbols.
 - Keep answers concise (2 to 3 simple sentences).
 - Always say times are in Houston Central Time.
+- CRITICAL TERMINOLOGY: NEVER use terms like "Subha Jo Niyaz" or "Sanjhi Dua". Refer to them strictly as "Morning Dua" (or "Morning Prayer") and "Evening Prayer".
 - CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, say: "I am sorry, I do not know the answer to that question. Please call our human staff at the official Information Line at +1 (713) 522-2026. They will be happy to assist you."`
         : `You are the digital AI assistant for the Ismaili Center Houston. You are an automated AI computer program, NOT a human staff member.
 Rules:
 - Use clear, simple, accessible words so that all visitors, including immigrants and non-native English speakers, can easily understand.
 - All schedules are strictly in US Central Time (Houston, TX). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Entry is free. Free tours can be booked at https://ismailicenter.org/tour-booking/.
 - Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays).
+- CRITICAL TERMINOLOGY: NEVER use terms like "Subha Jo Niyaz" or "Sanjhi Dua". Refer to them strictly as "Morning Dua" (or "Morning Prayer") and "Evening Prayer".
 - Building design: Farshid Moussavi. Gardens: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX.
 - Provide polite, warm, simple responses formatted with markdown.
 - CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, advise the user to contact the official human staff Information Line at +1 (713) 522-2026.`;
@@ -956,7 +973,8 @@ Rules:
         const data = await response.json();
         const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (candidateText) {
-          const finalReply = isPhoneMode ? cleanSpokenPhoneText(candidateText) : candidateText;
+          const raw = stripUnwantedPhrases(candidateText);
+          const finalReply = isPhoneMode ? cleanSpokenPhoneText(raw) : raw;
           return {
             reply: finalReply,
             source: 'gemini-client',

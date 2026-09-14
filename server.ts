@@ -29,6 +29,17 @@ function getGeminiClient(): GoogleGenAI | null {
   return geminiClient;
 }
 
+// Helper to strip unwanted prayer phrases from responses
+function stripUnwantedPhrases(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\s*\(\s*Subha\s+Jo\s+Niyaz\s*\)/gi, "")
+    .replace(/\s*\(\s*Sanjhi\s+Dua\s*\)/gi, "")
+    .replace(/\bSubha\s+Jo\s+Niyaz\b/gi, "")
+    .replace(/\bSanjhi\s+Dua\b/gi, "")
+    .replace(/[ \t]{2,}/g, " ");
+}
+
 // Built-in high accuracy fallback knowledge base
 function getKnowledgeBaseResponse(query: string): string {
   const q = (query || "").toLowerCase();
@@ -392,7 +403,9 @@ Domain Knowledge & Strict Guidelines:
    - Respond with warmth, clarity, and precision.
    - Format answers cleanly with markdown headings, structured bullet points, and helpful links where appropriate.
 7. CRITICAL FALLBACK & HUMAN STAFF LINE:
-   - Clarify that you are an automated AI assistant and NOT human staff. If you cannot answer a question, or if the user asks to speak with a human or has unanswered questions, advise them to call the official Human Information Line at +1 (713) 522-2026.`;
+   - Clarify that you are an automated AI assistant and NOT human staff. If you cannot answer a question, or if the user asks to speak with a human or has unanswered questions, advise them to call the official Human Information Line at +1 (713) 522-2026.
+8. CRITICAL TERMINOLOGY RULE:
+   - NEVER use the phrases "Subha Jo Niyaz" or "Sanjhi Dua". Refer to prayer times strictly as "Morning Dua" (or "Morning Prayer") and "Evening Prayer".`;
 
       // Build contents supporting multi-turn conversation history (must start with role: "user")
       const contents: any[] = [];
@@ -433,6 +446,7 @@ Domain Knowledge & Strict Guidelines:
 
       const response: any = await Promise.race([generatePromise, timeoutPromise]);
       let replyText = response?.text || (isPhoneMode ? getPhonebotKnowledgeResponse(message) : getKnowledgeBaseResponse(message));
+      replyText = stripUnwantedPhrases(replyText);
       
       // Additional sanitization for phone mode to guarantee no symbols or markdown slip through
       if (isPhoneMode && replyText) {
@@ -445,14 +459,14 @@ Domain Knowledge & Strict Guidelines:
           .trim();
       }
 
-      res.json({ reply: replyText, source: "gemini" });
+      res.json({ reply: stripUnwantedPhrases(replyText), source: "gemini" });
       return;
     } catch (err: any) {
       console.warn("Gemini API call error, falling back to rich knowledge base:", err?.message || err);
       const fallbackReply = isPhoneMode
         ? getPhonebotKnowledgeResponse(message)
         : getKnowledgeBaseResponse(message);
-      res.json({ reply: fallbackReply, source: "offline-fallback" });
+      res.json({ reply: stripUnwantedPhrases(fallbackReply), source: "offline-fallback" });
       return;
     }
   }
@@ -461,7 +475,7 @@ Domain Knowledge & Strict Guidelines:
   const offlineReply = isPhoneMode
     ? getPhonebotKnowledgeResponse(message)
     : getKnowledgeBaseResponse(message);
-  res.json({ reply: offlineReply, source: "offline" });
+  res.json({ reply: stripUnwantedPhrases(offlineReply), source: "offline" });
 });
 
 // Vite middleware or static serving

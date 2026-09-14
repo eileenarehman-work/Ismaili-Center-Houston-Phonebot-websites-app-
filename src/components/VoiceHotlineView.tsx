@@ -539,35 +539,7 @@ export const VoiceHotlineView: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
-      {/* 1. Clear Distinction & Human Staff Hotline Reassurance Banner */}
-      <div className="bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-700/70 rounded-3xl p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-xs font-bold uppercase tracking-wider">
-              <Bot className="w-3.5 h-3.5 text-amber-700 dark:text-amber-300" />
-              <span>Notice: Automated Computer Assistant (Not Human Staff)</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white font-cinzel">
-              This is an AI Phonebot — Not the Human Hotline
-            </h2>
-            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-              This webpage is an automated computer helper. Please do not confuse this with our real staff telephone number. If the computer cannot answer your questions, or if you need personal help, please call our real human staff directly on the official Information Line:
-            </p>
-          </div>
-
-          <div className="flex-shrink-0 w-full md:w-auto">
-            <a
-              href="tel:+17135222026"
-              className="w-full md:w-auto inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm shadow-md transition-all active:scale-95 cursor-pointer"
-            >
-              <Phone className="w-4 h-4 fill-current" />
-              <span>Call Human Staff: +1 (713) 522-2026</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Page Header with Clean Flow */}
+      {/* Page Header with Clean Flow */}
       <div className="space-y-2">
         <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
           <Radio className="w-3.5 h-3.5 animate-pulse" />
@@ -581,7 +553,7 @@ export const VoiceHotlineView: React.FC = () => {
         </p>
       </div>
 
-      {/* 3. Telephone Console & Touch-Tone Keypad (Spacious Two-Column Layout) */}
+      {/* Telephone Console & Touch-Tone Keypad (Spacious Two-Column Layout) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Virtual Phone Console (7 cols) */}
