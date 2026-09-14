@@ -144,6 +144,82 @@ function getKnowledgeBaseResponse(query: string): string {
   }
 }
 
+// Spoken telephone response generator (smooth connected sentences, no symbols, concise American telephone tone)
+function getPhonebotKnowledgeResponse(query: string): string {
+  const q = (query || "").toLowerCase();
+  if (
+    q.includes("tour") ||
+    q.includes("book") ||
+    q.includes("visit") ||
+    q.includes("open") ||
+    q.includes("hour") ||
+    q.includes("when") ||
+    q.includes("admission") ||
+    q.includes("ticket") ||
+    q.includes("cost") ||
+    q.includes("free")
+  ) {
+    return "The Ismaili Center Houston welcomes all visitors on Tuesdays, Thursdays, Saturdays, and Sundays. Our building and cultural exhibitions are open from 10:00 AM to 4:00 PM Central Time, and the eleven-acre gardens open early at 8:00 AM. Admission is completely free of charge, and you can reserve complimentary guided architectural tours online at ismailicenter dot org.";
+  } else if (
+    q.includes("schedule") ||
+    q.includes("time") ||
+    q.includes("prayer") ||
+    q.includes("dua") ||
+    q.includes("bandagi") ||
+    q.includes("jamatkhana")
+  ) {
+    return "All Jamatkhana prayer times are in US Central Time. Daily silent meditation is from 4:00 to 5:00 AM, followed by morning prayer from 5:00 to 5:30 AM. Evening prayer takes place at 7:00 PM Monday through Thursday, Saturday, and Sunday, and at 7:30 PM on Fridays. While the prayer hall is dedicated to congregational worship, our civic galleries and gardens are open to everyone on visitor days.";
+  } else if (
+    q.includes("architect") ||
+    q.includes("farshid") ||
+    q.includes("moussavi") ||
+    q.includes("building") ||
+    q.includes("garden") ||
+    q.includes("design") ||
+    q.includes("landscape") ||
+    q.includes("verandah") ||
+    q.includes("veranda")
+  ) {
+    return "The Center was designed by renowned architect Farshid Moussavi, featuring shaded verandas that catch natural Gulf Coast breezes and ceramic geometric screens that filter Texas sunlight. The eleven acres of surrounding Persian-inspired gardens were created by Nelson Byrd Woltz, complete with reflection basins and native Texas flora.";
+  } else if (q.includes("aga khan") || q.includes("hazar imam")) {
+    return "His Highness the Aga Khan is the forty-ninth hereditary Imam of Shia Ismaili Muslims and founder of the Aga Khan Development Network. He commissioned the Ismaili Center Houston as a gift to the city to serve as an ambassadorial bridge of understanding, education, and pluralism.";
+  } else if (
+    q.includes("location") ||
+    q.includes("address") ||
+    q.includes("where") ||
+    q.includes("parking") ||
+    q.includes("directions") ||
+    q.includes("montrose")
+  ) {
+    return "We are located in Houston's Montrose district at Montrose Boulevard and Allen Parkway, right by Buffalo Bayou Park. Complimentary on-site visitor parking is provided during our public visiting hours, and we offer direct pedestrian access to local trails.";
+  } else if (
+    q.includes("dress") ||
+    q.includes("etiquette") ||
+    q.includes("wear") ||
+    q.includes("shoes")
+  ) {
+    return "We recommend modest, casual attire with shoulders and knees covered when entering indoor spaces. Comfortable walking shoes are ideal for exploring our eleven-acre gardens, and personal photography is warmly welcomed in all outdoor areas.";
+  } else if (
+    q.includes("non-muslim") ||
+    q.includes("anyone") ||
+    q.includes("everyone") ||
+    q.includes("can i visit")
+  ) {
+    return "Yes, absolutely! The Ismaili Center Houston was created as an open civic institution for the entire community. People of all faiths and backgrounds are warmly invited to explore our building and gardens on Tuesdays, Thursdays, Saturdays, and Sundays with completely free admission.";
+  } else if (
+    q.includes("faith") ||
+    q.includes("ismaili") ||
+    q.includes("who are") ||
+    q.includes("shia") ||
+    q.includes("tradition") ||
+    q.includes("islam")
+  ) {
+    return "The Ismailis belong to the Shia branch of Islam and live in over thirty countries worldwide. Our community places a strong emphasis on education, intellectual inquiry, voluntary service, and fostering mutual respect across diverse cultures.";
+  } else {
+    return "Hello and welcome to the Ismaili Center Houston! Our building and gardens are open to the public on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time, and admission is completely free. How can I assist you with your visit or questions today?";
+  }
+}
+
 // Support both root and GitHub repository sub-path prefixes seamlessly
 app.use((req, _res, next) => {
   if (req.url.startsWith('/Ismaili-Center-Houston-Phonebot-websites-app-')) {
@@ -168,11 +244,13 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.post("/api/chat", async (req, res) => {
-  const { message, history, userKey } = req.body;
+  const { message, history, userKey, mode } = req.body;
   if (!message || typeof message !== "string") {
     res.status(400).json({ error: "A message string is required." });
     return;
   }
+
+  const isPhoneMode = mode === "phone";
 
   const rawKey = userKey || process.env.GEMINI_API_KEY;
   const isUsableKey = Boolean(
@@ -192,7 +270,18 @@ app.post("/api/chat", async (req, res) => {
         },
       });
 
-      const systemInstruction = `You are the courteous, erudite, and highly articulate AI Ambassador for the Ismaili Center Houston.
+      const systemInstruction = isPhoneMode
+        ? `You are the official AI Phonebot Ambassador answering telephone calls for the Ismaili Center Houston.
+You are speaking live to a caller over an audio telephone line.
+Key Telephone Guidelines:
+1. Spoken telephone manner: Warm, welcoming, professional, engaging, and articulate with a clear natural American tone.
+2. Connected sentences: Speak strictly in smooth, connected, complete sentences.
+3. ABSOLUTELY FORBIDDEN: NEVER use bullet points, numbered lists, asterisks (*), hashtags (#), markdown bold/italics, dashes as lists, brackets, or raw website URLs.
+4. Concise and complete: Keep your response relatively short for a phone conversation (typically 2 to 4 smooth sentences), but be sure to cover all essential, accurate facts.
+5. Central Time: Whenever discussing visitor hours or Jamatkhana prayer schedules, always explicitly state that times are in US Central Time.
+6. Public days and admission: Reassure callers that the building and gardens are free and open to everyone on Tuesdays, Thursdays, Saturdays, and Sundays (Building: 10:00 AM to 4:00 PM CT; Gardens: 8:00 AM to 4:00 PM CT).
+7. Website reference: If referring to tour booking or additional details, say "on our official website at ismailicenter dot org".`
+        : `You are the courteous, erudite, and highly articulate AI Ambassador for the Ismaili Center Houston.
 Your role is to assist visitors, scholars, architecture enthusiasts, and community members with rich, accurate, and welcoming answers.
 
 Domain Knowledge & Strict Guidelines:
@@ -262,24 +351,40 @@ Domain Knowledge & Strict Guidelines:
         contents,
         config: {
           systemInstruction,
-          temperature: 0.65,
+          temperature: isPhoneMode ? 0.4 : 0.65,
         },
       });
 
       const response: any = await Promise.race([generatePromise, timeoutPromise]);
-      const replyText = response?.text || getKnowledgeBaseResponse(message);
+      let replyText = response?.text || (isPhoneMode ? getPhonebotKnowledgeResponse(message) : getKnowledgeBaseResponse(message));
+      
+      // Additional sanitization for phone mode to guarantee no symbols or markdown slip through
+      if (isPhoneMode && replyText) {
+        replyText = replyText
+          .replace(/\*\*(.*?)\*\*/g, "$1")
+          .replace(/###?\s*/g, "")
+          .replace(/[-*•]\s+/g, "")
+          .replace(/https?:\/\/[^\s]+/g, "at ismailicenter dot org")
+          .replace(/[*#_~`\[\]]/g, "")
+          .trim();
+      }
+
       res.json({ reply: replyText, source: "gemini" });
       return;
     } catch (err: any) {
       console.warn("Gemini API call error, falling back to rich knowledge base:", err?.message || err);
-      const fallbackReply = getKnowledgeBaseResponse(message);
+      const fallbackReply = isPhoneMode
+        ? getPhonebotKnowledgeResponse(message)
+        : getKnowledgeBaseResponse(message);
       res.json({ reply: fallbackReply, source: "offline-fallback" });
       return;
     }
   }
 
   // Fallback to offline knowledge base
-  const offlineReply = getKnowledgeBaseResponse(message);
+  const offlineReply = isPhoneMode
+    ? getPhonebotKnowledgeResponse(message)
+    : getKnowledgeBaseResponse(message);
   res.json({ reply: offlineReply, source: "offline" });
 });
 

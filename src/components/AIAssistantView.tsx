@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types.ts';
 import { formatCentralTimestamp } from '../utils/time.ts';
 import { getSmartAssistantResponse, queryKnowledgeEngine } from '../utils/smartAssistant.ts';
+import { humanizeSpokenText, getGoogleUKEnglishMaleVoice } from '../utils/naturalVoice.ts';
 import { 
   Bot, 
   User, 
@@ -180,27 +181,20 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
     }
 
     window.speechSynthesis.cancel();
-    // Clean markdown for text to speech
-    const cleanText = text
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/https?:\/\/[^\s]+/g, 'on the official website')
-      .replace(/[-*#]\s+/g, '')
-      .replace(/\n+/g, '. ');
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 0.98;
-    utterance.pitch = 1.0;
+    // Humanize text with natural pauses, phonetic 'Ismaili' correction and symbol removal
+    const cleanSpoken = humanizeSpokenText(text);
 
-    // Select a premium natural English voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const naturalVoice = voices.find(v => 
-      (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Karen')) &&
-      v.lang.startsWith('en')
-    ) || voices.find(v => v.lang.startsWith('en'));
+    const utterance = new SpeechSynthesisUtterance(cleanSpoken);
+    utterance.lang = 'en-GB';
 
-    if (naturalVoice) {
-      utterance.voice = naturalVoice;
+    const ukVoice = getGoogleUKEnglishMaleVoice();
+    if (ukVoice) {
+      utterance.voice = ukVoice;
     }
+
+    utterance.pitch = 1.0;
+    utterance.rate = 0.95;
 
     utterance.onend = () => setSpeakingMsgId(null);
     utterance.onerror = () => setSpeakingMsgId(null);

@@ -10,7 +10,7 @@ import { Footer } from './components/Footer.tsx';
 import { calculateCentralPrayerCountdown, getCentralTimeInfo } from './utils/time.ts';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<NavigationTab>('assistant');
+  const [currentTab, setCurrentTab] = useState<NavigationTab>('hotline');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
@@ -62,8 +62,8 @@ export default function App() {
         return;
       }
 
-      if (e.key === '1') setCurrentTab('assistant');
-      else if (e.key === '2') setCurrentTab('hotline');
+      if (e.key === '1') setCurrentTab('hotline');
+      else if (e.key === '2') setCurrentTab('assistant');
       else if (e.key === '3') setCurrentTab('schedule');
       else if (e.key === '4') setCurrentTab('visitor');
       else if (e.key === '5') setCurrentTab('videos');

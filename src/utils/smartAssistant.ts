@@ -606,23 +606,156 @@ How may I assist you further today?`,
 }
 
 /**
+ * Clean text specifically for spoken voice / telephone manner:
+ * Strips all markdown, symbols like *, bullets, headers, URLs, and awkward punctuation.
+ * Ensures the Web Speech API never reads out "asterisk", "bullet", "hash", or raw links.
+ */
+export function cleanSpokenPhoneText(text: string): string {
+  if (!text) return '';
+  return text
+    // Replace markdown links with spoken phrase
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 on our website at ismailicenter dot org')
+    // Remove bold and italics
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    // Remove headers
+    .replace(/###?\s*/g, '')
+    // Remove bullets and numbered lists
+    .replace(/^[\s]*[-*•]\s+/gm, '')
+    .replace(/[-*•]\s+/g, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    // Remove remaining asterisks, hashes, backticks, brackets
+    .replace(/[*#~`_\[\]]/g, '')
+    // Clean raw URLs
+    .replace(/https?:\/\/[^\s]+/g, 'at ismailicenter dot org')
+    // Ensure "Ismaili" is strictly pronounced with crisp 'S' ("Iss-my-lee") and NEVER with 'SH' ("Ishmaili")
+    .replace(/\bIsmailis\b/g, 'Iss-my-lees')
+    .replace(/\bismailis\b/g, 'iss-my-lees')
+    .replace(/\bIsmaili's\b/g, "Iss-my-lee's")
+    .replace(/\bismaili's\b/g, "iss-my-lee's")
+    .replace(/\bIsmaili\b/g, 'Iss-my-lee')
+    .replace(/\bismaili\b/g, 'iss-my-lee')
+    .replace(/\bISMAILI\b/g, 'Iss-my-lee')
+    .replace(/\bIsmailism\b/g, 'Iss-my-lee-ism')
+    // Smooth time dashes like 10:00 AM – 4:00 PM -> 10:00 AM to 4:00 PM
+    .replace(/(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[–—\-]\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))/g, '$1 to $2')
+    // Clean multiple newlines into smooth sentence breaks
+    .replace(/\n+/g, ' ')
+    // Remove double spaces
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+/**
+ * Fallback telephone knowledge engine specifically delivering smooth, connected,
+ * conversational sentences with no symbols, no bullets, and a professional, welcoming American telephone demeanor.
+ */
+export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantResponse {
+  const q = cleanMessage.toLowerCase();
+  let reply = '';
+
+  if (
+    q.includes('tour') ||
+    q.includes('book') ||
+    q.includes('visit') ||
+    q.includes('open') ||
+    q.includes('hour') ||
+    q.includes('when') ||
+    q.includes('admission') ||
+    q.includes('ticket') ||
+    q.includes('cost') ||
+    q.includes('free')
+  ) {
+    reply = "The Ismaili Center Houston welcomes all visitors on Tuesdays, Thursdays, Saturdays, and Sundays. Our building and cultural exhibitions are open from 10:00 AM to 4:00 PM Central Time, and the eleven-acre gardens open early at 8:00 AM. Admission is completely free of charge, and you can reserve complimentary guided architectural tours online at ismailicenter dot org.";
+  } else if (
+    q.includes('schedule') ||
+    q.includes('time') ||
+    q.includes('prayer') ||
+    q.includes('dua') ||
+    q.includes('bandagi') ||
+    q.includes('jamatkhana')
+  ) {
+    reply = "All Jamatkhana prayer times are in US Central Time. Daily silent meditation is from 4:00 to 5:00 AM, followed by morning prayer from 5:00 to 5:30 AM. Evening prayer takes place at 7:00 PM Monday through Thursday, Saturday, and Sunday, and at 7:30 PM on Fridays. While the prayer hall is dedicated to congregational worship, our civic galleries and gardens are open to everyone on visitor days.";
+  } else if (
+    q.includes('architect') ||
+    q.includes('farshid') ||
+    q.includes('moussavi') ||
+    q.includes('building') ||
+    q.includes('garden') ||
+    q.includes('design') ||
+    q.includes('landscape') ||
+    q.includes('verandah') ||
+    q.includes('veranda')
+  ) {
+    reply = "The Center was designed by celebrated architect Farshid Moussavi, featuring shaded verandas that catch natural Gulf Coast breezes and ceramic geometric screens that filter Texas sunlight. The eleven acres of surrounding Persian-inspired gardens were created by Nelson Byrd Woltz, complete with tranquil reflection basins and native Texas trees.";
+  } else if (q.includes('aga khan') || q.includes('hazar imam')) {
+    reply = "His Highness the Aga Khan is the forty-ninth hereditary Imam of Shia Ismaili Muslims and founder of the Aga Khan Development Network. He commissioned the Ismaili Center Houston as a gift to the city to serve as an ambassadorial bridge of understanding, education, and pluralism.";
+  } else if (
+    q.includes('location') ||
+    q.includes('address') ||
+    q.includes('where') ||
+    q.includes('parking') ||
+    q.includes('directions') ||
+    q.includes('montrose')
+  ) {
+    reply = "We are located in Houston's Montrose district at Montrose Boulevard and Allen Parkway, right next to Buffalo Bayou Park. Complimentary on-site visitor parking is provided during our public visiting hours, and we offer direct pedestrian access to the park trails.";
+  } else if (
+    q.includes('dress') ||
+    q.includes('etiquette') ||
+    q.includes('wear') ||
+    q.includes('shoes')
+  ) {
+    reply = "We recommend modest, casual attire with shoulders and knees covered when entering indoor spaces. Comfortable walking shoes are ideal for exploring our eleven-acre gardens, and personal photography is warmly welcomed in all outdoor areas.";
+  } else if (
+    q.includes('non-muslim') ||
+    q.includes('anyone') ||
+    q.includes('everyone') ||
+    q.includes('can i visit')
+  ) {
+    reply = "Yes, absolutely! The Ismaili Center Houston was created as an open civic institution for the entire community. People of all faiths and backgrounds are warmly invited to explore our building and gardens on Tuesdays, Thursdays, Saturdays, and Sundays with completely free admission.";
+  } else if (
+    q.includes('faith') ||
+    q.includes('ismaili') ||
+    q.includes('who are') ||
+    q.includes('shia') ||
+    q.includes('tradition') ||
+    q.includes('islam')
+  ) {
+    reply = "The Ismailis belong to the Shia branch of Islam and live in over thirty countries worldwide. Our community places a strong emphasis on education, intellectual inquiry, voluntary service, and fostering mutual respect across diverse cultures.";
+  } else {
+    reply = "Hello and welcome to the Ismaili Center Houston! Our building and gardens are open to the public on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time, and admission is completely free. How can I assist you with your visit or questions today?";
+  }
+
+  return {
+    reply,
+    source: 'knowledge-engine',
+  };
+}
+
+/**
  * Main Smart Assistant Coordinator
  * 1. Tries backend `/api/chat` (server-side Gemini)
  * 2. If running on static host (GitHub Pages / repo without backend) or backend is down:
  *    - Checks if `import.meta.env.VITE_GEMINI_API_KEY` is present in client environment
  *    - If present, makes direct client call
- *    - Otherwise, falls back to the smart, comprehensive `queryKnowledgeEngine`
+ *    - Otherwise, falls back to the smart knowledge engine
  * 
  * Result: Guaranteed instant, high-intelligence responses in ALL environments!
  */
 export async function getSmartAssistantResponse(
   message: string,
-  history?: Array<{ role: string; parts: Array<{ text: string }> }>
+  history?: Array<{ role: string; parts: Array<{ text: string }> }>,
+  options?: { mode?: 'text' | 'phone' }
 ): Promise<AssistantResponse> {
+  const isPhoneMode = options?.mode === 'phone';
   const cleanMessage = message.trim();
   if (!cleanMessage) {
     return {
-      reply: "Please enter a question about the Ismaili Center Houston.",
+      reply: isPhoneMode 
+        ? "Hello, please ask any question about the Ismaili Center Houston visiting hours, tours, or prayer schedules."
+        : "Please enter a question about the Ismaili Center Houston.",
       source: 'knowledge-engine',
     };
   }
@@ -663,7 +796,11 @@ export async function getSmartAssistantResponse(
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: cleanMessage, history: sanitizedHistory }),
+        body: JSON.stringify({ 
+          message: cleanMessage, 
+          history: sanitizedHistory,
+          mode: isPhoneMode ? 'phone' : 'text'
+        }),
         signal: controller.signal,
       });
 
@@ -673,8 +810,9 @@ export async function getSmartAssistantResponse(
       if (response.ok && contentType.includes('application/json')) {
         const data = await response.json();
         if (data && data.reply) {
+          const finalReply = isPhoneMode ? cleanSpokenPhoneText(data.reply) : data.reply;
           return {
-            reply: data.reply,
+            reply: finalReply,
             source: data.source === 'gemini' ? 'gemini-server' : 'knowledge-engine',
             suggestedFollowUps: data.suggestedFollowUps || [
               'How do I book a tour?',
@@ -695,7 +833,15 @@ export async function getSmartAssistantResponse(
     try {
       const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${clientKey.trim()}`;
       
-      const systemInstruction = `You are the official digital ambassador for the Ismaili Center Houston. All schedules are strictly in US Central Time (America/Chicago). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Admission is free. Guided tours can be booked at https://ismailicenter.org/tour-booking/. Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays). Architect: Farshid Moussavi. Landscape: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX. Provide polite, factual, beautifully formatted responses with markdown.`;
+      const systemInstruction = isPhoneMode
+        ? `You are the official AI Phonebot Ambassador for the Ismaili Center Houston speaking to a caller on the phone.
+Rules:
+- Speak in warm, smooth, connected sentences in a professional, clear American phone manner.
+- Do NOT use bullet points, numbered lists, asterisks, hashtags, or markdown formatting.
+- Keep the response short (2 to 4 smooth sentences) while covering all needed information.
+- Always specify Central Time for hours or prayers.
+- Refer tour reservations to ismailicenter dot org.`
+        : `You are the official digital ambassador for the Ismaili Center Houston. All schedules are strictly in US Central Time (America/Chicago). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Admission is free. Guided tours can be booked at https://ismailicenter.org/tour-booking/. Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays). Architect: Farshid Moussavi. Landscape: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX. Provide polite, factual, beautifully formatted responses with markdown.`;
 
       const contents = [
         ...sanitizedHistory,
@@ -714,8 +860,8 @@ export async function getSmartAssistantResponse(
             parts: [{ text: systemInstruction }]
           },
           generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 900,
+            temperature: isPhoneMode ? 0.35 : 0.4,
+            maxOutputTokens: isPhoneMode ? 250 : 900,
           }
         }),
         signal: controller.signal,
@@ -727,8 +873,9 @@ export async function getSmartAssistantResponse(
         const data = await response.json();
         const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (candidateText) {
+          const finalReply = isPhoneMode ? cleanSpokenPhoneText(candidateText) : candidateText;
           return {
-            reply: candidateText,
+            reply: finalReply,
             source: 'gemini-client',
             suggestedFollowUps: [
               'What are the visitor hours?',
@@ -744,5 +891,8 @@ export async function getSmartAssistantResponse(
   }
 
   // 3. Guaranteed instant comprehensive smart knowledge engine (works 100% on GitHub & everywhere with 0 latency)
+  if (isPhoneMode) {
+    return queryPhoneKnowledgeEngine(cleanMessage);
+  }
   return queryKnowledgeEngine(cleanMessage);
 }

@@ -52,24 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
   // Each tab configured with distinct signature colors for enhanced usability and engagement
   const tabs: TabConfig[] = [
     {
-      id: 'assistant',
-      label: 'AI Assistant',
-      icon: <Bot className="w-4 h-4" />,
-      shortcut: '1',
-      colorName: 'Sky Blue',
-      activeClass: 'bg-sky-600 text-white shadow-md shadow-sky-600/25 ring-2 ring-sky-500',
-      inactiveClass: 'bg-sky-50/70 dark:bg-sky-950/30 text-sky-900 dark:text-sky-200 border border-sky-200/80 dark:border-sky-800/60',
-      inactiveHoverClass: 'hover:bg-sky-100/80 dark:hover:bg-sky-900/50 hover:border-sky-400',
-      iconColorClass: 'text-sky-600 dark:text-sky-400',
-      badgeActiveClass: 'bg-white/20 text-white',
-      badgeInactiveClass: 'bg-sky-200/70 dark:bg-sky-800/60 text-sky-800 dark:text-sky-200',
-      dotColorClass: 'bg-sky-500',
-    },
-    {
       id: 'hotline',
-      label: 'Voice Hotline',
+      label: 'AI Phonebot Hotline',
       icon: <PhoneCall className="w-4 h-4" />,
-      shortcut: '2',
+      shortcut: '1',
       colorName: 'Rose Coral',
       activeClass: 'bg-rose-600 text-white shadow-md shadow-rose-600/25 ring-2 ring-rose-500',
       inactiveClass: 'bg-rose-50/70 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200 border border-rose-200/80 dark:border-rose-800/60',
@@ -78,6 +64,20 @@ export const Header: React.FC<HeaderProps> = ({
       badgeActiveClass: 'bg-white/20 text-white',
       badgeInactiveClass: 'bg-rose-200/70 dark:bg-rose-800/60 text-rose-800 dark:text-rose-200',
       dotColorClass: 'bg-rose-500',
+    },
+    {
+      id: 'assistant',
+      label: 'AI Assistant',
+      icon: <Bot className="w-4 h-4" />,
+      shortcut: '2',
+      colorName: 'Sky Blue',
+      activeClass: 'bg-sky-600 text-white shadow-md shadow-sky-600/25 ring-2 ring-sky-500',
+      inactiveClass: 'bg-sky-50/70 dark:bg-sky-950/30 text-sky-900 dark:text-sky-200 border border-sky-200/80 dark:border-sky-800/60',
+      inactiveHoverClass: 'hover:bg-sky-100/80 dark:hover:bg-sky-900/50 hover:border-sky-400',
+      iconColorClass: 'text-sky-600 dark:text-sky-400',
+      badgeActiveClass: 'bg-white/20 text-white',
+      badgeInactiveClass: 'bg-sky-200/70 dark:bg-sky-800/60 text-sky-800 dark:text-sky-200',
+      dotColorClass: 'bg-sky-500',
     },
     {
       id: 'schedule',
@@ -131,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Brand Logo matching user screenshot */}
           <div 
-            onClick={() => onSelectTab('assistant')} 
+            onClick={() => onSelectTab('hotline')} 
             className="cursor-pointer group flex items-center"
             title="Ismaili Center Houston Guide"
           >

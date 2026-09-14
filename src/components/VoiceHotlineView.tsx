@@ -20,7 +20,11 @@ import {
 } from 'lucide-react';
 import { telecomAudio } from '../utils/telecomAudio.ts';
 import { formatCentralTimestamp } from '../utils/time.ts';
-import { getSmartAssistantResponse } from '../utils/smartAssistant.ts';
+import { getSmartAssistantResponse, cleanSpokenPhoneText } from '../utils/smartAssistant.ts';
+import { 
+  getGoogleUKEnglishMaleVoice, 
+  humanizeSpokenText 
+} from '../utils/naturalVoice.ts';
 
 interface KeypadItem {
   digit: string;
@@ -54,6 +58,17 @@ export const VoiceHotlineView: React.FC = () => {
       transcriptBottomRef.current.scrollTop = transcriptBottomRef.current.scrollHeight;
     }
   }, [transcript]);
+
+  // Warm up speech synthesis voices on load
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const syncVoice = () => {
+        getGoogleUKEnglishMaleVoice();
+      };
+      syncVoice();
+      window.speechSynthesis.onvoiceschanged = syncVoice;
+    }
+  }, []);
 
   // Clean up on component unmount
   useEffect(() => {
@@ -167,7 +182,7 @@ export const VoiceHotlineView: React.FC = () => {
     }
   };
 
-  // Speaks text using natural speech synthesis with strict callActive checks
+  // Speaks text using natural speech synthesis with warm conversational human tone
   const speakText = (text: string, onDone?: () => void) => {
     // If call was hung up, cut off immediately!
     if (!callActiveRef.current) return;
@@ -182,27 +197,20 @@ export const VoiceHotlineView: React.FC = () => {
     stopListening();
     setOperatorSpeaking(true);
 
-    const cleanText = text
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/###?\s*/g, '')
-      .replace(/https?:\/\/[^\s]+/g, 'on the official website ismailicenter.org')
-      .replace(/[-*•]\s+/g, '')
-      .replace(/\n+/g, '. ');
+    // Phonetically humanize text: ensures "Ismaili" is pronounced "Iss-my-lee" (never "Ishmaili"), expands times, strips markdown
+    const spokenText = humanizeSpokenText(text);
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.lang = 'en-GB';
 
-    // Select natural English voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const naturalVoice = voices.find(v => 
-      (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Karen') || v.name.includes('Daniel')) &&
-      v.lang.startsWith('en')
-    ) || voices.find(v => v.lang.startsWith('en'));
-
-    if (naturalVoice) {
-      utterance.voice = naturalVoice;
+    // Strictly assign Google UK English Male (en-GB) voice
+    const ukVoice = getGoogleUKEnglishMaleVoice();
+    if (ukVoice) {
+      utterance.voice = ukVoice;
     }
+
+    utterance.pitch = 1.0;
+    utterance.rate = 0.95; // Crisp, cultured British conversational cadence
 
     utterance.onstart = () => {
       if (!callActiveRef.current) {
@@ -210,13 +218,13 @@ export const VoiceHotlineView: React.FC = () => {
         setOperatorSpeaking(false);
         return;
       }
-      setStatusText('AI Phonebot is speaking...');
+      setStatusText('AI Concierge is speaking...');
     };
 
     utterance.onend = () => {
       setOperatorSpeaking(false);
       if (!callActiveRef.current) return;
-      setStatusText('AI Phonebot is listening... Speak now');
+      setStatusText('Line Active • Listening... Speak now');
       if (onDone) onDone();
     };
 
@@ -230,20 +238,22 @@ export const VoiceHotlineView: React.FC = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Process caller voice input via smart assistant engine and respond aloud
+  // Process caller voice input via smart assistant engine and respond aloud with phone-catered manner
   const handleUserVoiceInput = async (query: string) => {
     if (!callActiveRef.current) return;
 
     setIsProcessingVoice(true);
-    setStatusText('AI Phonebot is thinking...');
+    setStatusText('AI Concierge is thinking...');
     stopListening();
 
+    const personaSpeaker = 'AI Concierge';
+
     try {
-      const response = await getSmartAssistantResponse(query);
+      const response = await getSmartAssistantResponse(query, [], { mode: 'phone' });
       if (!callActiveRef.current) return;
 
-      const reply = response.reply || "I am glad to help! You can visit on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time.";
-      addTranscriptEntry('AI Phonebot', reply);
+      const reply = response.reply || "The Ismaili Center Houston welcomes all visitors on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time, and admission is completely free of charge.";
+      addTranscriptEntry(personaSpeaker, reply);
 
       speakText(reply, () => {
         if (callActiveRef.current && isMicActive) {
@@ -252,8 +262,8 @@ export const VoiceHotlineView: React.FC = () => {
       });
     } catch (_err) {
       if (!callActiveRef.current) return;
-      const fallbackReply = "The Ismaili Center Houston is located in Montrose, Houston. Visitors are welcome on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time.";
-      addTranscriptEntry('AI Phonebot', fallbackReply);
+      const fallbackReply = "The Ismaili Center Houston is located in Montrose, Houston. Visitors are welcome on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time, and admission is completely free.";
+      addTranscriptEntry(personaSpeaker, fallbackReply);
       speakText(fallbackReply, () => {
         if (callActiveRef.current && isMicActive) {
           startListening();
@@ -276,18 +286,18 @@ export const VoiceHotlineView: React.FC = () => {
       if (!callActiveRef.current) return;
 
       setCallState('connected');
-      setStatusText('Call Connected • HD Voice Link Active');
+      setStatusText('Call Connected • AI Concierge Online');
 
       // Start duration counter
       timerRef.current = setInterval(() => {
         setCallSeconds((s) => s + 1);
       }, 1000);
 
-      // Conversational greeting from the AI Phonebot as requested
+      // Conversational greeting in Google UK English Male
       const phonebotGreeting = 
-        "Hello and welcome to the Ismaili Center Houston! I am your AI phonebot ambassador. You can speak to me directly about our visiting hours, guided architectural tours, Central Time prayer schedules, or anything else about the Center. How may I help you today?";
+        "Hello, and welcome to the Ismaili Center Houston! I am your AI concierge. You can speak to me directly about our visiting hours, guided architectural tours, Central Time prayer schedules, or anything else about the Center. How may I help you today?";
 
-      addTranscriptEntry('AI Phonebot', phonebotGreeting);
+      addTranscriptEntry('AI Concierge', phonebotGreeting);
       speakText(phonebotGreeting, () => {
         // Automatically start listening for caller's voice once greeting completes
         if (callActiveRef.current && isMicActive) {
@@ -328,7 +338,7 @@ export const VoiceHotlineView: React.FC = () => {
     }
 
     addTranscriptEntry(`You (Keypad [${digit}])`, menuTitle);
-    addTranscriptEntry('AI Phonebot', responseText);
+    addTranscriptEntry('AI Concierge', responseText);
     speakText(responseText, () => {
       if (callActiveRef.current && isMicActive) {
         startListening();
@@ -451,12 +461,12 @@ export const VoiceHotlineView: React.FC = () => {
     {
       digit: '0',
       sub: 'OPER',
-      label: 'Live AI Phonebot',
+      label: 'Live AI Concierge',
       handler: () => {
         telecomAudio.playDTMF('0');
-        const greeting = "You are speaking directly with the AI phonebot ambassador for the Ismaili Center Houston. What can I assist you with regarding visiting hours, tours, or prayer schedules?";
-        addTranscriptEntry('You (Keypad [0])', 'Transferred to AI Phonebot');
-        addTranscriptEntry('AI Phonebot', greeting);
+        const greeting = "You are speaking directly with the AI concierge for the Ismaili Center Houston. What can I assist you with regarding visiting hours, tours, or prayer schedules?";
+        addTranscriptEntry('You (Keypad [0])', 'Connected with AI Concierge');
+        addTranscriptEntry('AI Concierge', greeting);
         speakText(greeting, () => {
           if (callActiveRef.current && isMicActive) {
             startListening();
