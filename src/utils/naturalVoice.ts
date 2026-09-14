@@ -98,6 +98,9 @@ export function humanizeSpokenText(text: string): string {
   t = t.replace(/\bCST\b/g, 'Central Standard Time');
   t = t.replace(/\bCDT\b/g, 'Central Daylight Time');
 
+  // Phone number audio smoothing for telephone clarity
+  t = t.replace(/\+?1?\s*\(?713\)?[\s.-]*522[\s.-]*2026/g, '7 1 3, 5 2 2, 2 0 2 6');
+
   // Time formatting: 10:00 AM -> 10:00 A M, 4:00 PM -> 4:00 P M
   t = t.replace(/(\d{1,2}):00\s*(AM|am)/g, '$1 A M');
   t = t.replace(/(\d{1,2}):00\s*(PM|pm)/g, '$1 P M');

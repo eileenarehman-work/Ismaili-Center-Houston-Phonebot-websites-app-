@@ -65,8 +65,11 @@ function aistudioMediaPlugin(): Plugin {
 // LINT.ThenChange(//depot/google3/java/com/google/alkali/boq/makersuite/applet_dev_service/templates/initializers/react_theme/vite.config.ts:aistudio_media_plugin)
 
 export default defineConfig(() => {
-  const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
-  const base = isGitHubActions ? '/Ismaili-Center-Houston-Phonebot-websites-app-/' : './';
+  // Determine base path: works seamlessly on GitHub Actions, GitHub Pages, custom domains, and subpaths
+  const githubRepoBase = process.env.GITHUB_REPOSITORY
+    ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/`
+    : undefined;
+  const base = process.env.BASE_PATH || githubRepoBase || './';
 
   return {
     base,

@@ -593,6 +593,7 @@ The **Ismaili Center Houston** is the first purpose-built Ismaili Center in the 
 - **Architectural Tours**: Free 45-minute guided tours are available at [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/).
 - **Architecture**: Designed by Farshid Moussavi OBE, RA, featuring triangular shaded verandahs and geometric ceramic screens.
 - **Jamatkhana Prayer**: Bandagi (4:00–5:00 AM CT), Morning Dua (5:00–5:30 AM CT), Evening Prayer (7:00 PM Mon–Thu/Sat/Sun; 7:30 PM Fridays CT).
+- **Dedicated Information Line**: If you have any further questions, please call **+1 (713) 522-2026**.
 
 How may I assist you further today?`,
     source: 'knowledge-engine',
@@ -641,6 +642,8 @@ export function cleanSpokenPhoneText(text: string): string {
     .replace(/\bIsmailism\b/g, 'Iss-my-lee-ism')
     // Smooth time dashes like 10:00 AM – 4:00 PM -> 10:00 AM to 4:00 PM
     .replace(/(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[–—\-]\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))/g, '$1 to $2')
+    // Smooth phone number for speech synthesis
+    .replace(/\+?1?\s*\(?713\)?[\s.-]*522[\s.-]*2026/g, '7 1 3, 5 2 2, 2 0 2 6')
     // Clean multiple newlines into smooth sentence breaks
     .replace(/\n+/g, ' ')
     // Remove double spaces
@@ -653,10 +656,26 @@ export function cleanSpokenPhoneText(text: string): string {
  * conversational sentences with no symbols, no bullets, and a professional, welcoming American telephone demeanor.
  */
 export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantResponse {
-  const q = cleanMessage.toLowerCase();
+  const q = cleanMessage.toLowerCase().trim();
   let reply = '';
 
+  // 1. Direct Phonebot Menu Number / Command Handlers
   if (
+    q === '1' ||
+    q === 'one' ||
+    q === 'press 1' ||
+    q === 'press one' ||
+    q.includes('speak directly') ||
+    q.includes('talk directly') ||
+    q.includes('talk to you') ||
+    q.includes('speak to you')
+  ) {
+    reply = "I am speaking directly with you! Please ask me any question about visiting hours, Jamatkhana prayer schedules, architectural tours, or the Center.";
+  } else if (
+    q === '2' ||
+    q === 'two' ||
+    q === 'press 2' ||
+    q === 'press two' ||
     q.includes('tour') ||
     q.includes('book') ||
     q.includes('visit') ||
@@ -670,6 +689,10 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
   ) {
     reply = "The Ismaili Center Houston welcomes all visitors on Tuesdays, Thursdays, Saturdays, and Sundays. Our building and cultural exhibitions are open from 10:00 AM to 4:00 PM Central Time, and the eleven-acre gardens open early at 8:00 AM. Admission is completely free of charge, and you can reserve complimentary guided architectural tours online at ismailicenter dot org.";
   } else if (
+    q === '3' ||
+    q === 'three' ||
+    q === 'press 3' ||
+    q === 'press three' ||
     q.includes('schedule') ||
     q.includes('time') ||
     q.includes('prayer') ||
@@ -679,6 +702,32 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
   ) {
     reply = "All Jamatkhana prayer times are in US Central Time. Daily silent meditation is from 4:00 to 5:00 AM, followed by morning prayer from 5:00 to 5:30 AM. Evening prayer takes place at 7:00 PM Monday through Thursday, Saturday, and Sunday, and at 7:30 PM on Fridays. While the prayer hall is dedicated to congregational worship, our civic galleries and gardens are open to everyone on visitor days.";
   } else if (
+    q === '4' ||
+    q === 'four' ||
+    q === 'press 4' ||
+    q === 'press four' ||
+    q.includes('guided tour') ||
+    q.includes('architectural tour')
+  ) {
+    reply = "Guided architectural tours are available on Tuesdays, Thursdays, Saturdays, and Sundays. Each tour lasts approximately forty-five minutes and explores Farshid Moussavi's architecture and the eleven-acre Persian-inspired gardens. You can reserve free tickets online at ismailicenter dot org.";
+  } else if (
+    q === '5' ||
+    q === 'five' ||
+    q === 'press 5' ||
+    q === 'press five' ||
+    q.includes('location') ||
+    q.includes('address') ||
+    q.includes('where') ||
+    q.includes('parking') ||
+    q.includes('directions') ||
+    q.includes('montrose')
+  ) {
+    reply = "We are located in Houston's Montrose district at Montrose Boulevard and Allen Parkway, right next to Buffalo Bayou Park. Complimentary on-site visitor parking is provided during our public visiting hours, and we offer direct pedestrian access to the park trails.";
+  } else if (
+    q === '6' ||
+    q === 'six' ||
+    q === 'press 6' ||
+    q === 'press six' ||
     q.includes('architect') ||
     q.includes('farshid') ||
     q.includes('moussavi') ||
@@ -690,24 +739,47 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
     q.includes('veranda')
   ) {
     reply = "The Center was designed by celebrated architect Farshid Moussavi, featuring shaded verandas that catch natural Gulf Coast breezes and ceramic geometric screens that filter Texas sunlight. The eleven acres of surrounding Persian-inspired gardens were created by Nelson Byrd Woltz, complete with tranquil reflection basins and native Texas trees.";
-  } else if (q.includes('aga khan') || q.includes('hazar imam')) {
+  } else if (
+    q === '7' ||
+    q === 'seven' ||
+    q === 'press 7' ||
+    q === 'press seven' ||
+    q.includes('aga khan') || 
+    q.includes('hazar imam')
+  ) {
     reply = "His Highness the Aga Khan is the forty-ninth hereditary Imam of Shia Ismaili Muslims and founder of the Aga Khan Development Network. He commissioned the Ismaili Center Houston as a gift to the city to serve as an ambassadorial bridge of understanding, education, and pluralism.";
   } else if (
-    q.includes('location') ||
-    q.includes('address') ||
-    q.includes('where') ||
-    q.includes('parking') ||
-    q.includes('directions') ||
-    q.includes('montrose')
-  ) {
-    reply = "We are located in Houston's Montrose district at Montrose Boulevard and Allen Parkway, right next to Buffalo Bayou Park. Complimentary on-site visitor parking is provided during our public visiting hours, and we offer direct pedestrian access to the park trails.";
-  } else if (
+    q === '8' ||
+    q === 'eight' ||
+    q === 'press 8' ||
+    q === 'press eight' ||
     q.includes('dress') ||
     q.includes('etiquette') ||
     q.includes('wear') ||
     q.includes('shoes')
   ) {
     reply = "We recommend modest, casual attire with shoulders and knees covered when entering indoor spaces. Comfortable walking shoes are ideal for exploring our eleven-acre gardens, and personal photography is warmly welcomed in all outdoor areas.";
+  } else if (
+    q === '9' ||
+    q === 'nine' ||
+    q === 'press 9' ||
+    q === 'press nine' ||
+    q.includes('repeat') ||
+    q.includes('menu')
+  ) {
+    reply = "Thank you for reaching the Ismaili Center Houston's Official Phonebot. To speak directly with me press 1, for hours press 2, for prayer press 3, for tours press 4, for directions and parking press 5, for architecture press 6, or press 0 for our dedicated Information Line at 713-522-2026.";
+  } else if (
+    q === '0' ||
+    q === 'zero' ||
+    q === 'press 0' ||
+    q === 'press zero' ||
+    q.includes('information line') ||
+    q.includes('operator') ||
+    q.includes('representative') ||
+    q.includes('agent') ||
+    q.includes('phone number')
+  ) {
+    reply = "You can contact our dedicated Information Line directly at +1 (713) 522-2026 for personalized assistance. You can also press 1 to continue speaking with me.";
   } else if (
     q.includes('non-muslim') ||
     q.includes('anyone') ||
@@ -725,7 +797,8 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
   ) {
     reply = "The Ismailis belong to the Shia branch of Islam and live in over thirty countries worldwide. Our community places a strong emphasis on education, intellectual inquiry, voluntary service, and fostering mutual respect across diverse cultures.";
   } else {
-    reply = "Hello and welcome to the Ismaili Center Houston! Our building and gardens are open to the public on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time, and admission is completely free. How can I assist you with your visit or questions today?";
+    // If the AI cannot answer a question, refer to the dedicated Information Line
+    reply = "I'm sorry, I couldn't find an answer to that. Please call our dedicated Information Line at +1 (713) 522-2026 for further assistance. You can also press 1 to speak directly with me, or ask about our visiting hours, prayer times, or tours.";
   }
 
   return {
@@ -840,8 +913,10 @@ Rules:
 - Do NOT use bullet points, numbered lists, asterisks, hashtags, or markdown formatting.
 - Keep the response short (2 to 4 smooth sentences) while covering all needed information.
 - Always specify Central Time for hours or prayers.
-- Refer tour reservations to ismailicenter dot org.`
-        : `You are the official digital ambassador for the Ismaili Center Houston. All schedules are strictly in US Central Time (America/Chicago). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Admission is free. Guided tours can be booked at https://ismailicenter.org/tour-booking/. Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays). Architect: Farshid Moussavi. Landscape: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX. Provide polite, factual, beautifully formatted responses with markdown.`;
+- Refer tour reservations to ismailicenter dot org.
+- CRITICAL FALLBACK: If you do not know the answer or cannot answer the question, say: "I'm sorry, I couldn't find an answer to that. Please call our dedicated Information Line at +1 (713) 522-2026 for further assistance."`
+        : `You are the official digital ambassador for the Ismaili Center Houston. All schedules are strictly in US Central Time (America/Chicago). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Admission is free. Guided tours can be booked at https://ismailicenter.org/tour-booking/. Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays). Architect: Farshid Moussavi. Landscape: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX. Provide polite, factual, beautifully formatted responses with markdown.
+- CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, advise the user to contact the dedicated Information Line at +1 (713) 522-2026.`;
 
       const contents = [
         ...sanitizedHistory,

@@ -51,6 +51,10 @@ export const VoiceHotlineView: React.FC = () => {
   const timerRef = useRef<any>(null);
   const recognitionRef = useRef<any>(null);
   const transcriptBottomRef = useRef<HTMLDivElement>(null);
+  const operatorSpeakingRef = useRef<boolean>(false);
+  const speakingCooldownUntilRef = useRef<number>(0);
+  const lastBotSpeechTextRef = useRef<string>('');
+  const lastBotSpeechTimeRef = useRef<number>(0);
 
   // Auto-scroll transcript
   useEffect(() => {
@@ -74,6 +78,7 @@ export const VoiceHotlineView: React.FC = () => {
   useEffect(() => {
     return () => {
       callActiveRef.current = false;
+      operatorSpeakingRef.current = false;
       if (timerRef.current) clearInterval(timerRef.current);
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -100,7 +105,10 @@ export const VoiceHotlineView: React.FC = () => {
 
   // Safe Speech Recognition control for talking to the AI phonebot
   const startListening = () => {
-    if (!callActiveRef.current || operatorSpeaking || !isMicActive) return;
+    // CRITICAL ANTI-LOOPBACK: Never start listening while the bot is speaking or during echo cooldown
+    if (!callActiveRef.current || operatorSpeakingRef.current || Date.now() < speakingCooldownUntilRef.current || !isMicActive) {
+      return;
+    }
     if (typeof window === 'undefined') return;
 
     const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -114,6 +122,7 @@ export const VoiceHotlineView: React.FC = () => {
         try {
           recognitionRef.current.abort();
         } catch (e) {}
+        recognitionRef.current = null;
       }
 
       const recog = new SpeechRec();
@@ -122,8 +131,10 @@ export const VoiceHotlineView: React.FC = () => {
       recog.lang = 'en-US';
 
       recog.onstart = () => {
-        if (!callActiveRef.current) {
+        // Double check loopback lock
+        if (!callActiveRef.current || operatorSpeakingRef.current || Date.now() < speakingCooldownUntilRef.current) {
           try { recog.abort(); } catch (e) {}
+          setIsListening(false);
           return;
         }
         setIsListening(true);
@@ -131,7 +142,12 @@ export const VoiceHotlineView: React.FC = () => {
       };
 
       recog.onresult = (event: any) => {
-        if (!callActiveRef.current) return;
+        // CRITICAL ANTI-LOOPBACK: Discard any audio input if caller disconnected, operator is speaking, or within echo cooldown
+        if (!callActiveRef.current || operatorSpeakingRef.current || Date.now() < speakingCooldownUntilRef.current) {
+          setUserInterimSpeech('');
+          return;
+        }
+
         let interim = '';
         let final = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -148,7 +164,6 @@ export const VoiceHotlineView: React.FC = () => {
           setUserInterimSpeech('');
           setIsListening(false);
           const userSaid = final.trim();
-          addTranscriptEntry('You (Voice)', userSaid);
           handleUserVoiceInput(userSaid);
         }
       };
@@ -156,7 +171,7 @@ export const VoiceHotlineView: React.FC = () => {
       recog.onerror = () => {
         setIsListening(false);
         setUserInterimSpeech('');
-        if (callActiveRef.current && !operatorSpeaking) {
+        if (callActiveRef.current && !operatorSpeakingRef.current) {
           setStatusText('Line Active • Tap "Talk to Phonebot" or speak anytime');
         }
       };
@@ -179,12 +194,13 @@ export const VoiceHotlineView: React.FC = () => {
       try {
         recognitionRef.current.abort();
       } catch (e) {}
+      recognitionRef.current = null;
     }
   };
 
-  // Speaks text using natural speech synthesis with warm conversational human tone
+  // Speaks text using natural speech synthesis with warm conversational phonebot tone
   const speakText = (text: string, onDone?: () => void) => {
-    // If call was hung up, cut off immediately!
+    // If call was hung up, cut off immediately
     if (!callActiveRef.current) return;
 
     if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -195,9 +211,15 @@ export const VoiceHotlineView: React.FC = () => {
     // Cancel any previous speech and pause mic during phonebot speaking
     window.speechSynthesis.cancel();
     stopListening();
+
+    operatorSpeakingRef.current = true;
+    speakingCooldownUntilRef.current = Date.now() + 99999999; // firmly locked while speaking
     setOperatorSpeaking(true);
 
-    // Phonetically humanize text: ensures "Ismaili" is pronounced "Iss-my-lee" (never "Ishmaili"), expands times, strips markdown
+    lastBotSpeechTextRef.current = text;
+    lastBotSpeechTimeRef.current = Date.now();
+
+    // Phonetically humanize text: ensures "Ismaili" is pronounced "Iss-my-lee", expands times, formats phone number
     const spokenText = humanizeSpokenText(text);
 
     const utterance = new SpeechSynthesisUtterance(spokenText);
@@ -210,29 +232,54 @@ export const VoiceHotlineView: React.FC = () => {
     }
 
     utterance.pitch = 1.0;
-    utterance.rate = 0.95; // Crisp, cultured British conversational cadence
+    utterance.rate = 0.95;
 
     utterance.onstart = () => {
       if (!callActiveRef.current) {
         window.speechSynthesis.cancel();
+        operatorSpeakingRef.current = false;
         setOperatorSpeaking(false);
         return;
       }
-      setStatusText('AI Concierge is speaking...');
+      operatorSpeakingRef.current = true;
+      setOperatorSpeaking(true);
+      stopListening();
+      setStatusText('AI Phonebot is speaking...');
     };
 
     utterance.onend = () => {
+      operatorSpeakingRef.current = false;
       setOperatorSpeaking(false);
+      // Cooldown buffer of 700ms prevents speaker room echo from re-entering the microphone
+      speakingCooldownUntilRef.current = Date.now() + 700;
+      lastBotSpeechTimeRef.current = Date.now();
+
       if (!callActiveRef.current) return;
       setStatusText('Line Active • Listening... Speak now');
-      if (onDone) onDone();
+
+      setTimeout(() => {
+        if (callActiveRef.current && !operatorSpeakingRef.current && isMicActive) {
+          startListening();
+        }
+        if (onDone) onDone();
+      }, 700);
     };
 
     utterance.onerror = () => {
+      operatorSpeakingRef.current = false;
       setOperatorSpeaking(false);
+      speakingCooldownUntilRef.current = Date.now() + 700;
+      lastBotSpeechTimeRef.current = Date.now();
+
       if (!callActiveRef.current) return;
       setStatusText('Line Active • Ready for your voice...');
-      if (onDone) onDone();
+
+      setTimeout(() => {
+        if (callActiveRef.current && !operatorSpeakingRef.current && isMicActive) {
+          startListening();
+        }
+        if (onDone) onDone();
+      }, 700);
     };
 
     window.speechSynthesis.speak(utterance);
@@ -242,33 +289,46 @@ export const VoiceHotlineView: React.FC = () => {
   const handleUserVoiceInput = async (query: string) => {
     if (!callActiveRef.current) return;
 
+    // ANTI-LOOPBACK: Discard voice input if operator was speaking or still within room echo cooldown
+    if (operatorSpeakingRef.current || Date.now() < speakingCooldownUntilRef.current) {
+      return;
+    }
+
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    // Filter out acoustic loopback: if caller's mic picked up a snippet of what the bot just said
+    const normalizedInput = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normalizedLastBot = lastBotSpeechTextRef.current.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (
+      normalizedLastBot &&
+      normalizedInput.length >= 6 &&
+      normalizedLastBot.includes(normalizedInput) &&
+      Date.now() - lastBotSpeechTimeRef.current < 4500
+    ) {
+      console.warn('Acoustic loopback filtered:', trimmed);
+      return;
+    }
+
     setIsProcessingVoice(true);
-    setStatusText('AI Concierge is thinking...');
+    setStatusText('AI Phonebot is thinking...');
     stopListening();
 
-    const personaSpeaker = 'AI Concierge';
+    addTranscriptEntry('You (Voice)', trimmed);
+    const personaSpeaker = 'AI Phonebot';
 
     try {
-      const response = await getSmartAssistantResponse(query, [], { mode: 'phone' });
+      const response = await getSmartAssistantResponse(trimmed, [], { mode: 'phone' });
       if (!callActiveRef.current) return;
 
-      const reply = response.reply || "The Ismaili Center Houston welcomes all visitors on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time, and admission is completely free of charge.";
+      const reply = response.reply || "I'm sorry, I couldn't find an answer to that. Please call our dedicated Information Line at +1 (713) 522-2026 for further assistance. You can also press 1 to speak directly with me, or ask about our visiting hours, prayer times, or tours.";
       addTranscriptEntry(personaSpeaker, reply);
-
-      speakText(reply, () => {
-        if (callActiveRef.current && isMicActive) {
-          startListening();
-        }
-      });
+      speakText(reply);
     } catch (_err) {
       if (!callActiveRef.current) return;
-      const fallbackReply = "The Ismaili Center Houston is located in Montrose, Houston. Visitors are welcome on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time, and admission is completely free.";
+      const fallbackReply = "I'm sorry, I couldn't find an answer to that. Please call our dedicated Information Line at +1 (713) 522-2026 for further assistance. You can also press 1 to speak directly with me, or ask about our visiting hours, prayer times, or tours.";
       addTranscriptEntry(personaSpeaker, fallbackReply);
-      speakText(fallbackReply, () => {
-        if (callActiveRef.current && isMicActive) {
-          startListening();
-        }
-      });
+      speakText(fallbackReply);
     } finally {
       setIsProcessingVoice(false);
     }
@@ -286,30 +346,26 @@ export const VoiceHotlineView: React.FC = () => {
       if (!callActiveRef.current) return;
 
       setCallState('connected');
-      setStatusText('Call Connected • AI Concierge Online');
+      setStatusText('Call Connected • AI Phonebot Online');
 
       // Start duration counter
       timerRef.current = setInterval(() => {
         setCallSeconds((s) => s + 1);
       }, 1000);
 
-      // Conversational greeting in Google UK English Male
+      // Authentic IVR Telephone Greeting
       const phonebotGreeting = 
-        "Hello, and welcome to the Ismaili Center Houston! I am your AI concierge. You can speak to me directly about our visiting hours, guided architectural tours, Central Time prayer schedules, or anything else about the Center. How may I help you today?";
+        "Thank you for reaching the Ismaili Center Houston's Official Phonebot. To speak directly with me press 1, for hours press 2, for prayer press 3, for tours press 4, for directions and parking press 5, or press 0 for our dedicated Information Line at 713-522-2026.";
 
-      addTranscriptEntry('AI Concierge', phonebotGreeting);
-      speakText(phonebotGreeting, () => {
-        // Automatically start listening for caller's voice once greeting completes
-        if (callActiveRef.current && isMicActive) {
-          startListening();
-        }
-      });
+      addTranscriptEntry('AI Phonebot', phonebotGreeting);
+      speakText(phonebotGreeting);
     });
   };
 
   // End call: IMMEDIATELY cut off phonebot speech and all telecom audio
   const endCall = () => {
     callActiveRef.current = false;
+    operatorSpeakingRef.current = false;
     setCallState('ended');
     setIsPaused(false);
     setOperatorSpeaking(false);
@@ -338,112 +394,108 @@ export const VoiceHotlineView: React.FC = () => {
     }
 
     addTranscriptEntry(`You (Keypad [${digit}])`, menuTitle);
-    addTranscriptEntry('AI Concierge', responseText);
-    speakText(responseText, () => {
-      if (callActiveRef.current && isMicActive) {
-        startListening();
-      }
-    });
+    addTranscriptEntry('AI Phonebot', responseText);
+    speakText(responseText);
   };
 
   // Interactive Voice Response (IVR) phone tree options
   const keypadItems: KeypadItem[] = [
     {
       digit: '1',
-      sub: 'HOURS',
-      label: 'Visitor Hours & Admission',
+      sub: 'TALK',
+      label: 'Speak Directly with Me',
       handler: () =>
         handleKeypadPress(
           '1',
-          "Visitor Hours and Admission: The Ismaili Center Houston building and exhibition spaces are open to the public on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time. The 11 acres of gardens open at 8:00 AM to 4:00 PM. Admission is completely free. Guided architectural tours can be booked at ismailicenter.org.",
-          'Selection 1: Visitor Hours & Admission'
+          "I am speaking directly with you! Please ask me any question about visiting hours, Jamatkhana prayer schedules, architectural tours, or the Center.",
+          'Selection 1: Speak Directly with Me'
         ),
     },
     {
       digit: '2',
-      sub: 'PRAYER',
-      label: 'Prayer Times (Central Time)',
+      sub: 'HOURS',
+      label: 'Visitor Hours & Admission',
       handler: () =>
         handleKeypadPress(
           '2',
-          "Jamatkhana Prayer Schedule in US Central Time: Bandagi is from 4:00 AM to 5:00 AM daily. Morning Dua is from 5:00 AM to 5:30 AM daily. Evening Prayer is at 7:00 PM Monday through Thursday, Saturday, and Sunday, and at 7:30 PM on Fridays. Prayer halls are reserved for congregational worship, while civic spaces are open on visiting days.",
-          'Selection 2: Jamatkhana Prayer Times (CT)'
+          "Visitor Hours and Admission: The Ismaili Center Houston building and exhibition spaces are open to the public on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time. The 11 acres of gardens open at 8:00 AM to 4:00 PM. Admission is completely free. Guided architectural tours can be booked at ismailicenter.org. Press 1 to speak directly with me.",
+          'Selection 2: Visitor Hours & Admission'
         ),
     },
     {
       digit: '3',
-      sub: 'TOURS',
-      label: 'Tour Booking Info',
+      sub: 'PRAYER',
+      label: 'Prayer Times (Central Time)',
       handler: () =>
         handleKeypadPress(
           '3',
-          "Guided Architectural Tours: 45-minute guided tours are offered on Tuesdays, Thursdays, Saturdays, and Sundays. Tours explore Farshid Moussavi's architecture and the 11-acre gardens. Pre-booking is recommended at ismailicenter.org/tour-booking. Walk-ins are accommodated based on availability.",
-          'Selection 3: Architectural Tour Booking'
+          "Jamatkhana Prayer Schedule in US Central Time: Daily silent meditation is from 4:00 AM to 5:00 AM, followed by morning prayer from 5:00 AM to 5:30 AM. Evening prayer takes place at 7:00 PM Monday through Thursday, Saturday, and Sunday, and at 7:30 PM on Fridays. While the prayer hall is reserved for congregational worship, our civic spaces are open on visiting days. Press 1 to speak directly with me.",
+          'Selection 3: Jamatkhana Prayer Times (CT)'
         ),
     },
     {
       digit: '4',
-      sub: 'MAPS',
-      label: 'Location & Parking',
+      sub: 'TOURS',
+      label: 'Guided Tour Booking',
       handler: () =>
         handleKeypadPress(
           '4',
-          "Location and Directions: The Ismaili Center Houston is located in the Montrose district at the corner of Montrose Boulevard and Allen Parkway, Houston, Texas 77019, right next to Buffalo Bayou Park. Complimentary on-site visitor parking and bicycle racks are provided.",
-          'Selection 4: Location, Address & Parking'
+          "Guided Architectural Tours: 45-minute guided tours are offered on Tuesdays, Thursdays, Saturdays, and Sundays. Tours explore Farshid Moussavi's architecture and the 11-acre gardens. Pre-booking is recommended at ismailicenter.org/tour-booking. Walk-ins are accommodated based on availability. Press 1 to speak directly with me.",
+          'Selection 4: Architectural Tour Booking'
         ),
     },
     {
       digit: '5',
-      sub: 'DESIGN',
-      label: 'Architecture & Gardens',
+      sub: 'MAPS',
+      label: 'Location & Parking',
       handler: () =>
         handleKeypadPress(
           '5',
-          "Architecture and Design: Designed by celebrated architect Farshid Moussavi, the building features shaded triangular verandahs, ceramic screens, and sustainable environmental engineering. The 11 acres of Persian-inspired gardens were landscaped by Nelson Byrd Woltz, featuring native Texas trees and reflection pools.",
-          'Selection 5: Farshid Moussavi Design & Gardens'
+          "Location and Directions: The Ismaili Center Houston is located in the Montrose district at the corner of Montrose Boulevard and Allen Parkway, Houston, Texas 77019, right next to Buffalo Bayou Park. Complimentary on-site visitor parking and bicycle racks are provided. Press 1 to speak directly with me.",
+          'Selection 5: Location, Address & Parking'
         ),
     },
     {
       digit: '6',
-      sub: 'LEAD',
-      label: 'Aga Khan & Heritage',
+      sub: 'DESIGN',
+      label: 'Architecture & Gardens',
       handler: () =>
         handleKeypadPress(
           '6',
-          "Leadership and Community: The Center was commissioned by His Highness the Aga Khan, 49th hereditary Imam of the Shia Imami Ismaili Muslims and founder of the Aga Khan Development Network, to serve as a permanent ambassadorial bridge of understanding, pluralism, and civil dialogue.",
-          'Selection 6: His Highness the Aga Khan'
+          "Architecture and Design: Designed by celebrated architect Farshid Moussavi, the building features shaded triangular verandahs, ceramic screens, and sustainable environmental engineering. The 11 acres of Persian-inspired gardens were landscaped by Nelson Byrd Woltz, featuring native Texas trees and reflection pools. Press 1 to speak directly with me.",
+          'Selection 6: Farshid Moussavi Design & Gardens'
         ),
     },
     {
       digit: '7',
-      sub: 'DRESS',
-      label: 'Visitor Etiquette & Attire',
+      sub: 'LEAD',
+      label: 'Aga Khan & Heritage',
       handler: () =>
         handleKeypadPress(
           '7',
-          "Visitor Guidelines: Modest clothing is recommended with shoulders and knees covered when entering indoor community spaces. Comfortable walking shoes are advised for the outdoor gardens. Photography is welcomed in public gardens and outdoor verandas.",
-          'Selection 7: Visitor Etiquette & Attire'
+          "Leadership and Community: The Center was commissioned by His Highness the Aga Khan, 49th hereditary Imam of the Shia Imami Ismaili Muslims and founder of the Aga Khan Development Network, to serve as a permanent ambassadorial bridge of understanding, pluralism, and civil dialogue. Press 1 to speak directly with me.",
+          'Selection 7: His Highness the Aga Khan'
         ),
     },
     {
       digit: '8',
-      sub: 'INFO',
-      label: 'Ismaili Shia Tradition',
+      sub: 'DRESS',
+      label: 'Visitor Etiquette & Attire',
       handler: () =>
         handleKeypadPress(
           '8',
-          "About the Ismaili Tradition: Ismailis belong to the Shia branch of Islam, emphasizing intellectual inquiry, compassion, voluntary community service, gender equity, and universal ethics.",
-          'Selection 8: About Ismaili Tradition'
+          "Visitor Guidelines: Modest clothing is recommended with shoulders and knees covered when entering indoor community spaces. Comfortable walking shoes are advised for the outdoor gardens. Photography is welcomed in public gardens and outdoor verandas. Press 1 to speak directly with me.",
+          'Selection 8: Visitor Etiquette & Attire'
         ),
     },
     {
       digit: '9',
       sub: 'MENU',
-      label: 'Repeat Menu Options',
+      label: 'Repeat Phonebot Menu',
       handler: () =>
         handleKeypadPress(
           '9',
-          "Repeating options: Press 1 for visitor hours. Press 2 for Jamatkhana prayer times in Central Time. Press 3 for tour reservations. Press 4 for directions and parking. Press 5 for architecture and gardens. Press 6 for the Aga Khan. Press 0 for the AI voice operator.",
+          "Thank you for reaching the Ismaili Center Houston's Official Phonebot. To speak directly with me press 1, for hours press 2, for prayer press 3, for tours press 4, for directions and parking press 5, or press 0 for our dedicated Information Line at 713-522-2026.",
           'Selection 9: Repeat Menu'
         ),
     },
@@ -454,24 +506,20 @@ export const VoiceHotlineView: React.FC = () => {
       handler: () =>
         handleKeypadPress(
           '*',
-          "Welcome to the Ismaili Center Houston voice hotline. The building is open to visitors Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time.",
+          "Thank you for reaching the Ismaili Center Houston's Official Phonebot. To speak directly with me press 1, for hours press 2, for prayer press 3, for tours press 4, for directions and parking press 5, or press 0 for our dedicated Information Line at 713-522-2026.",
           'Selection *: Replay Welcome'
         ),
     },
     {
       digit: '0',
-      sub: 'OPER',
-      label: 'Live AI Concierge',
+      sub: 'LINE',
+      label: 'Dedicated Information Line',
       handler: () => {
         telecomAudio.playDTMF('0');
-        const greeting = "You are speaking directly with the AI concierge for the Ismaili Center Houston. What can I assist you with regarding visiting hours, tours, or prayer schedules?";
-        addTranscriptEntry('You (Keypad [0])', 'Connected with AI Concierge');
-        addTranscriptEntry('AI Concierge', greeting);
-        speakText(greeting, () => {
-          if (callActiveRef.current && isMicActive) {
-            startListening();
-          }
-        });
+        const lineNotice = "You can contact our dedicated Information Line directly at +1 (713) 522-2026 for personalized assistance. You can also press 1 to continue speaking directly with me.";
+        addTranscriptEntry('You (Keypad [0])', 'Dedicated Information Line (+1 713-522-2026)');
+        addTranscriptEntry('AI Phonebot', lineNotice);
+        speakText(lineNotice);
       },
     },
     {
@@ -808,14 +856,16 @@ export const VoiceHotlineView: React.FC = () => {
                 Menu Directory:
               </p>
               <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                <span>[1] Visitor Hours</span>
-                <span>[2] Prayer Times (CT)</span>
-                <span>[3] Book Tour</span>
-                <span>[4] Montrose Address</span>
-                <span>[5] Architecture</span>
-                <span>[6] Aga Khan & AKDN</span>
-                <span>[7] Etiquette</span>
-                <span>[0] AI Operator Voice</span>
+                <span>[1] Speak Directly</span>
+                <span>[2] Visitor Hours</span>
+                <span>[3] Jamatkhana Prayer (CT)</span>
+                <span>[4] Book Tour</span>
+                <span>[5] Directions & Parking</span>
+                <span>[6] Architecture</span>
+                <span>[7] Aga Khan & AKDN</span>
+                <span>[8] Visitor Etiquette</span>
+                <span>[9] Repeat Menu</span>
+                <span>[0] Information Line</span>
               </div>
             </div>
           </div>
