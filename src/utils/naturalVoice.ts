@@ -48,6 +48,36 @@ export function getGoogleUKEnglishMaleVoice(): SpeechSynthesisVoice | null {
 }
 
 /**
+ * Retrieves natural US English Female voice if available
+ */
+export function getGoogleUSEnglishFemaleVoice(): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if (voices.length === 0) return null;
+
+  const female = voices.find(v =>
+    (v.lang.startsWith('en-US') || v.lang.startsWith('en_US')) &&
+    (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Google US English'))
+  );
+  if (female) return female;
+  return voices.find(v => v.lang.startsWith('en-US')) || getGoogleUKEnglishMaleVoice();
+}
+
+/**
+ * Voice selection helper supporting UK Male (default), US Female, or System
+ */
+export function getSelectedVoice(voiceType: 'uk-male' | 'us-female' | 'system'): SpeechSynthesisVoice | null {
+  if (voiceType === 'us-female') {
+    return getGoogleUSEnglishFemaleVoice();
+  }
+  if (voiceType === 'system') {
+    const voices = typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : [];
+    return voices[0] || null;
+  }
+  return getGoogleUKEnglishMaleVoice();
+}
+
+/**
  * Phonetically pre-processes text before sending to SpeechSynthesis:
  * - Phonetically replaces "Ismaili" -> "Iss-my-lee" so speech engines never pronounce it as "Ishmaili"
  * - Phonetically replaces "Ismailis" -> "Iss-my-lees"

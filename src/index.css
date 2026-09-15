@@ -26,3 +26,181 @@
 .animate-wave-bar {
   animation: wave 1.2s infinite ease-in-out;
 }
+
+/* ==========================================================================
+   ACCESSIBILITY: ENLARGED CURSORS (High-Visibility Vector Data URIs)
+   ========================================================================== */
+.cursor-large,
+.cursor-large * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%230f172a' stroke='%23ffffff' stroke-width='1.5'%3E%3Cpath d='M3 3l7 18 3-7 7-3L3 3z'/%3E%3C/svg%3E"), auto !important;
+}
+
+.cursor-large a,
+.cursor-large button,
+.cursor-large [role="button"],
+.cursor-large input,
+.cursor-large select,
+.cursor-large textarea {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%23007ba8' stroke='%23ffffff' stroke-width='1.5'%3E%3Cpath d='M10 2a2 2 0 0 0-2 2v6H7a2 2 0 0 0-2 2v2l3 7a2 2 0 0 0 1.8 1.2h6.4a2 2 0 0 0 1.9-1.4l1.5-5.2a2 2 0 0 0-.2-1.6 2 2 0 0 0-1.4-.9h-3V4a2 2 0 0 0-2-2z'/%3E%3C/svg%3E"), pointer !important;
+}
+
+.cursor-xlarge,
+.cursor-xlarge * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23e11d48' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M3 3l7 18 3-7 7-3L3 3z'/%3E%3Ccircle cx='4' cy='4' r='2.5' fill='%23facc15' stroke='%23000000' stroke-width='1'/%3E%3C/svg%3E"), auto !important;
+}
+
+.cursor-xlarge a,
+.cursor-xlarge button,
+.cursor-xlarge [role="button"],
+.cursor-xlarge input,
+.cursor-xlarge select,
+.cursor-xlarge textarea {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23e11d48' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M10 2a2 2 0 0 0-2 2v6H7a2 2 0 0 0-2 2v2l3 7a2 2 0 0 0 1.8 1.2h6.4a2 2 0 0 0 1.9-1.4l1.5-5.2a2 2 0 0 0-.2-1.6 2 2 0 0 0-1.4-.9h-3V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='10' cy='2' r='2.5' fill='%23facc15' stroke='%23000000' stroke-width='1'/%3E%3C/svg%3E"), pointer !important;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: CONTRAST MODES
+   ========================================================================== */
+/* 1. High Contrast Mode */
+.contrast-high {
+  --tw-border-opacity: 1 !important;
+}
+
+.contrast-high body,
+.contrast-high main {
+  font-weight: 500;
+}
+
+.contrast-high p,
+.contrast-high span,
+.contrast-high li,
+.contrast-high button {
+  text-shadow: 0 0 0.2px rgba(0, 0, 0, 0.4);
+}
+
+.contrast-high:not(.dark) {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.contrast-high:not(.dark) .bg-white,
+.contrast-high:not(.dark) .bg-slate-50,
+.contrast-high:not(.dark) .bg-slate-100 {
+  background-color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+.contrast-high:not(.dark) text-slate-500,
+.contrast-high:not(.dark) .text-slate-600 {
+  color: #1e293b !important;
+}
+
+.contrast-high.dark {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.contrast-high.dark .bg-slate-900,
+.contrast-high.dark .bg-slate-800,
+.contrast-high.dark .bg-slate-950,
+.contrast-high.dark .dark\:bg-slate-900,
+.contrast-high.dark .dark\:bg-slate-800 {
+  background-color: #0a0f1d !important;
+  border-color: #94a3b8 !important;
+}
+
+.contrast-high.dark .text-slate-400,
+.contrast-high.dark .text-slate-300 {
+  color: #f1f5f9 !important;
+}
+
+/* 2. Yellow on Black (Standard WCAG Low Vision Contrast) */
+.contrast-yellow-black,
+.contrast-yellow-black body,
+.contrast-yellow-black main,
+.contrast-yellow-black div,
+.contrast-yellow-black section,
+.contrast-yellow-black nav,
+.contrast-yellow-black header,
+.contrast-yellow-black footer {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border-color: #ffff00 !important;
+}
+
+.contrast-yellow-black h1,
+.contrast-yellow-black h2,
+.contrast-yellow-black h3,
+.contrast-yellow-black h4,
+.contrast-yellow-black p,
+.contrast-yellow-black span,
+.contrast-yellow-black label,
+.contrast-yellow-black strong {
+  color: #ffff00 !important;
+}
+
+.contrast-yellow-black a,
+.contrast-yellow-black button {
+  color: #00ffff !important;
+  border-color: #ffff00 !important;
+}
+
+.contrast-yellow-black button:hover,
+.contrast-yellow-black a:hover {
+  background-color: #1a1a00 !important;
+}
+
+.contrast-yellow-black input,
+.contrast-yellow-black select,
+.contrast-yellow-black textarea {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+}
+
+.contrast-yellow-black svg {
+  stroke: #ffff00 !important;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: DYSLEXIA-FRIENDLY FONT
+   ========================================================================== */
+.font-dyslexia,
+.font-dyslexia body,
+.font-dyslexia * {
+  font-family: 'OpenDyslexic', 'Trebuchet MS', 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif !important;
+  letter-spacing: 0.04em !important;
+  word-spacing: 0.1em !important;
+  line-height: 1.75 !important;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: REDUCED MOTION
+   ========================================================================== */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: HIGHLIGHT INTERACTIVE LINKS
+   ========================================================================== */
+.highlight-links a,
+.highlight-links button:not([role="tab"]):not(.no-underline-override) {
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 2px !important;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: ENHANCED KEYBOARD FOCUS RINGS
+   ========================================================================== */
+.enhanced-focus :focus-visible {
+  outline: 3px solid #f59e0b !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.85) !important;
+}

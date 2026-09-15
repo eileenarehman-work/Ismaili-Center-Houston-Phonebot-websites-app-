@@ -12,14 +12,15 @@ import {
   Menu, 
   X,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Settings
 } from 'lucide-react';
 
 interface HeaderProps {
   currentTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
-  isDarkMode: boolean;
-  onToggleTheme: () => void;
+  onOpenSettings: () => void;
+  activeAccessibilityCount?: number;
   upcomingSessionText: string;
   centralTimeDisplay?: string;
 }
@@ -42,8 +43,8 @@ interface TabConfig {
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
   onSelectTab,
-  isDarkMode,
-  onToggleTheme,
+  onOpenSettings,
+  activeAccessibilityCount = 0,
   upcomingSessionText,
   centralTimeDisplay,
 }) => {
@@ -177,24 +178,19 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action buttons */}
           <div className="flex items-center space-x-2.5">
-            {/* Dark / Light Mode Toggle Pill */}
+            {/* Accessibility & Display Settings Button (Replaces the Light/Dark Mode button) */}
             <button
+              id="header-settings-btn"
               type="button"
-              onClick={onToggleTheme}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 transition-all cursor-pointer active:scale-95"
-              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              aria-label="Toggle dark mode"
+              onClick={onOpenSettings}
+              className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 hover:text-[#007ba8] dark:hover:text-teal-300 transition-all cursor-pointer active:scale-95 group"
+              title="Display & Accessibility Settings"
+              aria-label="Open display and accessibility settings"
             >
-              {isDarkMode ? (
-                <>
-                  <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
-                  <span className="hidden sm:inline">Light</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-4 h-4 text-indigo-600" />
-                  <span className="hidden sm:inline">Dark</span>
-                </>
+              <Settings className="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:rotate-45 transition-transform duration-300 group-hover:text-[#007ba8] dark:group-hover:text-teal-300" />
+              <span className="hidden sm:inline">Settings</span>
+              {activeAccessibilityCount > 0 && (
+                <span className="w-2 h-2 rounded-full bg-[#007ba8] dark:bg-teal-400 animate-pulse" />
               )}
             </button>
 
@@ -301,6 +297,25 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-col space-y-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenSettings();
+              }}
+              className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold cursor-pointer hover:border-[#007ba8]"
+            >
+              <div className="flex items-center space-x-2.5">
+                <Settings className="w-4 h-4 text-[#007ba8] dark:text-teal-400" />
+                <span>Display & Accessibility Settings</span>
+              </div>
+              {activeAccessibilityCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 font-mono text-[10px]">
+                  {activeAccessibilityCount} active
+                </span>
+              )}
+            </button>
+
             <a
               href="https://ismailicenter.org/tour-booking/"
               target="_blank"

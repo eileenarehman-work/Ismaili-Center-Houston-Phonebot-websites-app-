@@ -522,7 +522,177 @@ What would you like to explore today?`,
       ],
     }),
   },
+
+  // 19. VISITOR DRESS CODE & GUIDELINES
+  {
+    id: 'dress_code_and_guidelines',
+    keywords: ['dress', 'code', 'wear', 'attire', 'clothing', 'modest', 'clothes', 'shoes', 'etiquette', 'rules', 'guidelines'],
+    phrases: ['what should i wear', 'dress code', 'what to wear', 'clothing guidelines', 'visitor attire', 'shoe rules'],
+    title: 'Visitor Dress Code & Etiquette',
+    generateResponse: () => ({
+      text: `### Visitor Dress Code & Etiquette
+
+We want every visitor to feel comfortable and welcome at the **Ismaili Center Houston**:
+
+- **Attire Guidelines**: Modest, respectful casual clothing is recommended. When entering interior cultural spaces and verandahs, please ensure shoulders and knees are covered.
+- **Footwear**: Comfortable walking shoes are ideal for exploring our 11 acres of landscaped paths, lawns, and tree canopies. Inside consecrated prayer halls, shoes are removed and placed in designated shoe rooms.
+- **Photography**: Personal outdoor photography in the gardens and surrounding verandahs is warmly welcomed. Commercial filming or photography inside prayer spaces requires prior administrative authorization.
+- **Respectful Atmosphere**: The Center is a place of peace, contemplation, and civic gathering. We kindly ask guests to keep mobile devices on silent mode.`,
+      followUps: [
+        'What are the visitor hours?',
+        'How do I book a free tour?',
+        'Where can I park?',
+      ],
+    }),
+  },
+
+  // 20. EVENTS, EXHIBITIONS & AUDITORIUM
+  {
+    id: 'events_and_exhibitions',
+    keywords: ['event', 'events', 'exhibition', 'exhibitions', 'lecture', 'lectures', 'theater', 'theatre', 'auditorium', 'cultural', 'program', 'programs', 'music', 'art'],
+    phrases: ['upcoming events', 'what exhibitions are on', 'cultural programs', 'auditorium events', 'theater schedule'],
+    title: 'Exhibitions, Cultural Events & Civic Auditorium',
+    generateResponse: () => ({
+      text: `### Cultural Exhibitions & Civic Programs
+
+The **Ismaili Center Houston** is a vibrant hub for cultural dialogue, educational seminars, and the arts:
+
+- **Civic Auditorium & Black-Box Theater**: A state-of-the-art venue designed to host international academic symposia, chamber music recitals, poetry readings, and interfaith discussions.
+- **Exhibition Galleries**: Dedicated spaces showcasing rotating exhibitions of Islamic art, global humanities, architecture, and contemporary photography.
+- **Public Lectures**: Regular presentations by renowned scholars, scientists, and humanitarians exploring pluralism, sustainability, and ethics.
+- **Event Inquiries**: To inquire about public programming or community events, please visit [ismailicenter.org/houston](https://ismailicenter.org/houston) or call our staff at **+1 (713) 522-2026**.`,
+      followUps: [
+        'How do I book a tour?',
+        'What are the visitor hours?',
+        'Who is the architect?',
+      ],
+    }),
+  },
 ];
+
+export type PhonebotIntentType = 
+  | 'inquiry_hours'
+  | 'inquiry_prayer'
+  | 'inquiry_tours'
+  | 'inquiry_directions'
+  | 'inquiry_architecture'
+  | 'inquiry_gardens'
+  | 'inquiry_dress_code'
+  | 'inquiry_events'
+  | 'task_book_tour'
+  | 'task_leave_message'
+  | 'routing_handoff'
+  | 'general_inquiry';
+
+export interface PhonebotIntentResult {
+  intent: PhonebotIntentType;
+  label: string;
+  departmentTarget?: string;
+  confidence: number;
+}
+
+/**
+ * Real-time Intent Classification Engine for Phonebot
+ * Classifies caller voice or text queries into actionable intent categories
+ */
+export function detectPhonebotIntent(query: string): PhonebotIntentResult {
+  const q = query.toLowerCase().trim();
+
+  // Task: Book / Reserve Tour
+  if (
+    (q.includes('book') || q.includes('reserve') || q.includes('ticket') || q.includes('register') || q.includes('sign up')) &&
+    (q.includes('tour') || q.includes('visit') || q.includes('pass') || q.includes('slot') || q.includes('spot') || q.length < 25)
+  ) {
+    return { 
+      intent: 'task_book_tour', 
+      label: 'Tour Reservation', 
+      departmentTarget: 'Visitor Services & Guided Tours',
+      confidence: 0.94 
+    };
+  }
+
+  // Task: Leave Voicemail / Message for Staff
+  if (
+    q.includes('leave a message') || 
+    q.includes('leave message') || 
+    q.includes('take a message') || 
+    q.includes('voicemail') || 
+    q.includes('call me back') || 
+    q.includes('callback') ||
+    q.includes('note for staff')
+  ) {
+    return { 
+      intent: 'task_leave_message', 
+      label: 'Voicemail / Message Intake', 
+      departmentTarget: 'Front Desk Administration',
+      confidence: 0.96 
+    };
+  }
+
+  // Routing: Warm Handoff / Transfer to Human
+  if (
+    q === '0' ||
+    q.includes('human') || 
+    q.includes('staff') || 
+    q.includes('person') || 
+    q.includes('operator') || 
+    q.includes('representative') || 
+    q.includes('agent') || 
+    q.includes('transfer') || 
+    q.includes('speak with someone') || 
+    q.includes('talk to someone') ||
+    q.includes('speak to a person')
+  ) {
+    return { 
+      intent: 'routing_handoff', 
+      label: 'Staff Handoff & Transfer', 
+      departmentTarget: 'Information Line (+1 713-522-2026)',
+      confidence: 0.98 
+    };
+  }
+
+  // Routine Inquiry: Hours
+  if (q.includes('hour') || q.includes('open') || q.includes('close') || q.includes('when') || q.includes('admission') || q.includes('time open') || q === '2') {
+    return { intent: 'inquiry_hours', label: 'Hours & Admission', confidence: 0.95 };
+  }
+
+  // Routine Inquiry: Prayer
+  if (q.includes('prayer') || q.includes('dua') || q.includes('bandagi') || q.includes('jamatkhana') || q.includes('namaz') || q === '3') {
+    return { intent: 'inquiry_prayer', label: 'Prayer Times', confidence: 0.96 };
+  }
+
+  // Routine Inquiry: Guided Tours
+  if (q.includes('tour') || q.includes('docent') || q.includes('guide') || q === '4') {
+    return { intent: 'inquiry_tours', label: 'Architectural Tours', confidence: 0.93 };
+  }
+
+  // Routine Inquiry: Directions / Parking
+  if (q.includes('direction') || q.includes('parking') || q.includes('where') || q.includes('address') || q.includes('map') || q.includes('car') || q === '5') {
+    return { intent: 'inquiry_directions', label: 'Directions & Parking', confidence: 0.94 };
+  }
+
+  // Routine Inquiry: Dress code
+  if (q.includes('dress') || q.includes('wear') || q.includes('clothing') || q.includes('attire') || q.includes('shoes') || q === '8') {
+    return { intent: 'inquiry_dress_code', label: 'Dress Code & Etiquette', confidence: 0.92 };
+  }
+
+  // Routine Inquiry: Building / Architecture
+  if (q.includes('architect') || q.includes('moussavi') || q.includes('building') || q.includes('ceramic') || q.includes('verandah') || q === '6') {
+    return { intent: 'inquiry_architecture', label: 'Building & Architecture', confidence: 0.91 };
+  }
+
+  // Routine Inquiry: Gardens
+  if (q.includes('garden') || q.includes('woltz') || q.includes('acres') || q.includes('landscape') || q.includes('trees') || q.includes('plants')) {
+    return { intent: 'inquiry_gardens', label: '11-Acre Gardens', confidence: 0.92 };
+  }
+
+  // Routine Inquiry: Events
+  if (q.includes('event') || q.includes('exhibition') || q.includes('auditorium') || q.includes('theater') || q.includes('lecture') || q.includes('program')) {
+    return { intent: 'inquiry_events', label: 'Events & Exhibitions', confidence: 0.90 };
+  }
+
+  return { intent: 'general_inquiry', label: 'General Inquiry', confidence: 0.85 };
+}
 
 /**
  * Intelligent Semantic Knowledge Engine
@@ -803,6 +973,28 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
     q.includes('can i visit')
   ) {
     reply = "Yes, absolutely! The Ismaili Center Houston was created as an open civic institution for the entire community. People of all faiths and backgrounds are warmly invited to explore our building and gardens on Tuesdays, Thursdays, Saturdays, and Sundays with completely free admission.";
+  } else if (
+    q.includes('event') ||
+    q.includes('exhibition') ||
+    q.includes('auditorium') ||
+    q.includes('theater') ||
+    q.includes('program')
+  ) {
+    reply = "The Ismaili Center Houston hosts cultural exhibitions, international lectures, and performances in our civic auditorium and theater. You can find upcoming schedules online at ismailicenter dot org or call human staff at 713-522-2026.";
+  } else if (
+    q.includes('book a tour') ||
+    q.includes('register for a tour') ||
+    q.includes('reserve a tour') ||
+    q.includes('book tour')
+  ) {
+    reply = "You can register for a free guided architectural tour right now! Please tap the 'Book Tour' button on your screen to save your reservation pass, or visit ismailicenter dot org.";
+  } else if (
+    q.includes('leave a message') ||
+    q.includes('leave message') ||
+    q.includes('voicemail') ||
+    q.includes('call me back')
+  ) {
+    reply = "I would be glad to help you leave a message for our front desk team. Please tap 'Leave Message' on your screen to record your callback details, or call our official staff phone number directly at 713-522-2026.";
   } else if (
     q.includes('faith') ||
     q.includes('ismaili') ||

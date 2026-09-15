@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavigationTab } from './types.ts';
+import { NavigationTab, AccessibilitySettings } from './types.ts';
 import { Header } from './components/Header.tsx';
 import { AIAssistantView } from './components/AIAssistantView.tsx';
 import { VoiceHotlineView } from './components/VoiceHotlineView.tsx';
@@ -7,35 +7,52 @@ import { ScheduleView } from './components/ScheduleView.tsx';
 import { VisitorInfoView } from './components/VisitorInfoView.tsx';
 import { VideosView } from './components/VideosView.tsx';
 import { Footer } from './components/Footer.tsx';
+import { AccessibilitySettingsModal } from './components/AccessibilitySettingsModal.tsx';
+import { ReadingGuide } from './components/ReadingGuide.tsx';
 import { calculateCentralPrayerCountdown, getCentralTimeInfo } from './utils/time.ts';
+import { 
+  getStoredAccessibilitySettings, 
+  saveAccessibilitySettings, 
+  applyAccessibilityToDOM 
+} from './utils/accessibility.ts';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('hotline');
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme');
-      if (saved) return saved === 'dark';
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
+  
+  // Accessibility & Display Settings State
+  const [accessibilitySettings, setAccessibilitySettings] = useState<AccessibilitySettings>(() => {
+    return getStoredAccessibilitySettings();
   });
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
   const [upcomingSessionName, setUpcomingSessionName] = useState<string>('Upcoming Session');
   const [upcomingSessionText, setUpcomingSessionText] = useState<string>('Calculating...');
   const [centralTimeDisplay, setCentralTimeDisplay] = useState<string>('');
 
-  // Theme synchronization with HTML and Body class
+  // Synchronize accessibility settings with DOM and persistent storage
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode]);
+    applyAccessibilityToDOM(accessibilitySettings);
+    saveAccessibilitySettings(accessibilitySettings);
+  }, [accessibilitySettings]);
+
+  // Derive dark mode boolean for root element helper
+  const isDarkEffective = 
+    accessibilitySettings.theme === 'dark' || 
+    (accessibilitySettings.theme === 'system' && 
+     typeof window !== 'undefined' && 
+     window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  // Active accessibility badges count
+  let activeAccessibilityCount = 0;
+  if (accessibilitySettings.theme !== 'light') activeAccessibilityCount++;
+  if (accessibilitySettings.contrast !== 'normal') activeAccessibilityCount++;
+  if (accessibilitySettings.cursorSize !== 'normal') activeAccessibilityCount++;
+  if (accessibilitySettings.zoomLevel !== 100) activeAccessibilityCount++;
+  if (accessibilitySettings.dyslexiaFont) activeAccessibilityCount++;
+  if (accessibilitySettings.reducedMotion) activeAccessibilityCount++;
+  if (accessibilitySettings.highlightLinks) activeAccessibilityCount++;
+  if (accessibilitySettings.enhancedFocus) activeAccessibilityCount++;
+  if (accessibilitySettings.readingGuide) activeAccessibilityCount++;
 
   // Real-time calculation of Jamatkhana prayer session countdown catered to Central Time (Houston, TX)
   useEffect(() => {
@@ -74,13 +91,13 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`${isDarkMode ? 'dark' : ''} min-h-screen flex flex-col bg-[#f7f6f2] dark:bg-[#0b1320] text-slate-800 dark:text-slate-100 transition-colors duration-200 selection:bg-[#007ba8]/20 selection:text-[#007ba8]`}>
-      {/* Header with Navigation & Live countdown */}
+    <div className={`${isDarkEffective ? 'dark' : ''} min-h-screen flex flex-col bg-[#f7f6f2] dark:bg-[#0b1320] text-slate-800 dark:text-slate-100 transition-colors duration-200 selection:bg-[#007ba8]/20 selection:text-[#007ba8]`}>
+      {/* Header with Navigation, Live countdown & Settings Button replacing old light/dark toggle */}
       <Header
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
-        isDarkMode={isDarkMode}
-        onToggleTheme={() => setIsDarkMode((prev) => !prev)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        activeAccessibilityCount={activeAccessibilityCount}
         upcomingSessionText={upcomingSessionText}
         centralTimeDisplay={centralTimeDisplay}
       />
@@ -104,6 +121,17 @@ export default function App() {
 
       {/* Footer */}
       <Footer onSelectTab={setCurrentTab} />
+
+      {/* Reading Guide Ruler Overlay */}
+      <ReadingGuide enabled={accessibilitySettings.readingGuide} />
+
+      {/* Accessibility & Display Settings Modal */}
+      <AccessibilitySettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={accessibilitySettings}
+        onUpdateSettings={setAccessibilitySettings}
+      />
     </div>
   );
 }
