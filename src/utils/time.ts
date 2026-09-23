@@ -150,3 +150,79 @@ export function formatCentralTimestamp(date: Date = new Date()): string {
     hour12: true,
   }).format(date) + ' CT';
 }
+
+/**
+ * Accurately formats a timestamp or date relative to current Central Time.
+ * If the date occurred today -> "Today at [h:mm A] CT"
+ * If the date occurred yesterday -> "Yesterday at [h:mm A] CT"
+ * Otherwise -> "[MMM d] at [h:mm A] CT"
+ */
+export function formatRelativeCentralTimestamp(input?: string | Date | number): string {
+  if (!input) return 'Just now';
+  
+  // If it's already an explicit string like "Yesterday at ...", return it cleanly
+  if (typeof input === 'string' && input.startsWith('Yesterday at ')) {
+    return input;
+  }
+
+  let date: Date;
+  if (typeof input === 'string') {
+    // If it's a legacy string like "Today at 09:30 AM CT" without isoDate, check if it's today
+    if (input.startsWith('Today at ')) {
+      return input;
+    }
+    date = new Date(input);
+  } else if (typeof input === 'number') {
+    date = new Date(input);
+  } else {
+    date = input;
+  }
+
+  if (isNaN(date.getTime())) {
+    return String(input);
+  }
+
+  const timeZone = 'America/Chicago';
+
+  // Format the time part in Central Time
+  const timeStr = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date) + ' CT';
+
+  // Extract year, month, day in Central Time for "now" and "target"
+  const now = new Date();
+  const getDayKey = (d: Date) => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    }).formatToParts(d);
+    let y = 0, m = 0, day = 0;
+    for (const p of parts) {
+      if (p.type === 'year') y = parseInt(p.value, 10);
+      if (p.type === 'month') m = parseInt(p.value, 10);
+      if (p.type === 'day') day = parseInt(p.value, 10);
+    }
+    return { y, m, day, epochDay: Math.floor(Date.UTC(y, m - 1, day) / 86400000) };
+  };
+
+  const nowKey = getDayKey(now);
+  const targetKey = getDayKey(date);
+  const dayDiff = nowKey.epochDay - targetKey.epochDay;
+
+  if (dayDiff === 0) {
+    return `Today at ${timeStr}`;
+  } else if (dayDiff === 1) {
+    return `Yesterday at ${timeStr}`;
+  } else if (dayDiff > 1 && dayDiff < 7) {
+    const weekday = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short' }).format(date);
+    return `${weekday} at ${timeStr}`;
+  } else {
+    const monthDay = new Intl.DateTimeFormat('en-US', { timeZone, month: 'short', day: 'numeric' }).format(date);
+    return `${monthDay} at ${timeStr}`;
+  }
+}

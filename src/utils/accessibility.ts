@@ -1,8 +1,20 @@
-import { AccessibilitySettings } from '../types.ts';
+import { AccessibilitySettings, LanguageOption } from '../types.ts';
 
 const STORAGE_KEY = 'ich_accessibility_settings';
 
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { code: 'en', nativeName: 'English', englishName: 'English', dir: 'ltr' },
+  { code: 'es', nativeName: 'Español', englishName: 'Spanish', dir: 'ltr' },
+  { code: 'hi', nativeName: 'हिन्दी', englishName: 'Hindi', dir: 'ltr' },
+  { code: 'ur', nativeName: 'اردو', englishName: 'Urdu', dir: 'rtl' },
+  { code: 'ar', nativeName: 'العربية', englishName: 'Arabic', dir: 'rtl' },
+  { code: 'gu', nativeName: 'ગુજરાતી', englishName: 'Gujarati', dir: 'ltr' },
+  { code: 'fa', nativeName: 'فارسی', englishName: 'Persian', dir: 'rtl' },
+  { code: 'tl', nativeName: 'Tagalog', englishName: 'Tagalog', dir: 'ltr' },
+];
+
 export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettings = {
+  language: 'en',
   theme: 'light',
   contrast: 'normal',
   cursorSize: 'normal',
@@ -36,6 +48,7 @@ export function getStoredAccessibilitySettings(): AccessibilitySettings {
       ...DEFAULT_ACCESSIBILITY_SETTINGS,
       ...parsed,
       theme,
+      language: 'en', // Default language is strictly English
     };
   } catch (e) {
     console.warn('Error reading accessibility settings from localStorage', e);
@@ -67,6 +80,13 @@ export function applyAccessibilityToDOM(settings: AccessibilitySettings): void {
 
   const html = document.documentElement;
   const body = document.body;
+
+  // 0. Language & Text Direction (RTL / LTR)
+  const langConfig = SUPPORTED_LANGUAGES.find((l) => l.code === settings.language) || SUPPORTED_LANGUAGES[0];
+  html.lang = langConfig.code;
+  html.dir = langConfig.dir;
+  body.setAttribute('data-lang', langConfig.code);
+  body.setAttribute('data-dir', langConfig.dir);
 
   // 1. Theme (Dark / Light / System)
   let isDark = false;

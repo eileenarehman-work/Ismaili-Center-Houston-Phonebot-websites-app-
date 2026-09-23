@@ -22,9 +22,10 @@ import {
   AccessibilitySettings, 
   ThemeMode, 
   ContrastMode, 
-  CursorSize 
+  CursorSize
 } from '../types.ts';
 import { DEFAULT_ACCESSIBILITY_SETTINGS } from '../utils/accessibility.ts';
+import { useTranslation } from '../context/LanguageContext.tsx';
 
 interface AccessibilitySettingsModalProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
   settings,
   onUpdateSettings,
 }) => {
+  const { t } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape key
@@ -112,9 +114,9 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
   const speakSampleAnnouncement = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(
-        "Ismaili Center Houston accessibility helper is active. You can customize text zoom, contrast, cursor size, and reading guides."
-      );
+      const phrase = "Ismaili Center Houston display helper is active. You can customize text size, contrast, and reading tools.";
+      const utterance = new SpeechSynthesisUtterance(phrase);
+      utterance.lang = 'en-US';
       utterance.rate = 0.95;
       window.speechSynthesis.speak(utterance);
     }
@@ -156,7 +158,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
             <div>
               <div className="flex items-center space-x-2">
                 <h2 id="accessibility-title" className="text-lg font-bold text-slate-900 dark:text-white">
-                  Display & Accessibility Settings
+                  {t('settings.title', 'Display & Accessibility Settings')}
                 </h2>
                 {activeCount > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 font-mono text-[11px] font-bold">
@@ -165,7 +167,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 )}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Personalize contrast, text size, cursor, and reading assistance
+                {t('settings.subtitle', 'Customize text size, contrast, colors, and reading tools')}
               </p>
             </div>
           </div>
@@ -183,16 +185,16 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
 
         {/* Modal Scrollable Body */}
         <div className="p-6 overflow-y-auto space-y-6 text-sm">
-          
-          {/* SECTION 1: THEME SELECTION (Replaces Old Header Toggle) */}
+
+          {/* SECTION 1: THEME SELECTION */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Sun className="w-4 h-4 text-amber-500" />
                 <span>Color Theme</span>
               </label>
-              <span className="text-[11px] text-slate-400">
-                Light, Dark, or System Preference
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                Light, Dark, or match your device
               </span>
             </div>
 
@@ -208,7 +210,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 }`}
               >
                 <Sun className="w-5 h-5 text-amber-500" />
-                <span className="text-xs">Light</span>
+                <span className="text-xs font-medium">Light</span>
               </button>
 
               {/* Dark Mode */}
@@ -222,7 +224,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 }`}
               >
                 <Moon className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                <span className="text-xs">Dark</span>
+                <span className="text-xs font-medium">Dark</span>
               </button>
 
               {/* System Preference */}
@@ -236,20 +238,20 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 }`}
               >
                 <Laptop className="w-5 h-5 text-slate-500" />
-                <span className="text-xs">System Auto</span>
+                <span className="text-xs font-medium">Match Device</span>
               </button>
             </div>
           </div>
 
-          {/* SECTION 2: CONTRAST MODES */}
+          {/* SECTION 3: CONTRAST MODES */}
           <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Eye className="w-4 h-4 text-[#007ba8]" />
-                <span>Contrast Mode</span>
+                <span>Contrast</span>
               </label>
-              <span className="text-[11px] text-slate-400">
-                Enhance edge definition & legibility
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                Make text and borders easier to see
               </span>
             </div>
 
@@ -269,7 +271,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                   {settings.contrast === 'normal' && <Check className="w-3.5 h-3.5" />}
                 </div>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Balanced aesthetic colors
+                  Everyday balanced colors
                 </span>
               </button>
 
@@ -288,7 +290,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                   {settings.contrast === 'high' && <Check className="w-3.5 h-3.5" />}
                 </div>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Crisp borders & deep darks
+                  Crisp dark borders and text
                 </span>
               </button>
 
@@ -307,21 +309,21 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                   {settings.contrast === 'yellow-black' && <Check className="w-3.5 h-3.5 text-yellow-300" />}
                 </div>
                 <span className="text-[11px] text-yellow-200/70">
-                  Low-vision WCAG mode
+                  High contrast for easy reading
                 </span>
               </button>
             </div>
           </div>
 
-          {/* SECTION 3: ENLARGED CURSOR */}
+          {/* SECTION 4: ENLARGED CURSOR */}
           <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <MousePointer2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Enlarged Cursor & Pointer</span>
+                <span>Mouse Pointer Size</span>
               </label>
-              <span className="text-[11px] text-slate-400">
-                High-visibility tracking
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                Make pointer easier to find and track
               </span>
             </div>
 
@@ -349,7 +351,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 }`}
               >
                 <span className="text-base font-bold font-mono">1.5x</span>
-                <span className="text-xs">Large Cursor</span>
+                <span className="text-xs">Large</span>
               </button>
 
               <button
@@ -367,12 +369,12 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
             </div>
           </div>
 
-          {/* SECTION 4: ZOOM IN / OUT & TEXT SCALING */}
+          {/* SECTION 5: ZOOM IN / OUT & TEXT SCALING */}
           <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Maximize2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span>Text & UI Zoom</span>
+                <span>Text & Screen Zoom</span>
               </label>
               <span className="text-xs font-mono font-bold text-[#007ba8] dark:text-teal-300">
                 Current: {settings.zoomLevel}%
@@ -430,20 +432,20 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
             </div>
           </div>
 
-          {/* SECTION 5: HELPFUL ACCESSIBILITY TOGGLES */}
+          {/* SECTION 6: HELPFUL READING & FOCUS ASSISTANCE */}
           <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-500" />
-                <span>Reading & Focus Assistance</span>
+                <span>Reading & Focus Helpers</span>
               </label>
-              <span className="text-[11px] text-slate-400">
-                Cognitive & Motor Enhancements
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                Tools to help you read comfortably
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Dyslexia-Friendly Font */}
+              {/* Easy-to-read font */}
               <button
                 type="button"
                 onClick={() => handleToggleOption('dyslexiaFont')}
@@ -456,10 +458,10 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-1.5 font-semibold text-xs text-slate-900 dark:text-white">
                     <Type className="w-3.5 h-3.5 text-[#007ba8]" />
-                    <span>Dyslexia-Friendly Font</span>
+                    <span>Easy-Reading Font</span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Expands letter spacing & distinct weights
+                    Clear letter shapes that are easier to distinguish
                   </p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
@@ -482,10 +484,10 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-1.5 font-semibold text-xs text-slate-900 dark:text-white">
                     <RotateCcw className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Reduce Motion</span>
+                    <span>Pause Moving Animations</span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Stops animations & pulse effects
+                    Keeps the screen calm with fewer moving parts
                   </p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
@@ -508,10 +510,10 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-1.5 font-semibold text-xs text-slate-900 dark:text-white">
                     <Compass className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>Highlight All Links</span>
+                    <span>Underline Clickable Links</span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Adds continuous underlines to all actions
+                    Shows a clear line under every button and link
                   </p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
@@ -534,10 +536,10 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-1.5 font-semibold text-xs text-slate-900 dark:text-white">
                     <Eye className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Ultra Focus Rings</span>
+                    <span>Bright Keyboard Outlines</span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Vibrant amber outlines for keyboard tab
+                    Clear colored border when moving with the keyboard
                   </p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
@@ -560,10 +562,10 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-1.5 font-semibold text-xs text-slate-900 dark:text-white">
                     <ArrowUpDown className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Reading Focus Ruler (Line Guide)</span>
+                    <span>Reading Guide Line</span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    A cursor-tracking line ruler across the screen to help focus line-by-line while reading
+                    A steady line that follows your mouse to help you read line by line
                   </p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
@@ -581,19 +583,19 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
               <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <div>
                 <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                  Audio Speech Demonstration
+                  Voice Helper Demo
                 </span>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Hear spoken assistance through your device speaker
+                  Listen to spoken text through your speakers
                 </span>
               </div>
             </div>
             <button
               type="button"
               onClick={speakSampleAnnouncement}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
             >
-              Test Voice
+              Play Voice
             </button>
           </div>
 
@@ -607,7 +609,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
             className="inline-flex items-center space-x-1.5 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-semibold cursor-pointer py-1.5 px-2.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Defaults</span>
+            <span>{t('settings.reset_btn', 'Reset Defaults')}</span>
           </button>
 
           <button
@@ -616,7 +618,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
             className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#007ba8] hover:bg-[#006185] text-white font-bold text-xs shadow-sm transition-all cursor-pointer active:scale-95"
           >
             <Check className="w-4 h-4" />
-            <span>Done</span>
+            <span>{t('settings.close_btn', 'Done')}</span>
           </button>
         </div>
       </div>

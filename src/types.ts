@@ -1,4 +1,4 @@
-export type NavigationTab = 'assistant' | 'hotline' | 'schedule' | 'visitor' | 'videos';
+export type NavigationTab = 'assistant' | 'hotline' | 'schedule' | 'visitor' | 'videos' | 'admin';
 
 export interface ChatMessage {
   id: string;
@@ -39,6 +39,23 @@ export interface CallerMessage {
   status: 'pending' | 'reviewed' | 'resolved';
 }
 
+// Center Public Experiences & Exhibition Types
+export interface CenterExperience {
+  id: string;
+  title: string;
+  category: 'tour' | 'garden' | 'exhibition' | 'architecture' | 'cultural' | 'spiritual';
+  shortDescription: string;
+  fullDescription: string;
+  schedule: string;
+  duration: string;
+  admission: string;
+  officialBookingUrl: string;
+  badge?: string;
+  highlights: string[];
+  isActive: boolean;
+  updatedAt: string;
+}
+
 export interface TourReservation {
   id: string;
   confirmationCode: string;
@@ -76,8 +93,17 @@ export interface TelephonyPipelineTelemetry {
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ContrastMode = 'normal' | 'high' | 'yellow-black';
 export type CursorSize = 'normal' | 'large' | 'extra-large';
+export type LanguageCode = 'en' | 'es' | 'hi' | 'ur' | 'ar' | 'gu' | 'fa' | 'tl';
+
+export interface LanguageOption {
+  code: LanguageCode;
+  nativeName: string;
+  englishName: string;
+  dir: 'ltr' | 'rtl';
+}
 
 export interface AccessibilitySettings {
+  language: LanguageCode;
   theme: ThemeMode;
   contrast: ContrastMode;
   cursorSize: CursorSize;
@@ -88,4 +114,60 @@ export interface AccessibilitySettings {
   enhancedFocus: boolean;
   readingGuide: boolean;
   textToSpeech: boolean;
+}
+
+// Lifespan User History Types
+export type LifespanEventType = 'voice_call' | 'ai_chat' | 'tour_booking' | 'caller_message' | 'setting_change' | 'navigation' | 'admin_action';
+
+export interface LifespanEvent {
+  id: string;
+  timestamp: string;
+  isoDate: string;
+  type: LifespanEventType;
+  title: string;
+  summary: string;
+  userIdentifier?: string;
+  status?: string;
+  duration?: string;
+  details?: Record<string, any>;
+}
+
+export interface AdminAnnouncement {
+  id: string;
+  enabled: boolean;
+  message: string;
+  type: 'info' | 'alert' | 'event';
+  updatedAt: string;
+}
+
+// Anonymous Call Log & Verbatim Direct Transcript for Administrative Auditing
+export interface CallTranscriptTurn {
+  id: string;
+  speaker: 'Anonymous Caller' | 'AI Phonebot' | 'System';
+  text: string;
+  timestamp: string;
+  intent?: string;
+}
+
+export interface AnonymousCallRecord {
+  id: string;
+  callNumber: number;
+  anonymousCallerId: string; // e.g. "Anonymous Caller #001"
+  startTime: string;
+  endTime: string;
+  durationSeconds: number;
+  formattedDuration: string;
+  outcome: 'completed' | 'escalated_to_staff' | 'voicemail_recorded' | 'abandoned';
+  outcomeLabel: string;
+  turnsCount: number;
+  finalIntent: string;
+  topicsDetected: string[];
+  transcript: CallTranscriptTurn[];
+  telemetry: {
+    roundtripLatencyMs: number;
+    sttEngine: string;
+    llmEngine: string;
+    ttsEngine: string;
+    telephonyCodec: string;
+  };
 }

@@ -102,8 +102,8 @@ Guided 45-minute architectural tours run throughout open days. Admission is comp
   - The breathtaking geometric ceramic facade screens (*mashrabiya*) and triangular verandahs by architect Farshid Moussavi.
   - The 11 acres of Persian-inspired *charbagh* gardens and native Texas flora landscaped by Nelson Byrd Woltz.
   - The civic auditorium, cultural exhibition galleries, and community spaces.
-- **Reservation Link**: You can reserve your free tour tickets in advance at [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/).
-- **Walk-Ins**: Accommodated on public days (Tuesday, Thursday, Saturday, Sunday) on a space-available basis, though advance online booking is strongly encouraged.`,
+- **Official Tour Registration**: All tour bookings are hosted exclusively on the official Ismaili Center portal at [the.ismaili/us/ismaili-center-houston](https://the.ismaili/us/ismaili-center-houston). Please reserve directly on the official site.
+- **Walk-Ins**: Accommodated on public days (Tuesday, Thursday, Saturday, Sunday) on a space-available basis, though advance online booking on the official portal is strongly encouraged.`,
       followUps: [
         'What are the visitor hours on weekends?',
         'Who designed the building?',
@@ -433,8 +433,7 @@ While every Ismaili Center houses a Jamatkhana within its complex, the two serve
       text: `### Official Contact & Information Channels
 
 - **Official Human Information Line**: If your questions are not answered by this AI assistant, please call human staff at **+1 (713) 522-2026**
-- **Official Tour Booking**: [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/)
-- **Ismaili Center Houston Portal**: [ismailicenter.org/houston](https://ismailicenter.org/houston)
+- **Official Tour Registration**: [the.ismaili/us/ismaili-center-houston](https://the.ismaili/us/ismaili-center-houston)
 - **Global Ismaili Community Portal**: [the.ismaili](https://the.ismaili)
 - **Official YouTube**: [The Ismaili Channel](https://www.youtube.com/@TheIsmaili)`,
       followUps: [
@@ -506,7 +505,7 @@ The **Ismaili Center Houston** stands as the **first purpose-built Ismaili Cente
 I am designed to assist visitors, scholars, architecture enthusiasts, and community members with authoritative, real-time knowledge about the Center:
 
 - **Visitor Hours & Central Time Schedules**: Up-to-the-minute status on public visiting days (Tue, Thu, Sat, Sun) in Houston Central Time.
-- **Guided Architectural Tours**: Guidance and links to reserve free 45-minute tours at [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/).
+- **Guided Architectural Tours**: Official guidance and links to reserve free 45-minute tours on the official portal at [the.ismaili/us/ismaili-center-houston](https://the.ismaili/us/ismaili-center-houston).
 - **Farshid Moussavi Architecture**: Explanations of shaded triangular verandahs, ceramic *mashrabiya* screens, and sustainable design.
 - **11-Acre Persian Gardens**: Details on Nelson Byrd Woltz's landscaping, reflection pools, and native Texas plants.
 - **Jamatkhana Prayer Timings**: Daily Bandagi, Morning Dua, and Evening Prayer hours in Central Time.
@@ -605,7 +604,7 @@ export function detectPhonebotIntent(query: string): PhonebotIntentResult {
   ) {
     return { 
       intent: 'task_book_tour', 
-      label: 'Tour Reservation', 
+      label: 'Official Tour Portal Redirect', 
       departmentTarget: 'Visitor Services & Guided Tours',
       confidence: 0.94 
     };
@@ -759,7 +758,7 @@ The **Ismaili Center Houston** is the first purpose-built Ismaili Center in the 
 **Quick Visitor Essentials (Houston Central Time)**:
 - **Public Visiting Days**: Tuesdays, Thursdays, Saturdays, and Sundays (10:00 AM – 4:00 PM CT; 11-Acre Gardens open 8:00 AM – 4:00 PM CT).
 - **Admission**: Free of charge for all visitors.
-- **Architectural Tours**: Free 45-minute guided tours are available at [ismailicenter.org/tour-booking](https://ismailicenter.org/tour-booking/).
+- **Architectural Tours**: Free 45-minute guided tours are registered on the official website at [the.ismaili/us/ismaili-center-houston](https://the.ismaili/us/ismaili-center-houston).
 - **Architecture**: Designed by Farshid Moussavi OBE, RA, featuring triangular shaded verandahs and geometric ceramic screens.
 - **Jamatkhana Prayer**: Bandagi (4:00–5:00 AM CT), Morning Dua (5:00–5:30 AM CT), Evening Prayer (7:00 PM Mon–Thu/Sat/Sun; 7:30 PM Fridays CT).
 - **Human Staff Phone**: If your questions are not answered by this AI assistant, please call human staff at **+1 (713) 522-2026**.
@@ -1028,9 +1027,10 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
 export async function getSmartAssistantResponse(
   message: string,
   history?: Array<{ role: string; parts: Array<{ text: string }> }>,
-  options?: { mode?: 'text' | 'phone' }
+  options?: { mode?: 'text' | 'phone'; language?: string }
 ): Promise<AssistantResponse> {
   const isPhoneMode = options?.mode === 'phone';
+  const userLang = options?.language || 'en';
   const cleanMessage = message.trim();
   if (!cleanMessage) {
     return {
@@ -1080,7 +1080,8 @@ export async function getSmartAssistantResponse(
         body: JSON.stringify({ 
           message: cleanMessage, 
           history: sanitizedHistory,
-          mode: isPhoneMode ? 'phone' : 'text'
+          mode: isPhoneMode ? 'phone' : 'text',
+          language: userLang
         }),
         signal: controller.signal,
       });
@@ -1115,10 +1116,10 @@ export async function getSmartAssistantResponse(
     try {
       const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${clientKey.trim()}`;
       
-      const systemInstruction = isPhoneMode
+      let systemInstruction = isPhoneMode
         ? `You are an automated AI Phonebot helper for the Ismaili Center Houston. You are an AI computer assistant, NOT a human.
 Rules:
-- Speak in simple, friendly, easy-to-understand English so immigrants and visitors can easily understand.
+- Speak in simple, friendly, easy-to-understand language so immigrants and visitors can easily understand.
 - Use short, clear sentences. Avoid difficult words.
 - Do NOT use bullet points, numbered lists, asterisks, hashtags, or markdown symbols.
 - Keep answers concise (2 to 3 simple sentences).
@@ -1128,12 +1129,27 @@ Rules:
         : `You are the digital AI assistant for the Ismaili Center Houston. You are an automated AI computer program, NOT a human staff member.
 Rules:
 - Use clear, simple, accessible words so that all visitors, including immigrants and non-native English speakers, can easily understand.
-- All schedules are strictly in US Central Time (Houston, TX). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Entry is free. Free tours can be booked at https://ismailicenter.org/tour-booking/.
+- All schedules are strictly in US Central Time (Houston, TX). Public visiting hours are Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM CT (Gardens 8:00 AM to 4:00 PM CT). Entry is free. Free tours are registered on the official website at https://the.ismaili/us/ismaili-center-houston.
 - Jamatkhana schedule: Bandagi 4:00-5:00 AM, Morning Dua 5:00-5:30 AM, Evening Prayer 7:00 PM (7:30 PM on Fridays).
 - CRITICAL TERMINOLOGY: NEVER use terms like "Subha Jo Niyaz" or "Sanjhi Dua". Refer to them strictly as "Morning Dua" (or "Morning Prayer") and "Evening Prayer".
 - Building design: Farshid Moussavi. Gardens: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX.
 - Provide polite, warm, simple responses formatted with markdown.
 - CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, advise the user to contact the official human staff Information Line at +1 (713) 522-2026.`;
+
+      if (userLang && userLang !== 'en') {
+        const langNames: Record<string, string> = {
+          es: 'Spanish (Español)',
+          ur: 'Urdu (اردو)',
+          hi: 'Hindi (हिन्दी)',
+          fr: 'French (Français)',
+          pt: 'Portuguese (Português)',
+          ar: 'Arabic (العربية)',
+          fa: 'Persian / Farsi (فارسی)',
+          tl: 'Tagalog / Filipino',
+        };
+        const targetLang = langNames[userLang] || userLang;
+        systemInstruction += `\n\nCRITICAL LANGUAGE REQUIREMENT: You MUST reply fluently, clearly, and completely in ${targetLang}.`;
+      }
 
       const contents = [
         ...sanitizedHistory,

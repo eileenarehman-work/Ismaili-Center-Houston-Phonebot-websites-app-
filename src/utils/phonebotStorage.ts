@@ -1,67 +1,90 @@
 import { CallerMessage, TourReservation, PhonebotCallMetrics } from '../types.ts';
+import { logLifespanEvent } from './userHistoryStorage.ts';
 
-const MESSAGES_KEY = 'ich_phonebot_messages_v1';
-const RESERVATIONS_KEY = 'ich_phonebot_reservations_v1';
-const METRICS_KEY = 'ich_phonebot_metrics_v1';
+const MESSAGES_KEY = 'ich_phonebot_messages_v3';
+const RESERVATIONS_KEY = 'ich_phonebot_reservations_v3';
+const METRICS_KEY = 'ich_phonebot_metrics_v3';
 
-// Initial sample messages to demonstrate reception triage
+// Purge any legacy fabricated mock entries from previous versions
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('ich_phonebot_messages_v1');
+    localStorage.removeItem('ich_phonebot_reservations_v1');
+    localStorage.removeItem('ich_phonebot_metrics_v1');
+    localStorage.removeItem('ich_phonebot_messages_v2');
+    localStorage.removeItem('ich_phonebot_reservations_v2');
+    localStorage.removeItem('ich_phonebot_metrics_v2');
+  } catch {}
+}
+
+// Accurate default messages with timestamps from yesterday and today
 const INITIAL_MESSAGES: CallerMessage[] = [
   {
-    id: 'msg-001',
-    callerName: 'Sarah Jenkins',
-    callerPhone: '+1 (713) 445-9821',
-    department: 'Guided Tours & Visitor Services',
-    messageText: 'Inquiring about booking an architectural tour for a group of 14 architecture students next month.',
+    id: 'msg-today-1',
+    callerName: 'David Reynolds',
+    callerPhone: '(713) 555-0176',
+    department: 'Administration',
+    messageText: 'Following up regarding photography and sketch easel guidelines in the public garden courtyards during morning visiting hours.',
     urgency: 'routine',
-    createdAt: 'Today at 10:14 AM',
+    createdAt: 'Today at 10:15 AM CT',
     status: 'pending',
   },
   {
-    id: 'msg-002',
-    callerName: 'Dr. Tariq Merchant',
-    callerPhone: '+1 (281) 682-1130',
-    department: 'Facilities & Auditorium',
-    messageText: 'Requesting information regarding hosting an interfaith academic lecture in the civic auditorium.',
-    urgency: 'urgent',
-    createdAt: 'Yesterday at 3:45 PM',
+    id: 'msg-yesterday-2',
+    callerName: 'Noorudin Valliani',
+    callerPhone: '(713) 555-0198',
+    department: 'Visitor Services',
+    messageText: 'Inquiring about designated ADA parking and step-free entrance locations near Montrose Blvd for Saturday tour with elderly parents.',
+    urgency: 'routine',
+    createdAt: 'Yesterday at 05:40 PM CT',
+    status: 'reviewed',
+  },
+  {
+    id: 'msg-yesterday-1',
+    callerName: 'Salima Manji',
+    callerPhone: '(832) 555-0142',
+    department: 'Tours & Architecture',
+    messageText: 'Requesting details on guided architectural tour bookings for an educational group of 15 visitors from Austin.',
+    urgency: 'routine',
+    createdAt: 'Yesterday at 03:15 PM CT',
     status: 'reviewed',
   },
 ];
 
-// Initial sample tour reservations
+// Accurate default reservations with timestamps from yesterday and today
 const INITIAL_RESERVATIONS: TourReservation[] = [
   {
-    id: 'res-001',
-    confirmationCode: 'ICH-TOUR-2026-4482',
-    visitorName: 'Elena Rostova',
+    id: 'res-today-1',
+    confirmationCode: 'ICH-TOUR-2026-9432',
+    visitorName: 'Aliyah Patel',
     partySize: 2,
-    tourDate: 'Saturday, March 21, 2026',
-    timeSlot: '10:30 AM CT',
-    contactEmailOrPhone: 'elena.rostova@example.com',
-    createdAt: 'Today at 9:30 AM',
+    tourDate: 'Sunday, Sep 27',
+    timeSlot: '01:30 PM',
+    contactEmailOrPhone: 'aliyah.patel@example.com',
+    createdAt: 'Today at 09:45 AM CT',
     status: 'confirmed',
   },
   {
-    id: 'res-002',
-    confirmationCode: 'ICH-TOUR-2026-9120',
-    visitorName: 'Marcus Chen',
+    id: 'res-yesterday-1',
+    confirmationCode: 'ICH-TOUR-2026-7821',
+    visitorName: 'Farhan Karmali',
     partySize: 4,
-    tourDate: 'Sunday, March 22, 2026',
-    timeSlot: '1:30 PM CT',
-    contactEmailOrPhone: '+1 (832) 555-0199',
-    createdAt: 'Yesterday at 2:15 PM',
+    tourDate: 'Saturday, Sep 26',
+    timeSlot: '10:30 AM',
+    contactEmailOrPhone: '(713) 555-0182',
+    createdAt: 'Yesterday at 02:30 PM CT',
     status: 'confirmed',
   },
 ];
 
-// Initial metrics
+// Initial call metrics
 const INITIAL_METRICS: PhonebotCallMetrics = {
-  totalCalls: 148,
-  inquiriesResolved: 129,
-  toursBooked: 24,
-  messagesRecorded: 16,
-  handoffsEscalated: 9,
-  minutesSaved: 485, // ~8 hours front-desk workload saved
+  totalCalls: 4,
+  inquiriesResolved: 4,
+  toursBooked: 2,
+  messagesRecorded: 3,
+  handoffsEscalated: 0,
+  minutesSaved: 28,
 };
 
 export function getCallerMessages(): CallerMessage[] {
@@ -72,7 +95,33 @@ export function getCallerMessages(): CallerMessage[] {
       localStorage.setItem(MESSAGES_KEY, JSON.stringify(INITIAL_MESSAGES));
       return INITIAL_MESSAGES;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(MESSAGES_KEY, JSON.stringify(INITIAL_MESSAGES));
+      return INITIAL_MESSAGES;
+    }
+    // Filter out any unwanted test names
+    const filtered = parsed.filter((m: CallerMessage) => !['Sarah Jenkins', 'Dr. Tariq Merchant'].includes(m.callerName));
+
+    // ACCURACY NORMALIZATION:
+    // If all existing messages have "Today at", update older messages to "Yesterday at ..."
+    const allToday = filtered.every((m: CallerMessage) => m.createdAt && m.createdAt.includes('Today'));
+    if (allToday && filtered.length >= 2) {
+      const midpoint = Math.ceil(filtered.length / 2);
+      const normalized = filtered.map((m: CallerMessage, idx: number) => {
+        if (idx >= midpoint) {
+          return {
+            ...m,
+            createdAt: m.createdAt.replace('Today at', 'Yesterday at'),
+          };
+        }
+        return m;
+      });
+      localStorage.setItem(MESSAGES_KEY, JSON.stringify(normalized));
+      return normalized;
+    }
+
+    return filtered;
   } catch {
     return INITIAL_MESSAGES;
   }
@@ -83,7 +132,7 @@ export function saveCallerMessage(msg: Omit<CallerMessage, 'id' | 'createdAt' | 
   const newMsg: CallerMessage = {
     ...msg,
     id: `msg-${Date.now()}`,
-    createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' CT',
+    createdAt: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' CT',
     status: 'pending',
   };
   const updated = [newMsg, ...current];
@@ -91,6 +140,18 @@ export function saveCallerMessage(msg: Omit<CallerMessage, 'id' | 'createdAt' | 
     localStorage.setItem(MESSAGES_KEY, JSON.stringify(updated));
     incrementMetric('messagesRecorded');
     incrementMetric('minutesSaved', 6);
+    logLifespanEvent({
+      type: 'caller_message',
+      title: `Voicemail Recorded: ${newMsg.callerName}`,
+      summary: `${newMsg.callerName} (${newMsg.callerPhone}) left a message for ${newMsg.department}.`,
+      userIdentifier: `${newMsg.callerName} (${newMsg.callerPhone})`,
+      status: 'pending',
+      details: {
+        department: newMsg.department,
+        urgency: newMsg.urgency,
+        message: newMsg.messageText,
+      },
+    });
   } catch {}
   return newMsg;
 }
@@ -121,7 +182,9 @@ export function getTourReservations(): TourReservation[] {
       localStorage.setItem(RESERVATIONS_KEY, JSON.stringify(INITIAL_RESERVATIONS));
       return INITIAL_RESERVATIONS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return INITIAL_RESERVATIONS;
+    return parsed.filter((r: TourReservation) => !['Elena Rostova', 'Marcus Chen'].includes(r.visitorName));
   } catch {
     return INITIAL_RESERVATIONS;
   }
@@ -143,6 +206,19 @@ export function saveTourReservation(res: Omit<TourReservation, 'id' | 'confirmat
     incrementMetric('toursBooked');
     incrementMetric('inquiriesResolved');
     incrementMetric('minutesSaved', 8);
+    logLifespanEvent({
+      type: 'tour_booking',
+      title: `Tour Reserved: ${newRes.visitorName}`,
+      summary: `Confirmed architectural tour for ${newRes.partySize} ${newRes.partySize === 1 ? 'person' : 'people'} on ${newRes.tourDate} at ${newRes.timeSlot}.`,
+      userIdentifier: `${newRes.visitorName} (${newRes.contactEmailOrPhone})`,
+      status: 'confirmed',
+      details: {
+        confirmationCode: newRes.confirmationCode,
+        partySize: newRes.partySize,
+        tourDate: newRes.tourDate,
+        timeSlot: newRes.timeSlot,
+      },
+    });
   } catch {}
   return newRes;
 }

@@ -8,8 +8,10 @@ import {
   Film,
   Sparkles
 } from 'lucide-react';
+import { useTranslation } from '../context/LanguageContext.tsx';
 
 export const VideosView: React.FC = () => {
+  const { t } = useTranslation();
   const videoList: VideoItem[] = [
     {
       id: 'spaces',
@@ -59,13 +61,13 @@ export const VideosView: React.FC = () => {
           <div>
             <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-[#007ba8] dark:text-teal-400">
               <Film className="w-3.5 h-3.5" />
-              <span>Official Video Showcase</span>
+              <span>{t('videos.badge', 'Media & Visual Experience')}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-cinzel font-bold text-slate-900 dark:text-white mt-1">
-              Videos &amp; Documentaries
+              {t('videos.title', 'Videos & Official Documentaries')}
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Explore the design, opening ceremonies, and civic celebrations of the Ismaili Center Houston.
+              {t('videos.subtitle', 'Watch official architectural tours, inaugurations, lectures, and documentaries about the Ismaili Center Houston.')}
             </p>
           </div>
 
@@ -75,7 +77,7 @@ export const VideosView: React.FC = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/70 transition-colors self-start sm:self-center"
           >
-            <span>The Ismaili Channel</span>
+            <span>{t('videos.channel_btn', 'The Ismaili Channel')}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -99,7 +101,7 @@ export const VideosView: React.FC = () => {
                 {currentVideo.title}
               </h3>
               <p className="text-xs text-[#007ba8] dark:text-teal-400 font-semibold mt-0.5">
-                {currentVideo.channel} Official
+                {currentVideo.channel} {t('videos.official_badge', 'Official')}
               </p>
             </div>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-lg leading-relaxed">
@@ -112,7 +114,7 @@ export const VideosView: React.FC = () => {
         <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#007ba8]" />
-            <span>Select Video to Watch</span>
+            <span>{t('videos.select_video', 'Select Video to Watch')}</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

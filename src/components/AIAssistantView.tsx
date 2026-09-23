@@ -3,6 +3,8 @@ import { ChatMessage } from '../types.ts';
 import { formatCentralTimestamp } from '../utils/time.ts';
 import { getSmartAssistantResponse, queryKnowledgeEngine } from '../utils/smartAssistant.ts';
 import { humanizeSpokenText, getGoogleUKEnglishMaleVoice } from '../utils/naturalVoice.ts';
+import { logLifespanEvent } from '../utils/userHistoryStorage.ts';
+import { useTranslation } from '../context/LanguageContext.tsx';
 import { 
   Bot, 
   User, 
@@ -23,18 +25,19 @@ interface AIAssistantViewProps {
 }
 
 export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTab }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const { t, language } = useTranslation();
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: 'welcome',
       sender: 'assistant',
-      text: "Welcome to the **Ismaili Center Houston AI Assistant**! I am an automated computer helper, not human staff. Ask me about visiting hours, free guided tours, prayer times in Houston Central Time, or our gardens and building. If I cannot answer your question, please call our official human staff line at **+1 (713) 522-2026**.",
+      text: t('assistant.welcome', "Welcome to the **Ismaili Center Houston AI Assistant**! I am an automated computer helper, not human staff. Ask me about visiting hours, free guided tours, prayer times in Houston Central Time, or our gardens and building. If I cannot answer your question, please call our official human staff line at **+1 (713) 522-2026**."),
       timestamp: formatCentralTimestamp(),
       source: 'knowledge-engine',
       suggestedFollowUps: [
-        'What are the visitor hours?',
-        'How do I book a free tour?',
-        'What is the prayer schedule?',
-        'Where is the free parking?',
+        t('assistant.q1', 'What are the visitor hours?'),
+        t('assistant.q2', 'How do I book a free tour?'),
+        t('assistant.q3', 'What is the prayer schedule?'),
+        t('assistant.q4', 'Where is the free parking?'),
       ],
     },
   ]);
@@ -47,6 +50,40 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
+  // Sync speech recognition language with active app language
+  const langCodeMap: Record<string, string> = {
+    en: 'en-US',
+    es: 'es-ES',
+    ur: 'ur-PK',
+    hi: 'hi-IN',
+    ar: 'ar-SA',
+    fa: 'fa-IR',
+    fr: 'fr-FR',
+    gu: 'gu-IN',
+  };
+
+  // Re-translate initial welcome message if no conversation has started yet
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length === 1 && prev[0].id === 'welcome') {
+        return [{
+          id: 'welcome',
+          sender: 'assistant',
+          text: t('assistant.welcome', "Welcome to the **Ismaili Center Houston AI Assistant**! I am an automated computer helper, not human staff. Ask me about visiting hours, free guided tours, prayer times in Houston Central Time, or our gardens and building. If I cannot answer your question, please call our official human staff line at **+1 (713) 522-2026**."),
+          timestamp: formatCentralTimestamp(),
+          source: 'knowledge-engine',
+          suggestedFollowUps: [
+            t('assistant.q1', 'What are the visitor hours?'),
+            t('assistant.q2', 'How do I book a free tour?'),
+            t('assistant.q3', 'What is the prayer schedule?'),
+            t('assistant.q4', 'Where is the free parking?'),
+          ],
+        }];
+      }
+      return prev;
+    });
+  }, [language, t]);
+
   // Initialize Speech Recognition if supported
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -56,7 +93,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
         const recog = new SpeechRecognitionClass();
         recog.continuous = false;
         recog.interimResults = false;
-        recog.lang = 'en-US';
+        recog.lang = langCodeMap[language] || 'en-US';
 
         recog.onresult = (event: any) => {
           if (event?.results?.[0]?.[0]?.transcript) {
@@ -86,6 +123,13 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
     };
   }, []);
 
+  // Update speech recognition language when language changes
+  useEffect(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.lang = langCodeMap[language] || 'en-US';
+    }
+  }, [language]);
+
   // Auto-scroll on new messages
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -94,13 +138,13 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
   }, [messages, isTyping]);
 
   const quickQueries = [
-    { label: 'Visitor Hours', query: 'When is the Ismaili Center Houston open to visitors?' },
-    { label: 'Book a Tour', query: 'How do I book a guided tour of the center?' },
-    { label: 'Prayer Schedule', query: 'What is the Jamatkhana prayer schedule?' },
-    { label: 'Architecture & Gardens', query: 'Who designed the building and gardens?' },
-    { label: 'Who is the Aga Khan?', query: 'Who is His Highness the Aga Khan?' },
-    { label: 'About the Ismaili Faith', query: 'What is the Ismaili Shia Muslim faith and tradition?' },
-    { label: 'Location', query: 'Where is the Ismaili Center located in Houston?' },
+    { label: t('assistant.chip_hours', 'Visitor Hours'), query: t('assistant.query_hours', 'When is the Ismaili Center Houston open to visitors?') },
+    { label: t('assistant.chip_tour', 'Book a Tour'), query: t('assistant.query_tour', 'How do I book a guided tour of the center?') },
+    { label: t('assistant.chip_prayer', 'Prayer Schedule'), query: t('assistant.query_prayer', 'What is the Jamatkhana prayer schedule?') },
+    { label: t('assistant.chip_gardens', 'Architecture & Gardens'), query: t('assistant.query_gardens', 'Who designed the building and gardens?') },
+    { label: t('assistant.chip_leader', 'Who is the Aga Khan?'), query: t('assistant.query_leader', 'Who is His Highness the Aga Khan?') },
+    { label: t('assistant.chip_faith', 'About the Ismaili Faith'), query: t('assistant.query_faith', 'What is the Ismaili Shia Muslim faith and tradition?') },
+    { label: t('assistant.chip_location', 'Location & Parking'), query: t('assistant.query_location', 'Where is the Ismaili Center located in Houston and where is parking?') },
   ];
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -135,6 +179,19 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
       };
 
       setMessages((prev) => [...prev, botMessage]);
+
+      logLifespanEvent({
+        type: 'ai_chat',
+        title: `AI Query: "${query.slice(0, 42)}${query.length > 42 ? '...' : ''}"`,
+        summary: `Visitor asked: "${query}". AI responded via ${response.source || 'gemini-model'}.`,
+        userIdentifier: 'Web Visitor',
+        status: 'answered',
+        details: {
+          query,
+          source: response.source,
+          responsePreview: response.reply.slice(0, 180),
+        },
+      });
     } catch (_err) {
       // Local knowledge engine backup guaranteed to never fail
       const localResponse = queryKnowledgeEngine(query);
@@ -147,6 +204,19 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
         suggestedFollowUps: localResponse.suggestedFollowUps,
       };
       setMessages((prev) => [...prev, botMessage]);
+
+      logLifespanEvent({
+        type: 'ai_chat',
+        title: `AI Query (Offline Engine): "${query.slice(0, 42)}${query.length > 42 ? '...' : ''}"`,
+        summary: `Visitor asked: "${query}". Responded via local verified knowledge engine.`,
+        userIdentifier: 'Web Visitor',
+        status: 'answered',
+        details: {
+          query,
+          source: 'knowledge-engine',
+          responsePreview: localResponse.reply.slice(0, 180),
+        },
+      });
     } finally {
       setIsTyping(false);
     }
@@ -186,11 +256,18 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
     const cleanSpoken = humanizeSpokenText(text);
 
     const utterance = new SpeechSynthesisUtterance(cleanSpoken);
-    utterance.lang = 'en-GB';
+    const targetLang = langCodeMap[language] || 'en-US';
+    utterance.lang = targetLang;
 
-    const ukVoice = getGoogleUKEnglishMaleVoice();
-    if (ukVoice) {
-      utterance.voice = ukVoice;
+    // Pick appropriate localized voice
+    const voices = window.speechSynthesis.getVoices();
+    const langPrefix = targetLang.split('-')[0].toLowerCase();
+    const matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith(langPrefix));
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+    } else if (language === 'en') {
+      const ukVoice = getGoogleUKEnglishMaleVoice();
+      if (ukVoice) utterance.voice = ukVoice;
     }
 
     utterance.pitch = 1.0;
@@ -212,7 +289,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
       {
         id: `welcome-${Date.now()}`,
         sender: 'assistant',
-        text: "Chat cleared. What else would you like to know about the Ismaili Center Houston?",
+        text: t('assistant.chat_cleared', "Chat cleared. What else would you like to know about the Ismaili Center Houston?"),
         timestamp: formatCentralTimestamp(),
         source: 'offline',
       },
@@ -282,15 +359,15 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Ismaili Center AI Assistant
+                {t('assistant.title', 'Ismaili Center AI Assistant')}
               </h2>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse" />
-                Computer Helper
+                {t('assistant.bot_badge', 'Computer Helper')}
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Automated answers for visiting hours, prayer times, free tours, and directions
+              {t('assistant.subtitle', 'Automated answers for visiting hours, prayer times, free tours, and directions')}
             </p>
           </div>
         </div>
@@ -301,7 +378,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
             className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition-colors"
             title="Call the real human staff phone line"
           >
-            <span>Staff: +1 (713) 522-2026</span>
+            <span>{t('assistant.staff_phone', 'Staff: +1 (713) 522-2026')}</span>
           </a>
 
           <button
@@ -311,7 +388,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
             title="Clear chat history"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Clear</span>
+            <span>{t('assistant.clear', 'Clear')}</span>
           </button>
         </div>
       </div>
@@ -320,7 +397,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
       <div className="px-4 py-2.5 bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-800 flex items-center space-x-2 overflow-x-auto scrollbar-none">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex-shrink-0 flex items-center">
           <Sparkles className="w-3 h-3 mr-1 text-[#007ba8]" />
-          Topics:
+          {t('assistant.topics', 'Topics:')}
         </span>
         {quickQueries.map((item, i) => (
           <button
@@ -368,7 +445,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
                   <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-700/70">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5 flex items-center">
                       <Sparkles className="w-2.5 h-2.5 mr-1 text-[#007ba8]" />
-                      Suggested Follow-ups:
+                      {t('assistant.suggested_followups', 'Suggested Follow-ups:')}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {msg.suggestedFollowUps.map((chip, cIdx) => (
@@ -447,7 +524,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
               <span className="w-2 h-2 rounded-full bg-[#007ba8] animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="w-2 h-2 rounded-full bg-[#007ba8] animate-bounce" style={{ animationDelay: '150ms' }} />
               <span className="w-2 h-2 rounded-full bg-[#007ba8] animate-bounce" style={{ animationDelay: '300ms' }} />
-              <span className="text-xs text-slate-500 dark:text-slate-400 pl-1 font-medium">Preparing guide response...</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 pl-1 font-medium">{t('assistant.thinking', 'Preparing guide response...')}</span>
             </div>
           </div>
         )}
@@ -479,7 +556,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Ask a question (e.g., 'What are the visiting hours?' or 'How do I book a tour?')"
+          placeholder={t('assistant.input_placeholder', 'Ask a question about hours, tours, prayers, or architecture...')}
           className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#007ba8] focus:border-transparent transition-all placeholder:text-slate-400"
         />
 
@@ -488,7 +565,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
           disabled={!inputValue.trim() || isTyping}
           className="px-5 py-2.5 rounded-xl bg-[#007ba8] hover:bg-[#006185] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-all shadow-sm flex items-center space-x-1.5 active:scale-95"
         >
-          <span>Send</span>
+          <span>{t('assistant.send', 'Send')}</span>
           <Send className="w-3.5 h-3.5" />
         </button>
       </form>

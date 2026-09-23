@@ -328,13 +328,14 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.post("/api/chat", async (req, res) => {
-  const { message, history, userKey, mode } = req.body;
+  const { message, history, userKey, mode, language } = req.body;
   if (!message || typeof message !== "string") {
     res.status(400).json({ error: "A message string is required." });
     return;
   }
 
   const isPhoneMode = mode === "phone";
+  const userLang = typeof language === "string" ? language : "en";
 
   const rawKey = userKey || process.env.GEMINI_API_KEY;
   const isUsableKey = Boolean(
@@ -407,6 +408,22 @@ Domain Knowledge & Strict Guidelines:
 8. CRITICAL TERMINOLOGY RULE:
    - NEVER use the phrases "Subha Jo Niyaz" or "Sanjhi Dua". Refer to prayer times strictly as "Morning Dua" (or "Morning Prayer") and "Evening Prayer".`;
 
+      let finalInstruction = systemInstruction;
+      if (userLang && userLang !== "en") {
+        const langNames: Record<string, string> = {
+          es: "Spanish (Español)",
+          ur: "Urdu (اردو)",
+          hi: "Hindi (हिन्दी)",
+          fr: "French (Français)",
+          pt: "Portuguese (Português)",
+          ar: "Arabic (العربية)",
+          fa: "Persian / Farsi (فارسی)",
+          tl: "Tagalog / Filipino",
+        };
+        const targetLang = langNames[userLang] || userLang;
+        finalInstruction += `\n\n9. CRITICAL LANGUAGE REQUIREMENT: You MUST reply fluently, clearly, and completely in ${targetLang}. All information must be communicated in ${targetLang}.`;
+      }
+
       // Build contents supporting multi-turn conversation history (must start with role: "user")
       const contents: any[] = [];
       if (Array.isArray(history) && history.length > 0) {
@@ -439,7 +456,7 @@ Domain Knowledge & Strict Guidelines:
         model: "gemini-3.8-flash",
         contents,
         config: {
-          systemInstruction,
+          systemInstruction: finalInstruction,
           temperature: isPhoneMode ? 0.4 : 0.65,
         },
       });
