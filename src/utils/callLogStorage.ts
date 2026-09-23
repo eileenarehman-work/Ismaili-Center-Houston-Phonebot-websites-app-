@@ -3,14 +3,7 @@ import { incrementMetric } from './phonebotStorage.ts';
 import { logLifespanEvent } from './userHistoryStorage.ts';
 import { formatRelativeCentralTimestamp } from './time.ts';
 
-const ANONYMOUS_CALLS_KEY = 'ich_anonymous_calls_v2';
-
-// Purge legacy call logs from prior iterations
-if (typeof window !== 'undefined') {
-  try {
-    localStorage.removeItem('ich_anonymous_calls_v1');
-  } catch {}
-}
+const ANONYMOUS_CALLS_KEY = 'ich_anonymous_calls_v1';
 
 export const INITIAL_CALLS: AnonymousCallRecord[] = [
   {

@@ -1027,10 +1027,9 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
 export async function getSmartAssistantResponse(
   message: string,
   history?: Array<{ role: string; parts: Array<{ text: string }> }>,
-  options?: { mode?: 'text' | 'phone'; language?: string }
+  options?: { mode?: 'text' | 'phone' }
 ): Promise<AssistantResponse> {
   const isPhoneMode = options?.mode === 'phone';
-  const userLang = options?.language || 'en';
   const cleanMessage = message.trim();
   if (!cleanMessage) {
     return {
@@ -1080,8 +1079,7 @@ export async function getSmartAssistantResponse(
         body: JSON.stringify({ 
           message: cleanMessage, 
           history: sanitizedHistory,
-          mode: isPhoneMode ? 'phone' : 'text',
-          language: userLang
+          mode: isPhoneMode ? 'phone' : 'text'
         }),
         signal: controller.signal,
       });
@@ -1116,10 +1114,10 @@ export async function getSmartAssistantResponse(
     try {
       const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${clientKey.trim()}`;
       
-      let systemInstruction = isPhoneMode
+      const systemInstruction = isPhoneMode
         ? `You are an automated AI Phonebot helper for the Ismaili Center Houston. You are an AI computer assistant, NOT a human.
 Rules:
-- Speak in simple, friendly, easy-to-understand language so immigrants and visitors can easily understand.
+- Speak in simple, friendly, easy-to-understand English so immigrants and visitors can easily understand.
 - Use short, clear sentences. Avoid difficult words.
 - Do NOT use bullet points, numbered lists, asterisks, hashtags, or markdown symbols.
 - Keep answers concise (2 to 3 simple sentences).
@@ -1135,21 +1133,6 @@ Rules:
 - Building design: Farshid Moussavi. Gardens: Nelson Byrd Woltz (11 acres). Location: Montrose Blvd & Allen Parkway, Houston, TX.
 - Provide polite, warm, simple responses formatted with markdown.
 - CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, advise the user to contact the official human staff Information Line at +1 (713) 522-2026.`;
-
-      if (userLang && userLang !== 'en') {
-        const langNames: Record<string, string> = {
-          es: 'Spanish (Español)',
-          ur: 'Urdu (اردو)',
-          hi: 'Hindi (हिन्दी)',
-          fr: 'French (Français)',
-          pt: 'Portuguese (Português)',
-          ar: 'Arabic (العربية)',
-          fa: 'Persian / Farsi (فارسی)',
-          tl: 'Tagalog / Filipino',
-        };
-        const targetLang = langNames[userLang] || userLang;
-        systemInstruction += `\n\nCRITICAL LANGUAGE REQUIREMENT: You MUST reply fluently, clearly, and completely in ${targetLang}.`;
-      }
 
       const contents = [
         ...sanitizedHistory,

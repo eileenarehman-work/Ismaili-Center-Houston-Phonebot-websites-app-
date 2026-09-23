@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavigationTab, AccessibilitySettings, TelephonyPipelineTelemetry, AdminAnnouncement, LanguageCode } from './types.ts';
+import { NavigationTab, AccessibilitySettings, TelephonyPipelineTelemetry, AdminAnnouncement } from './types.ts';
 import { Header } from './components/Header.tsx';
 import { AIAssistantView } from './components/AIAssistantView.tsx';
 import { VoiceHotlineView } from './components/VoiceHotlineView.tsx';
@@ -12,7 +12,6 @@ import { ReadingGuide } from './components/ReadingGuide.tsx';
 import { AdminLoginModal } from './components/AdminLoginModal.tsx';
 import { AdminDashboardModal } from './components/AdminDashboardModal.tsx';
 import { PhonebotPipelineInspector } from './components/PhonebotPipelineInspector.tsx';
-import { LanguageProvider } from './context/LanguageContext.tsx';
 import { calculateCentralPrayerCountdown, getCentralTimeInfo } from './utils/time.ts';
 import { 
   getStoredAccessibilitySettings, 
@@ -169,21 +168,8 @@ export default function App() {
     }
   };
 
-  const handleLanguageChange = (newLang: LanguageCode) => {
-    setAccessibilitySettings((prev) => {
-      const updated = { ...prev, language: newLang };
-      saveAccessibilitySettings(updated);
-      applyAccessibilityToDOM(updated);
-      return updated;
-    });
-  };
-
   return (
-    <LanguageProvider
-      language={accessibilitySettings.language}
-      onLanguageChange={handleLanguageChange}
-    >
-      <div className={`${isDarkEffective ? 'dark' : ''} min-h-screen flex flex-col bg-[#f7f6f2] dark:bg-[#0b1320] text-slate-800 dark:text-slate-100 transition-colors duration-200 selection:bg-[#007ba8]/20 selection:text-[#007ba8]`}>
+    <div className={`${isDarkEffective ? 'dark' : ''} min-h-screen flex flex-col bg-[#f7f6f2] dark:bg-[#0b1320] text-slate-800 dark:text-slate-100 transition-colors duration-200 selection:bg-[#007ba8]/20 selection:text-[#007ba8]`}>
       {/* Header with Navigation, Live countdown, Settings Button, & Admin Key Access */}
       <Header
         currentTab={currentTab}
@@ -316,6 +302,5 @@ export default function App() {
         onSimulateTransfer={() => {}}
       />
     </div>
-    </LanguageProvider>
   );
 }

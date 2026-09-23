@@ -24,7 +24,6 @@ import {
   LogOut,
   ShieldCheck
 } from 'lucide-react';
-import { useTranslation } from '../context/LanguageContext.tsx';
 
 interface HeaderProps {
   currentTab: NavigationTab;
@@ -67,7 +66,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const adminDropdownRef = useRef<HTMLDivElement>(null);
-  const { t } = useTranslation();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -86,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
   const tabs: TabConfig[] = [
     {
       id: 'hotline',
-      label: t('tab.hotline', 'AI Phonebot Hotline'),
+      label: 'AI Phonebot Hotline',
       icon: <PhoneCall className="w-4 h-4" />,
       shortcut: '1',
       colorName: 'Rose Coral',
@@ -100,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'assistant',
-      label: t('tab.assistant', 'AI Assistant'),
+      label: 'AI Assistant',
       icon: <Bot className="w-4 h-4" />,
       shortcut: '2',
       colorName: 'Sky Blue',
@@ -114,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'schedule',
-      label: t('tab.schedule', 'Jamatkhana Schedule'),
+      label: 'Jamatkhana Schedule',
       icon: <Clock className="w-4 h-4" />,
       shortcut: '3',
       colorName: 'Emerald Green',
@@ -128,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'visitor',
-      label: t('tab.visitor', 'Visitor Info'),
+      label: 'Visitor Info',
       icon: <Info className="w-4 h-4" />,
       shortcut: '4',
       colorName: 'Warm Amber',
@@ -142,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'videos',
-      label: t('tab.videos', 'Videos & Media'),
+      label: 'Videos & Media',
       icon: <Tv className="w-4 h-4" />,
       shortcut: '5',
       colorName: 'Royal Purple',
@@ -156,7 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     ...(isAdmin ? [{
       id: 'admin' as NavigationTab,
-      label: t('tab.admin', 'Admin'),
+      label: 'Admin Console',
       icon: <ShieldCheck className="w-4 h-4" />,
       shortcut: '6',
       colorName: 'Amber Gold',
@@ -207,7 +205,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Next congregational prayer in Houston Central Time"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 dark:text-slate-400 font-medium">{t('header.next_prayer', 'Next:')}</span>
+              <span className="text-slate-500 dark:text-slate-400 font-medium">Next:</span>
               <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{upcomingSessionText}</span>
             </div>
 
@@ -218,7 +216,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-[#007ba8]/10 hover:bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 dark:bg-teal-950/40 text-xs font-semibold transition-all border border-[#007ba8]/20"
               title="Official Ismaili Center Houston Portal - Guided Architectural Tours"
             >
-              <span>{t('header.book_tour', 'Book Tour')}</span>
+              <span>Book Tour</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
@@ -259,11 +257,14 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={() => onOpenAdmin('calls')}
                   className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400 transition-all cursor-pointer active:scale-95 group"
-                  title="Staff & Admin Access (Password required)"
-                  aria-label="Open Admin Login"
+                  title="Staff & Admin Access (Passkey required)"
+                  aria-label="Open Admin Login with Passkey"
                 >
                   <KeyRound className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:rotate-45 group-hover:text-amber-500 transition-transform duration-200" />
-                  <span className="font-bold">Admin</span>
+                  <span className="font-bold">Admin Key</span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-700 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                    Staff
+                  </span>
                 </button>
               )}
 
@@ -274,10 +275,10 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80 mb-1 flex items-center justify-between">
                     <div className="flex items-center space-x-1.5">
                       <ShieldCheck className="w-4 h-4 text-amber-500" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">Admin Quick Menu</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">Admin Quick Navigation</span>
                     </div>
                     <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
-                      Signed In
+                      Passkey Active
                     </span>
                   </div>
 
@@ -411,10 +412,10 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className="text-xs font-semibold block text-slate-900 dark:text-slate-100">
-                          Phone System Setup
+                          Telephony Gateway & Carrier
                         </span>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                          Twilio and phone routing
+                          Twilio TwiML & SIP routing
                         </p>
                       </div>
                     </button>
@@ -440,23 +441,19 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Settings Button */}
+            {/* Accessibility & Display Settings Button (Replaces the Light/Dark Mode button) */}
             <button
               id="header-settings-btn"
               type="button"
               onClick={onOpenSettings}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 hover:text-[#007ba8] dark:hover:text-teal-300 transition-all cursor-pointer active:scale-95 group"
-              title="Settings"
-              aria-label="Settings"
+              className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 hover:text-[#007ba8] dark:hover:text-teal-300 transition-all cursor-pointer active:scale-95 group"
+              title="Display & Accessibility Settings"
+              aria-label="Open display and accessibility settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400 group-hover:rotate-45 transition-transform duration-300 group-hover:text-[#007ba8] dark:group-hover:text-teal-300" />
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
-                Settings
-              </span>
+              <Settings className="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:rotate-45 transition-transform duration-300 group-hover:text-[#007ba8] dark:group-hover:text-teal-300" />
+              <span className="hidden sm:inline">Settings</span>
               {activeAccessibilityCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 font-mono text-[10px] font-bold">
-                  {activeAccessibilityCount}
-                </span>
+                <span className="w-2 h-2 rounded-full bg-[#007ba8] dark:bg-teal-400 animate-pulse" />
               )}
             </button>
 
@@ -662,10 +659,10 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <div className="flex items-center space-x-2.5">
                   <KeyRound className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  <span className="font-bold">Admin Login</span>
+                  <span className="font-bold">Admin Login (Key Access)</span>
                 </div>
                 <span className="px-2 py-0.5 rounded-full font-mono text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                  Password
+                  Passkey Required
                 </span>
               </button>
             )}
@@ -680,7 +677,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <div className="flex items-center space-x-2.5">
                 <Settings className="w-4 h-4 text-[#007ba8] dark:text-teal-400" />
-                <span>Settings</span>
+                <span>Display & Accessibility Settings</span>
               </div>
               {activeAccessibilityCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 font-mono text-[10px]">

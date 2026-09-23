@@ -1,14 +1,13 @@
 import { LifespanEvent, LifespanEventType } from '../types.ts';
 import { formatRelativeCentralTimestamp } from './time.ts';
 
-const LIFESPAN_HISTORY_KEY = 'ich_user_lifespan_history_v4';
+const LIFESPAN_HISTORY_KEY = 'ich_user_lifespan_history_v3';
 
 // Purge old mock history if present
 if (typeof window !== 'undefined') {
   try {
     localStorage.removeItem('ich_user_lifespan_history_v1');
     localStorage.removeItem('ich_user_lifespan_history_v2');
-    localStorage.removeItem('ich_user_lifespan_history_v3');
   } catch {}
 }
 

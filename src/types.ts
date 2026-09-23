@@ -93,17 +93,8 @@ export interface TelephonyPipelineTelemetry {
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ContrastMode = 'normal' | 'high' | 'yellow-black';
 export type CursorSize = 'normal' | 'large' | 'extra-large';
-export type LanguageCode = 'en' | 'es' | 'hi' | 'ur' | 'ar' | 'gu' | 'fa' | 'tl';
-
-export interface LanguageOption {
-  code: LanguageCode;
-  nativeName: string;
-  englishName: string;
-  dir: 'ltr' | 'rtl';
-}
 
 export interface AccessibilitySettings {
-  language: LanguageCode;
   theme: ThemeMode;
   contrast: ContrastMode;
   cursorSize: CursorSize;

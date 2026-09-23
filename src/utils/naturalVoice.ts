@@ -64,24 +64,14 @@ export function getGoogleUSEnglishFemaleVoice(): SpeechSynthesisVoice | null {
 }
 
 /**
- * Voice selection helper supporting UK Male (default), US Female, or System,
- * with automatic adaptation to target language (e.g. Spanish, Urdu, Hindi).
+ * Voice selection helper supporting UK Male (default), US Female, or System
  */
-export function getSelectedVoice(voiceType: 'uk-male' | 'us-female' | 'system', lang?: string): SpeechSynthesisVoice | null {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
-  const voices = window.speechSynthesis.getVoices() || [];
-  if (voices.length === 0) return null;
-
-  if (lang && lang !== 'en') {
-    const langPrefix = lang.toLowerCase();
-    const matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith(langPrefix));
-    if (matchedVoice) return matchedVoice;
-  }
-
+export function getSelectedVoice(voiceType: 'uk-male' | 'us-female' | 'system'): SpeechSynthesisVoice | null {
   if (voiceType === 'us-female') {
     return getGoogleUSEnglishFemaleVoice();
   }
   if (voiceType === 'system') {
+    const voices = typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : [];
     return voices[0] || null;
   }
   return getGoogleUKEnglishMaleVoice();

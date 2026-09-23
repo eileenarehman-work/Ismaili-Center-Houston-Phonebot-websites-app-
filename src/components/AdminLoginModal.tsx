@@ -12,7 +12,6 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { verifyAdminPassword, setAdminAuth, ADMIN_PASSKEY } from '../utils/adminAuth.ts';
-import { useTranslation } from '../context/LanguageContext.tsx';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -25,7 +24,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   onClose,
   onLoginSuccess,
 }) => {
-  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +59,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     setError(null);
 
     if (!password.trim()) {
-      setError(t('admin_login.empty_err', 'Please enter the administrator password.'));
+      setError('Please enter the administrator password.');
       return;
     }
 
@@ -73,7 +71,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         onClose();
       }, 350);
     } else {
-      setError(t('admin_login.invalid_err', `Incorrect administrator password. Please try again.`));
+      setError(`Incorrect administrator password. Please use passkey ${ADMIN_PASSKEY} and try again.`);
       setPassword('');
       passwordInputRef.current?.focus();
     }
@@ -109,10 +107,10 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           </div>
 
           <h2 id="admin-login-title" className="text-xl font-bold font-cinzel tracking-wide text-white">
-            {t('admin_login.title', 'Staff & Admin Gateway')}
+            Staff &amp; Admin Gateway
           </h2>
           <p className="text-xs text-amber-100/90 mt-1">
-            {t('admin_login.subtitle', 'Ismaili Center Houston Management Portal')}
+            Ismaili Center Houston Management Portal
           </p>
         </div>
 
@@ -121,9 +119,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 flex items-start space-x-2.5">
             <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
             <div className="space-y-0.5">
-              <span className="font-bold block">{t('admin_login.badge', 'Administrator Sign-In')}</span>
+              <span className="font-bold block">Administrator Sign-In</span>
               <p className="text-[11px] text-amber-800 dark:text-amber-300/80">
-                {t('admin_login.desc', 'Enter your staff password to view call records, voicemails, tour schedules, and notice banners.')}
+                Enter your administrator password to access schedule controls, official tour links, verbatim call audit logs, voicemails, and center announcements.
               </p>
             </div>
           </div>
@@ -135,10 +133,10 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 htmlFor="admin-password-input"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
               >
-                {t('admin_login.password', 'Password')}
+                Password / Passkey
               </label>
-              <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-950/60 px-1.5 py-0.5 rounded font-semibold">
-                {t('admin_login.passkey_label', 'Password: 298402384')}
+              <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
+                Passkey: 298402384
               </span>
             </div>
             <div className="relative">
@@ -154,7 +152,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                   setPassword(e.target.value);
                   if (error) setError(null);
                 }}
-                placeholder={t('admin_login.placeholder', 'Enter password (298402384)...')}
+                placeholder="Enter password or passkey (298402384)..."
                 className="w-full pl-10 pr-11 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-mono"
                 required
                 autoComplete="current-password"
@@ -180,7 +178,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           {isSuccess && (
             <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
               <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>{t('admin_login.success', 'Sign-in successful! Opening admin console...')}</span>
+              <span>Authentication successful! Access granted.</span>
             </div>
           )}
 
@@ -190,7 +188,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               onClick={onClose}
               className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
-              {t('admin_login.cancel', 'Cancel')}
+              Cancel
             </button>
 
             <button
@@ -199,7 +197,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               className="flex-1 inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-bold text-xs shadow-md shadow-amber-600/20 transition-all cursor-pointer disabled:opacity-50 active:scale-98"
             >
               <Unlock className="w-3.5 h-3.5" />
-              <span>{t('admin_login.submit', 'Sign In')}</span>
+              <span>Unlock Admin Tab</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

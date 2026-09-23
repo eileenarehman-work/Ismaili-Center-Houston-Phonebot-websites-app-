@@ -374,11 +374,11 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-medium flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  Admin Signed In
+                  Admin Active
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Tour schedules, call logs, voicemails, and center notices
+                Tour schedules, verified call logs, voicemails, and center broadcasts
               </p>
             </div>
           </div>
@@ -388,7 +388,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
               type="button"
               onClick={onLogout}
               className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/80 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700/50 text-xs font-semibold transition-colors cursor-pointer"
-              title="Sign out of admin"
+              title="End admin session"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Log Out</span>
@@ -406,8 +406,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           </div>
         </div>
 
-        {/* Tab Navigation Bar */}
+        {/* Tab Navigation Navigation Bar */}
         <div className="px-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 flex items-center gap-1 overflow-x-auto no-scrollbar">
+          {/* PRIMARY TAB: DIRECT CALL TRANSCRIPTS (ZERO FABRICATION) */}
           <button
             type="button"
             onClick={() => setActiveTab('calls')}
@@ -418,7 +419,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             <PhoneCall className="w-4 h-4 text-emerald-500" />
-            <span>Call Transcripts</span>
+            <span>Direct Call Transcripts</span>
             <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono font-bold">
               {anonymousCalls.length}
             </span>
@@ -450,7 +451,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             <Layers className="w-4 h-4 text-rose-500" />
-            <span>System Speed & AI</span>
+            <span>Pipeline Inspector</span>
             <span className="px-1.5 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-[10px] font-mono font-bold">
               ~{telemetry.roundtripLatencyMs}ms
             </span>
@@ -466,7 +467,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             <Inbox className="w-4 h-4 text-purple-500" />
-            <span>Messages & Voicemails</span>
+            <span>Voicemails & Messages</span>
             <span className="px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[10px] font-mono">
               {messages.length}
             </span>
@@ -482,7 +483,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             <Compass className="w-4 h-4 text-emerald-500" />
-            <span>Manage Tours & Events</span>
+            <span>Manage Experiences</span>
             <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono font-bold">
               {experiences.length}
             </span>
@@ -498,7 +499,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             <Megaphone className="w-4 h-4 text-blue-500" />
-            <span>Notice Banner</span>
+            <span>Center Broadcast</span>
             {announcement.enabled && (
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
             )}
@@ -514,7 +515,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             <Cpu className="w-4 h-4 text-slate-500" />
-            <span>Phone Setup</span>
+            <span>Twilio & Telephony</span>
           </button>
         </div>
 
@@ -523,8 +524,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
           {/* TAB 0: DIRECT VERBATIM CALL TRANSCRIPTS & AUDIT (ZERO DATA FABRICATION) */}
           {activeTab === 'calls' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {/* Call Transcripts Banner */}
+            <div className="space-y-6">
+              {/* Executive Integrity Assurance Banner */}
               <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-sky-500/10 border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-start space-x-3.5">
                   <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 mt-0.5">
@@ -533,14 +534,14 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                        Call Transcripts & Phone Records
+                        Executive Call Transcripts & Telephony Audit
                       </h3>
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                        Accurate Call Logs
+                        Zero Data Fabrication Guarantee
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                      Every call below is a real conversation handled by the phone assistant. Calls are recorded word-for-word without saving any personal names or phone numbers to protect caller privacy.
+                      Every call listed below represents a real session taken by the Ismaili Center Houston AI Phonebot. All transcripts are recorded verbatim with strict caller anonymity (zero PII collected or stored) to provide leadership with an honest, unvarnished audit trail.
                     </p>
                   </div>
                 </div>
@@ -549,18 +550,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <button
                     type="button"
                     onClick={exportAuditReportTXT}
-                    className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
-                    title="Export text report"
+                    className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    title="Export official text report for leadership"
                   >
                     <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Export Text (.TXT)</span>
+                    <span>Export Audit (.TXT)</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={exportAuditReportJSON}
-                    className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-sky-500 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
-                    title="Export JSON data file"
+                    className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-sky-500 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    title="Export structured JSON archive"
                   >
                     <Download className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     <span>JSON</span>
@@ -1145,20 +1146,20 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             </div>
           )}
 
-          {/* TAB 2: SYSTEM SPEED & AI PIPELINE */}
+          {/* TAB 2: PIPELINE INSPECTOR OVERVIEW */}
           {activeTab === 'pipeline' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="space-y-6">
               <div className="p-5 rounded-2xl bg-gradient-to-r from-rose-950 via-slate-900 to-slate-900 text-white border border-rose-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="inline-flex items-center space-x-2 text-rose-400 text-xs font-bold uppercase tracking-wider">
                     <Layers className="w-4 h-4" />
-                    <span>Voice & AI Speed Breakdown</span>
+                    <span>5-Layer Speech-to-Speech Architecture</span>
                   </div>
                   <h3 className="text-xl font-bold font-cinzel text-white">
-                    Phone Assistant Speed & AI
+                    AI Phonebot Pipeline Inspector
                   </h3>
                   <p className="text-xs text-slate-300 max-w-xl">
-                    See response speeds for microphone audio, voice recognition, AI logic, and speech synthesis.
+                    Full visibility into Audio In/Out, Deepgram Nova-2 ASR, Gemini 2.5 Flash Core, ElevenLabs Neural TTS, and SIP Telephony trunking.
                   </p>
                 </div>
 
@@ -1168,7 +1169,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-600/30 transition-all cursor-pointer whitespace-nowrap active:scale-95"
                 >
                   <Layers className="w-4 h-4" />
-                  <span>Open Full Speed Inspector</span>
+                  <span>Open Full Inspector Modal</span>
                 </button>
               </div>
 
@@ -1255,14 +1256,14 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
           {/* TAB 3: VOICEMAILS & CALLER MESSAGES */}
           {activeTab === 'messages' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Voicemails & Caller Messages
+                    Front-Desk Voicemail & Intake Inquiries
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Messages left by callers through the automated phone assistant
+                    Messages recorded by callers through the AI Phonebot receptionist
                   </p>
                 </div>
                 <span className="text-xs font-mono text-slate-400">
@@ -1339,16 +1340,16 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
           {/* TAB 4: MANAGE EXPERIENCES & OFFICIAL TOUR REDIRECTS */}
           {activeTab === 'experiences' && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="space-y-5">
               {/* Experiences Header & Controls */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Compass className="w-4 h-4 text-emerald-500" />
-                    <span>Tours & Visitor Experiences</span>
+                    <span>Public Experiences & Architectural Tours</span>
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Update tour schedules, 11-acre gardens, and exhibitions. All tour registrations link to the official website.
+                    Update tour schedules, 11-acre gardens, and exhibitions. All tour registrations redirect to the official website.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -1371,7 +1372,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                     className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 shadow-xs transition-colors cursor-pointer active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Add Tour or Event</span>
+                    <span>Add Experience</span>
                   </button>
                 </div>
               </div>
@@ -1581,22 +1582,22 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             </div>
           )}
 
-          {/* TAB 5: NOTICE BANNER */}
+          {/* TAB 5: CENTER BROADCAST ANNOUNCEMENTS */}
           {activeTab === 'announcements' && (
-            <form onSubmit={handleSaveAnnouncement} className="space-y-5 max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <form onSubmit={handleSaveAnnouncement} className="space-y-5 max-w-2xl">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Notice Banner at Top of Site
+                  Visitor Announcement Banner Override
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Show urgent notices, holiday prayer changes, or special tour hours at the top of the website for all visitors.
+                  Broadcast urgent visitor bulletins, holiday prayer adjustments, or special tour notices across the top of the app.
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Show Banner on Website
+                    Broadcast Banner Active
                   </label>
                   <input
                     type="checkbox"
@@ -1608,14 +1609,14 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Notice Message
+                    Banner Message
                   </label>
                   <textarea
                     value={announcement.message}
                     onChange={(e) => setAnnouncement({ ...announcement, message: e.target.value })}
                     rows={3}
                     className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-amber-500"
-                    placeholder="Enter message to display at the top of the site..."
+                    placeholder="Enter broadcast message displayed to all visitors..."
                     required
                   />
                 </div>
@@ -1639,30 +1640,30 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
               <div className="flex items-center space-x-3">
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer active:scale-95"
+                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
                 >
-                  Save Notice Banner
+                  Publish Announcement
                 </button>
 
                 {announcementSaved && (
                   <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                     <Check className="w-3.5 h-3.5" />
-                    Notice banner saved successfully!
+                    Broadcast updated successfully!
                   </span>
                 )}
               </div>
             </form>
           )}
 
-          {/* TAB 6: PHONE SYSTEM SETUP */}
+          {/* TAB 6: TELEPHONY & TWILIO HUB */}
           {activeTab === 'telephony' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="space-y-6">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Phone Connection &amp; Setup
+                  Telephony Gateway & Carrier Integration
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Connect live phone lines (+1 713-522-2026) to the automated phone assistant
+                  Connect live DID phone numbers (+1 713-522-2026) to the AI speech pipeline
                 </p>
               </div>
 
@@ -1712,11 +1713,11 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
         {/* Modal Footer */}
         <div className="px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 flex items-center justify-between text-xs text-slate-500">
-          <span>Admin Signed In • Password: 298402384</span>
+          <span>Admin Session Active • Passkey: 298402384</span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer active:scale-95 transition-all"
+            className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer"
           >
             Close Console
           </button>
