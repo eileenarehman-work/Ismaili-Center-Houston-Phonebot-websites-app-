@@ -8,6 +8,7 @@ import {
   Film,
   Sparkles
 } from 'lucide-react';
+import { useScrollReveal } from '../hooks/useScrollReveal.ts';
 
 export const VideosView: React.FC = () => {
   const videoList: VideoItem[] = [
@@ -51,17 +52,20 @@ export const VideosView: React.FC = () => {
 
   const [currentVideo, setCurrentVideo] = useState<VideoItem>(videoList[0]);
 
+  // Activate scroll-triggered reveal animations
+  useScrollReveal([currentVideo]);
+
   return (
     <div className="space-y-6">
       {/* Top Title Banner */}
-      <div className="bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="scroll-reveal bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-[#007ba8] dark:text-teal-400">
               <Film className="w-3.5 h-3.5" />
               <span>Official Video Showcase</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-cinzel font-bold text-slate-900 dark:text-white mt-1">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1 tracking-tight">
               Videos &amp; Documentaries
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -73,7 +77,7 @@ export const VideosView: React.FC = () => {
             href="https://www.youtube.com/@TheIsmaili"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/70 transition-colors self-start sm:self-center"
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/70 transition-colors self-start sm:self-center cursor-pointer"
           >
             <span>The Ismaili Channel</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -81,7 +85,7 @@ export const VideosView: React.FC = () => {
         </div>
 
         {/* Main Video Cinema Player */}
-        <div className="space-y-4">
+        <div className="scroll-reveal scroll-reveal-delay-1 space-y-4">
           <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-lg border border-slate-200 dark:border-slate-800">
             <iframe
               key={currentVideo.videoId}
@@ -95,7 +99,7 @@ export const VideosView: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2">
             <div>
-              <h3 className="text-lg sm:text-xl font-bold font-cinzel text-slate-900 dark:text-white">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {currentVideo.title}
               </h3>
               <p className="text-xs text-[#007ba8] dark:text-teal-400 font-semibold mt-0.5">
@@ -109,7 +113,7 @@ export const VideosView: React.FC = () => {
         </div>
 
         {/* Gallery Selector Grid */}
-        <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="scroll-reveal scroll-reveal-delay-2 space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#007ba8]" />
             <span>Select Video to Watch</span>

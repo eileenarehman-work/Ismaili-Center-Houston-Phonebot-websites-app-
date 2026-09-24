@@ -6,6 +6,8 @@
  * with zero server dependencies or missing API keys.
  */
 
+import { getLatestSyncedData } from './syncData.ts';
+
 export interface AssistantResponse {
   reply: string;
   source: 'gemini-server' | 'gemini-client' | 'knowledge-engine';
@@ -54,6 +56,28 @@ export function getHoustonDayAndHour(): { dayName: string; hour: number; timeStr
 
 // Structured Knowledge Topics
 const KNOWLEDGE_TOPICS: KnowledgeTopic[] = [
+  // 0. OFFICIAL REAL-TIME NEWS & ANNOUNCEMENTS (Synced from the.ismaili)
+  {
+    id: 'official_news_and_updates',
+    keywords: ['news', 'update', 'updates', 'recent', 'announcement', 'announcements', 'press', 'release', 'happening', 'latest', 'bulletin'],
+    phrases: ['what is new', "what's new", 'latest news', 'recent news', 'what is happening', 'current events', 'official updates', 'press releases'],
+    title: 'Official Updates & News (the.ismaili)',
+    generateResponse: () => {
+      const data = getLatestSyncedData();
+      if (data.articles && data.articles.length > 0) {
+        const list = data.articles.slice(0, 3).map(a => `• **${a.title}** (${a.pubDate})\n${a.snippet}\n*Source: ${a.source} — [Official Article](${a.link})*`).join('\n\n');
+        return {
+          text: `### Official Real-Time Announcements (the.ismaili)\n\n*Verified data synchronized from official Ismaili public feeds (${data.lastSyncedAt}):*\n\n${list}\n\n**Public Visiting Hours**: Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM – 4:00 PM CT (11-acre gardens open at 8:00 AM CT). Guided architectural tours and entry are 100% free of charge!`,
+          followUps: ['How do I book a free tour?', 'What are the prayer times?', 'Tell me about the gardens'],
+        };
+      }
+      return {
+        text: `### Official Updates & Visiting Information\n\nThe Ismaili Center Houston welcomes visitors on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time. Guided architectural tours and admission are completely free of charge.`,
+        followUps: ['How do I book a tour?', 'What are the visitor hours?', 'Where is parking located?'],
+      };
+    },
+  },
+
   // 1. VISITOR HOURS & DAYS
   {
     id: 'hours_and_schedule',

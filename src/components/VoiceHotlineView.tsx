@@ -58,6 +58,7 @@ import { saveAnonymousCall } from '../utils/callLogStorage.ts';
 import { PhonebotPipelineInspector } from './PhonebotPipelineInspector.tsx';
 import { TourBookingModal, TakeMessageModal, WarmTransferModal } from './PhonebotTaskModals.tsx';
 import { logLifespanEvent } from '../utils/userHistoryStorage.ts';
+import { useScrollReveal } from '../hooks/useScrollReveal.ts';
 
 interface KeypadItem {
   digit: string;
@@ -85,6 +86,10 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
   // Voice Customization (UK Male / US Female / System) & Accessible Speech Speed
   const [selectedVoiceType, setSelectedVoiceType] = useState<'uk-male' | 'us-female' | 'system'>('uk-male');
   const [speechRate, setSpeechRate] = useState<number>(0.92); // 0.92 rate: relaxed, crystal-clear for immigrants & seniors
+  const [mobileLayoutMode, setMobileLayoutMode] = useState<'side-by-side' | 'stacked'>('stacked');
+
+  // Activate scroll-triggered reveal animations
+  useScrollReveal();
 
   // Pipeline & Telemetry State
   const [telemetry, setTelemetry] = useState<TelephonyPipelineTelemetry>({
@@ -578,17 +583,19 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
     });
   };
 
-  // Handle keypad digit presses with genuine DTMF audio
+  // Handle keypad digit presses with genuine DTMF audio - works seamlessly anytime
   const handleKeypadPress = (digit: string, responseText: string, menuTitle: string, intentLabel: string) => {
     telecomAudio.playDTMF(digit);
 
-    if (callState !== 'connected' && callState !== 'on_hold') {
-      return;
-    }
-
-    if (callState === 'on_hold') {
+    // If call is idle or ended, automatically connect so user can use keypad and voice together
+    if (callState === 'idle' || callState === 'ended') {
+      setCallState('connected');
+      setStatusText(`Active • Keypad [${digit}]`);
+      telecomAudio.playLineConnectClick();
+    } else if (callState === 'on_hold') {
       telecomAudio.stopHoldChime();
       setCallState('connected');
+      setStatusText(`Active • Resumed via [${digit}]`);
     }
 
     setTelemetry((prev) => ({
@@ -746,37 +753,68 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-7 pb-12">
-      {/* Top Header & Phonebot Pipeline Quick-Inspector Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div className="space-y-1.5">
-          <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
-            <Radio className="w-3.5 h-3.5 animate-pulse" />
-            <span>Automated AI Receptionist & Telephony Agent</span>
+    <div className="w-full space-y-2 sm:space-y-2.5 pb-1">
+      {/* Top Header Bar - Compact, High Legibility, Viewport-Optimized */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+        <div className="flex items-center space-x-2">
+          <div className="w-7 h-7 rounded-lg bg-rose-500/10 dark:bg-rose-950/40 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+            <Radio className="w-4 h-4 animate-pulse" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-cinzel font-bold text-slate-900 dark:text-white">
-            Ismaili Center Houston AI Phonebot
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-            Speech-to-Speech natural conversational voice agent with instant inquiry resolution, tour bookings, message intake, and warm staff handoff.
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
+                Ismaili Center AI Phonebot
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
+                Live Speech &amp; Keypad
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+              Speech-to-speech voice helper &amp; keypad directory for hours, prayers, tours, and parking
+            </p>
+          </div>
         </div>
 
-        {/* Top Action Buttons: Pipeline Inspector (Admin Only) & Task Execution */}
-        <div className="flex items-center gap-2.5 flex-wrap">
+        {/* Top Action Buttons & Layout Selector */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Layout Mode Selector (Stacked vs 3-Columns) */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700">
+            <button
+              type="button"
+              onClick={() => setMobileLayoutMode('stacked')}
+              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                mobileLayoutMode === 'stacked'
+                  ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-300 shadow-xs font-bold'
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}
+              title="Stacked view (Phone & Keypad on top, Live Convo on bottom)"
+            >
+              Stacked
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileLayoutMode('side-by-side')}
+              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                mobileLayoutMode === 'side-by-side'
+                  ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-300 shadow-xs font-bold'
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}
+              title="3-Column Side-by-Side view on desktop"
+            >
+              3 Columns
+            </button>
+          </div>
+
           {isAdmin && (
             <button
               type="button"
               onClick={() => setIsInspectorOpen(true)}
-              className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 hover:bg-amber-500/20 dark:hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold border border-amber-500/30 transition-all cursor-pointer shadow-xs active:scale-95"
+              className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-200 text-xs font-bold border border-amber-500/30 transition-all cursor-pointer shadow-xs active:scale-95"
               title="Admin Mode: Inspect 5-Layer STT/LLM/TTS/Telephony Architecture"
             >
               <Layers className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Pipeline Inspector</span>
-              <span className="px-1.5 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900/60 text-[10px] font-mono font-bold text-amber-800 dark:text-amber-200">
-                Admin
-              </span>
-              <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-300">
+              <span className="hidden sm:inline">Inspector</span>
+              <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
                 ~{telemetry.roundtripLatencyMs}ms
               </span>
             </button>
@@ -785,240 +823,149 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
           <button
             type="button"
             onClick={() => setIsBookingModalOpen(true)}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
-            title="Redirects to the official Ismaili Center tour registration portal"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
+            title="Open official Ismaili Center tour registration portal"
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>Official Tour Portal</span>
-            <ExternalLink className="w-3 h-3 ml-0.5" />
+            <span>Tours Portal</span>
+            <ExternalLink className="w-3 h-3" />
           </button>
         </div>
       </div>
 
-      {/* Telephone Console & Touch-Tone Keypad (Spacious Two-Column Layout) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Column: Virtual Phone Console (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col justify-between p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-xl border border-slate-800 space-y-6">
-          
-          {/* Phone Top Status Header */}
-          <div className="w-full flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3 font-mono">
-            <span className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${
-                callState === 'connected' 
-                  ? 'bg-emerald-400 animate-pulse' 
-                  : callState === 'on_hold' 
-                  ? 'bg-amber-400 animate-bounce' 
-                  : callState === 'ringing' 
-                  ? 'bg-amber-400 animate-ping' 
-                  : 'bg-slate-500'
-              }`} />
-              <span className="font-semibold text-slate-300 tracking-wider">
-                {callState === 'connected' ? 'CALL ACTIVE' : callState === 'on_hold' ? 'ON HOLD' : callState === 'ringing' ? 'CONNECTING...' : 'STANDBY'}
-              </span>
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-400 font-sans font-bold bg-slate-800/60 px-2 py-0.5 rounded">
-                {telemetry.telephonyCodec}
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 font-bold">
-                {callState === 'connected' || callState === 'on_hold' ? formatTimer(callSeconds) : '00:00'}
-              </span>
-            </div>
-          </div>
-
-          {/* Caller Identification Centerpiece */}
-          <div className="text-center space-y-2 py-1">
-            <span className="inline-block px-3 py-1 rounded-full text-[11px] font-bold text-rose-400 uppercase tracking-widest bg-rose-950/40 border border-rose-800/50">
-              Automated Voice Helper (Not a Human)
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-cinzel">
-              Ismaili Center Houston
-            </h3>
-            <p className="text-xs text-slate-300 font-medium">
-              Speech-to-Speech Phonebot • Information Line: +1 (713) 522-2026
-            </p>
-            
-            {/* Dynamic Status Text */}
-            <div className="pt-1.5">
-              <span className="inline-block px-4 py-1.5 rounded-full text-xs font-medium bg-slate-800/90 text-slate-200 border border-slate-700">
-                {statusText}
-              </span>
-            </div>
-          </div>
-
-          {/* Reactive Telephony Sound Visualizer */}
-          <div className="w-full py-1 flex items-center justify-center">
-            <div className="flex items-center space-x-2 h-14 px-8 py-3 rounded-2xl bg-black/50 border border-slate-800">
-              {[18, 32, 44, 26, 48, 38, 22, 42, 34, 46, 28, 16].map((height, i) => {
-                const isAnimated = (callState === 'connected' && operatorSpeaking) || callState === 'ringing' || callState === 'on_hold';
-                return (
-                  <div
-                    key={i}
-                    className={`w-1.5 rounded-full transition-all duration-150 ${
-                      callState === 'on_hold'
-                        ? 'bg-amber-400 animate-pulse'
-                        : isAnimated 
-                        ? 'bg-rose-500 animate-pulse' 
-                        : callState === 'connected'
-                        ? 'bg-emerald-500/80'
-                        : 'bg-slate-700'
-                    }`}
-                    style={{
-                      height: isAnimated ? `${Math.max(8, (height * ((i % 3) + 1)) % 40)}px` : '6px',
-                      animationDelay: `${(i * 0.08).toFixed(2)}s`,
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Telephony Voice & Audio Controls Bar */}
-          <div className="w-full bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-            {/* Voice Persona Selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400 font-medium">Voice:</span>
-              <select
-                value={selectedVoiceType}
-                onChange={(e) => setSelectedVoiceType(e.target.value as any)}
-                className="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none focus:border-rose-500"
-              >
-                <option value="uk-male">UK English Male (Polite)</option>
-                <option value="us-female">US English Female (Friendly)</option>
-                <option value="system">Device Default</option>
-              </select>
-            </div>
-
-            {/* Accessible Speed for Immigrants / Seniors */}
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400 font-medium">Pace:</span>
-              <select
-                value={speechRate}
-                onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                className="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-rose-500"
-              >
-                <option value={0.85}>0.85x (Clear & Gentle)</option>
-                <option value={0.92}>0.92x (Standard Phone)</option>
-                <option value={1.0}>1.0x (Normal)</option>
-                <option value={1.15}>1.15x (Brisk)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Call State Main Controls */}
-          <div className="w-full pt-1 flex flex-col items-center justify-center space-y-4">
-            {callState === 'idle' || callState === 'ended' ? (
-              <div className="w-full flex flex-col items-center space-y-2">
-                <button
-                  type="button"
-                  onClick={startCall}
-                  className="w-full max-w-sm py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base shadow-lg shadow-emerald-950/50 transition-all flex items-center justify-center space-x-3 active:scale-95 cursor-pointer"
-                >
-                  <Phone className="w-5 h-5 fill-current" />
-                  <span>Start AI Voice Helper</span>
-                </button>
-                <p className="text-xs text-slate-400 text-center">
-                  Tap above to begin speaking or pressing keypad buttons
-                </p>
+      {/* Main Console Layout */}
+      {mobileLayoutMode === 'stacked' ? (
+        <div className="space-y-3 sm:space-y-4 w-full">
+          {/* Top Row: Phone Console & Keypad side-by-side on desktop/horizontal */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch w-full">
+            {/* Top-Left: Virtual Phone Console (Phone Button & Voice Controls) */}
+            <div className="flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-lg border border-slate-800 space-y-2.5 min-h-[470px]">
+              {/* Top Status Header */}
+              <div className="w-full flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-1.5 font-mono">
+                <span className="flex items-center gap-1.5">
+                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                    callState === 'connected' 
+                      ? 'bg-emerald-400 animate-pulse' 
+                      : callState === 'on_hold' 
+                      ? 'bg-amber-400 animate-bounce' 
+                      : callState === 'ringing' 
+                      ? 'bg-amber-400 animate-ping' 
+                      : 'bg-slate-500'
+                  }`} />
+                  <span className="font-bold text-slate-200 tracking-wider text-[11px] sm:text-xs">
+                    {callState === 'connected' ? 'CALL ACTIVE' : callState === 'on_hold' ? 'ON HOLD' : callState === 'ringing' ? 'CONNECTING...' : 'STANDBY'}
+                  </span>
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-slate-400 font-sans font-bold bg-slate-800/80 px-1.5 py-0.5 rounded hidden sm:inline">
+                    {telemetry.telephonyCodec}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-200 font-bold text-xs">
+                    {callState === 'connected' || callState === 'on_hold' ? formatTimer(callSeconds) : '00:00'}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div className="w-full flex flex-col items-center space-y-4">
-                <div className="flex items-center justify-center gap-2.5 flex-wrap">
-                  {/* Hold / Resume Call button */}
-                  <button
-                    type="button"
-                    onClick={toggleHold}
-                    className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                      callState === 'on_hold'
-                        ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400 animate-pulse'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-                    }`}
-                    title={callState === 'on_hold' ? 'Resume Call' : 'Place on Hold with Music'}
-                  >
-                    {callState === 'on_hold' ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4" />}
-                    <span>{callState === 'on_hold' ? 'Resume Call' : 'Hold Call'}</span>
-                  </button>
 
-                  {/* Push to talk / Mic button */}
-                  <button
-                    type="button"
-                    onClick={() => setIsMicActive(!isMicActive)}
-                    className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                      isMicActive
-                        ? 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border-emerald-500/40'
-                        : 'bg-rose-950/60 hover:bg-rose-900/60 text-rose-400 border-rose-800'
-                    }`}
-                    title={isMicActive ? 'Mute Microphone' : 'Unmute Microphone'}
-                  >
-                    {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-                  </button>
+              {/* Caller Identification Centerpiece */}
+              <div className="text-center space-y-1 py-0.5">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold text-rose-400 uppercase tracking-wider bg-rose-950/40 border border-rose-800/50">
+                  Automated Voice Line
+                </span>
+                <h3 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
+                  Ismaili Center Houston
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-300 font-medium">
+                  Phone: +1 (713) 522-2026
+                </p>
+                
+                {/* Dynamic Status Text */}
+                <div className="pt-0.5">
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-slate-800/90 text-slate-200 border border-slate-700 max-w-full truncate">
+                    {statusText}
+                  </span>
+                </div>
+              </div>
 
-                  {/* Speaker Mute button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const next = !isMuted;
-                      setIsMuted(next);
-                      if (next && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                        window.speechSynthesis.cancel();
-                      }
-                    }}
-                    className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                      !isMuted
-                        ? 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
-                        : 'bg-rose-950/60 hover:bg-rose-900/60 text-rose-400 border-rose-800'
-                    }`}
-                    title={isMuted ? 'Turn Sound On' : 'Mute Assistant Sound'}
-                  >
-                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  </button>
+              {/* Reactive Sound Waveform Visualizer */}
+              <div className="w-full bg-slate-950/90 rounded-xl p-2 border border-slate-800 flex items-center justify-center space-x-1 sm:space-x-1.5 h-8 sm:h-9">
+                {[40, 65, 85, 95, 70, 50, 80, 100, 60, 45, 75, 55].map((h, i) => {
+                  const isAnimated = (operatorSpeaking || isListening) && (callState === 'connected' || callState === 'ringing');
+                  return (
+                    <span
+                      key={i}
+                      className={`w-1 sm:w-1.5 rounded-full transition-all duration-150 ${
+                        operatorSpeaking 
+                          ? 'bg-rose-500 animate-pulse' 
+                          : isListening 
+                          ? 'bg-emerald-400 animate-pulse' 
+                          : callState === 'on_hold'
+                          ? 'bg-amber-400 animate-pulse'
+                          : 'bg-slate-700'
+                      }`}
+                      style={{
+                        height: isAnimated ? `${Math.max(6, (h * ((i % 3) + 1.2)) / 4.5)}px` : '4px',
+                        animationDelay: `${(i * 0.08).toFixed(2)}s`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
 
-                  {/* Warm Transfer to Human Staff */}
-                  <button
-                    type="button"
-                    onClick={() => setIsTransferModalOpen(true)}
-                    className="px-3.5 py-2.5 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white text-xs font-bold border border-emerald-500/50 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
-                    title="Warm Transfer to Human Line"
+              {/* Accessible Pace & Voice Selector */}
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
+                  <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Voice:</span>
+                  <select
+                    value={selectedVoiceType}
+                    onChange={(e) => setSelectedVoiceType(e.target.value as any)}
+                    className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
                   >
-                    <PhoneForwarded className="w-4 h-4" />
-                    <span>Transfer to Staff</span>
-                  </button>
-
-                  {/* End Call Button */}
-                  <button
-                    type="button"
-                    onClick={endCall}
-                    className="py-2.5 px-5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
-                  >
-                    <PhoneOff className="w-4 h-4 fill-current" />
-                    <span>Hang Up</span>
-                  </button>
+                    <option value="uk-male" className="bg-slate-900">UK Male</option>
+                    <option value="us-female" className="bg-slate-900">US Female</option>
+                    <option value="system" className="bg-slate-900">Device</option>
+                  </select>
                 </div>
 
-                {/* Two-Way Voice Communication Section */}
-                <div className="pt-3 border-t border-slate-800 w-full space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 text-rose-300 text-xs font-semibold">
-                      <Sparkles className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-                      <span>Live Voice Helper</span>
-                    </div>
-                    <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      {callState === 'on_hold' ? 'PAUSED ON HOLD' : 'MIC ACTIVE'}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
+                  <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Pace:</span>
+                  <select
+                    value={speechRate}
+                    onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                    className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
+                  >
+                    <option value={0.85} className="bg-slate-900">0.85x Gentle</option>
+                    <option value={0.92} className="bg-slate-900">0.92x Normal</option>
+                    <option value={1.0} className="bg-slate-900">1.0x Fast</option>
+                  </select>
+                </div>
+              </div>
 
-                  {/* Interactive Voice Talk Station */}
-                  <div className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5">
-                    {/* Live speech feedback if hearing words */}
+              {/* Primary Action Section: Big Phone Call Button / Voice Station */}
+              <div className="w-full flex flex-col justify-end space-y-1.5">
+                {callState === 'idle' || callState === 'ended' ? (
+                  <div className="w-full space-y-1 py-1">
+                    <button
+                      type="button"
+                      onClick={startCall}
+                      className="w-full py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base sm:text-lg shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                    >
+                      <Phone className="w-5 h-5 fill-current shrink-0" />
+                      <span>Start AI Voice Helper</span>
+                    </button>
+                    <p className="text-[11px] text-slate-400 text-center">
+                      Tap to speak or press any number on keypad
+                    </p>
+                  </div>
+                ) : (
+                  <div className="w-full space-y-1.5">
+                    {/* Live Speech Feedback */}
                     {userInterimSpeech && (
-                      <div className="w-full text-center px-4 py-2 rounded-xl bg-rose-950/50 border border-rose-800 text-rose-200 text-xs italic animate-pulse">
+                      <div className="w-full text-center px-2 py-1 rounded-lg bg-rose-950/60 border border-rose-800 text-rose-200 text-xs italic animate-pulse truncate">
                         Hearing: "{userInterimSpeech}..."
                       </div>
                     )}
 
-                    {/* Talk to Phonebot Primary Button */}
+                    {/* Primary Prominent Talk Button */}
                     <button
                       type="button"
                       disabled={callState === 'on_hold'}
@@ -1034,273 +981,811 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
                           startListening();
                         }
                       }}
-                      className={`w-full py-3.5 px-5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center space-x-2.5 cursor-pointer shadow-md active:scale-95 disabled:opacity-50 ${
+                      className={`w-full py-2.5 sm:py-3 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-md active:scale-95 disabled:opacity-50 ${
                         operatorSpeaking
-                          ? 'bg-amber-600/30 text-amber-300 border border-amber-500/40 hover:bg-amber-600/40'
+                          ? 'bg-amber-600/30 text-amber-300 border-2 border-amber-500/50 hover:bg-amber-600/40'
                           : isListening
-                          ? 'bg-rose-600 text-white border border-rose-500 animate-pulse shadow-rose-900/50'
+                          ? 'bg-rose-600 text-white border-2 border-rose-400 animate-pulse shadow-rose-900/50'
                           : isProcessingVoice
                           ? 'bg-slate-800 text-slate-300 border border-slate-700'
-                          : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 shadow-emerald-950/40'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-400'
                       }`}
                     >
                       {operatorSpeaking ? (
                         <>
-                          <Volume2 className="w-4 h-4 animate-bounce" />
-                          <span>AI is Speaking (Tap to Interrupt & Talk)</span>
+                          <Volume2 className="w-4 h-4 animate-bounce shrink-0" />
+                          <span>Speaking (Tap Interrupt)</span>
                         </>
                       ) : isListening ? (
                         <>
-                          <Mic className="w-4 h-4 animate-pulse text-white" />
-                          <span>Listening to your voice... Speak now</span>
+                          <Mic className="w-4 h-4 animate-pulse text-white shrink-0" />
+                          <span>Listening... Speak Now</span>
                         </>
                       ) : isProcessingVoice ? (
                         <>
-                          <Sparkles className="w-4 h-4 animate-spin text-rose-400" />
-                          <span>AI is thinking...</span>
+                          <Sparkles className="w-4 h-4 animate-spin text-rose-400 shrink-0" />
+                          <span>AI Thinking...</span>
                         </>
                       ) : (
                         <>
-                          <Mic className="w-4 h-4" />
-                          <span>Tap to Talk to AI Phonebot</span>
+                          <Mic className="w-4 h-4 shrink-0" />
+                          <span>Tap to Speak Voice</span>
                         </>
                       )}
                     </button>
 
-                    <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-                      Speak normally into your microphone. The AI helper will listen and reply by voice.
-                    </p>
-                  </div>
+                    {/* In-Call Controls Row: Hold, Mic, Speaker, Transfer, Hang Up */}
+                    <div className="grid grid-cols-5 gap-1">
+                      <button
+                        type="button"
+                        onClick={toggleHold}
+                        className={`py-1.5 px-0.5 rounded-lg border text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                          callState === 'on_hold'
+                            ? 'bg-amber-500 text-slate-950 border-amber-400 animate-pulse'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                        }`}
+                        title={callState === 'on_hold' ? 'Resume Call' : 'Hold Call'}
+                      >
+                        {callState === 'on_hold' ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
+                        <span className="text-[9px]">{callState === 'on_hold' ? 'Resume' : 'Hold'}</span>
+                      </button>
 
-                  {/* Spoken Voice Shortcuts */}
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
-                      Or tap a quick question:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        'What are the visiting hours?',
-                        'Book an architectural tour',
-                        'What time is evening prayer?',
-                        'Where is the free parking?',
-                        'What is the dress code?',
-                        'Leave a message for staff',
-                      ].map((prompt) => (
-                        <button
-                          key={prompt}
-                          type="button"
-                          onClick={() => {
-                            addTranscriptEntry('You (Voice Prompt)', prompt);
-                            handleUserVoiceInput(prompt);
-                          }}
-                          disabled={operatorSpeaking || isProcessingVoice || callState === 'on_hold'}
-                          className="px-2.5 py-1 rounded-lg text-[11px] bg-slate-800/90 hover:bg-rose-950/60 text-slate-300 hover:text-rose-200 border border-slate-700/80 hover:border-rose-500/60 transition-all cursor-pointer text-left active:scale-95 disabled:opacity-50"
-                        >
-                          "{prompt}"
-                        </button>
-                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setIsMicActive(!isMicActive)}
+                        className={`py-1.5 px-0.5 rounded-lg border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                          isMicActive
+                            ? 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border-emerald-500/40'
+                            : 'bg-rose-950/60 text-rose-400 border-rose-800'
+                        }`}
+                        title={isMicActive ? 'Mute Mic' : 'Unmute Mic'}
+                      >
+                        {isMicActive ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
+                        <span className="text-[9px]">{isMicActive ? 'Mic On' : 'Mic Off'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !isMuted;
+                          setIsMuted(next);
+                          if (next && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                            window.speechSynthesis.cancel();
+                          }
+                        }}
+                        className={`py-1.5 px-0.5 rounded-lg border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                          !isMuted
+                            ? 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
+                            : 'bg-rose-950/60 text-rose-400 border-rose-800'
+                        }`}
+                        title={isMuted ? 'Turn Sound On' : 'Mute Sound'}
+                      >
+                        {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                        <span className="text-[9px]">{isMuted ? 'Muted' : 'Sound'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsTransferModalOpen(true)}
+                        className="py-1.5 px-0.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white text-xs font-bold border border-emerald-500/50 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95"
+                        title="Transfer to Human Staff"
+                      >
+                        <PhoneForwarded className="w-3.5 h-3.5" />
+                        <span className="text-[9px]">Staff</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={endCall}
+                        className="py-1.5 px-0.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer"
+                        title="End Call"
+                      >
+                        <PhoneOff className="w-3.5 h-3.5 fill-current" />
+                        <span className="text-[9px]">End</span>
+                      </button>
                     </div>
+                  </div>
+                )}
+
+                {/* Quick Spoken Topics Chips */}
+                <div className="pt-0.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Quick Spoken Topics:
+                  </span>
+                  <div className="grid grid-cols-2 gap-1">
+                    {[
+                      'What are visiting hours?',
+                      'What time is evening prayer?',
+                      'Book an architectural tour',
+                      'Where is free parking?',
+                    ].map((prompt) => (
+                      <button
+                        key={prompt}
+                        type="button"
+                        onClick={() => {
+                          addTranscriptEntry('You (Voice Prompt)', prompt);
+                          handleUserVoiceInput(prompt);
+                        }}
+                        disabled={operatorSpeaking || isProcessingVoice || callState === 'on_hold'}
+                        className="p-1 rounded-md text-[11px] bg-slate-800/80 hover:bg-rose-950/60 text-slate-200 hover:text-rose-200 border border-slate-700 text-left transition-all truncate active:scale-95 disabled:opacity-50 cursor-pointer"
+                        title={prompt}
+                      >
+                        "{prompt}"
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* Top-Right: Keypad & Directory */}
+            <div className="flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 min-h-[470px]">
+              {/* Keypad Header */}
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Grid3X3 className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Keypad</span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Tap numbers to trigger answers anytime
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold uppercase tracking-wider">
+                  READY
+                </span>
+              </div>
+
+              {/* Dialpad Matrix with Large Fonts */}
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 flex-1 items-center py-0.5">
+                {keypadItems.map((item) => (
+                  <button
+                    key={item.digit}
+                    type="button"
+                    onClick={item.handler}
+                    className="flex flex-col items-center justify-center py-2 sm:py-2.5 px-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500 text-slate-800 dark:text-slate-100 shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95 group"
+                    title={`${item.label} (Keypad [${item.digit}])`}
+                  >
+                    <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-mono group-hover:text-rose-600 dark:group-hover:text-rose-400 text-slate-900 dark:text-white leading-none">
+                      {item.digit}
+                    </span>
+                    <span className="text-[10px] sm:text-xs font-bold font-mono text-slate-500 dark:text-slate-400 tracking-wider mt-0.5">
+                      {item.sub}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Quick Tasks: Official Tours & Leave Message */}
+              <div className="grid grid-cols-2 gap-1.5 pt-0.5 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-left space-y-0.5 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center gap-1 text-xs font-bold text-slate-900 dark:text-white">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">Official Tours</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Tour registration portal
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsMessageModalOpen(true)}
+                  className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 hover:border-blue-500 text-left space-y-0.5 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center gap-1 text-xs font-bold text-slate-900 dark:text-white">
+                    <MessageSquare className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span className="truncate">Leave Message</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Staff voicemail
+                  </p>
+                </button>
+              </div>
+
+              {/* Keypad Directory Guide firmly bounded */}
+              <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-0.5">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-slate-600 dark:text-slate-300">
+                  <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[1]</strong> Talk AI</span>
+                  <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[2]</strong> Hours</span>
+                  <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[3]</strong> Prayers</span>
+                  <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[4]</strong> Tours</span>
+                  <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[5]</strong> Parking</span>
+                  <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[6]</strong> Gardens</span>
+                  <span className="col-span-2 text-amber-700 dark:text-amber-300 pt-0.5 border-t border-slate-200 dark:border-slate-700 font-semibold text-[10px] sm:text-[11px]">
+                    <strong className="font-mono text-xs text-amber-800 dark:text-amber-200">[0]</strong> Human Staff (+1 713-522-2026)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Row: Real-Time Live Conversation Stream (Full Width on Bottom) */}
+          <div className="flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 sm:p-5 shadow-sm space-y-2.5 w-full min-h-[260px]">
+            {/* Transcript Header */}
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <div className="flex items-center space-x-2">
+                <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center text-rose-600 shrink-0">
+                  <FileText className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                    Live Conversation Stream
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Real-time speech &amp; keypad transcript
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                  Houston CT
+                </span>
+                {transcript.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setTranscript([])}
+                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-2 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Clear conversation stream"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Transcript Scrollable Area */}
+            <div 
+              ref={transcriptBottomRef}
+              className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[300px] min-h-[140px]"
+            >
+              {transcript.length === 0 ? (
+                <div className="h-full min-h-[140px] flex flex-col items-center justify-center text-center p-4 space-y-2">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                    <Radio className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    No Active Conversation Yet
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
+                    Press <strong>"Start AI Voice Helper"</strong> or any keypad number to begin. Spoken words and responses will appear here in real time.
+                  </p>
+                </div>
+              ) : (
+                transcript.map((entry, idx) => {
+                  const isUser = entry.speaker.startsWith('You');
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-2.5 sm:p-3 rounded-xl border transition-all ${
+                        isUser
+                          ? 'bg-rose-50/95 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60 text-rose-950 dark:text-rose-100 ml-3 sm:ml-8'
+                          : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 mr-3 sm:mr-8'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-semibold mb-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className={isUser ? 'text-rose-700 dark:text-rose-400 font-bold text-xs sm:text-sm' : 'text-slate-900 dark:text-white font-bold text-xs sm:text-sm'}>
+                            {entry.speaker}
+                          </span>
+                          {entry.intent && (
+                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                              {entry.intent}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-mono font-normal">
+                          {entry.time}
+                        </span>
+                      </div>
+                      <p className="leading-relaxed whitespace-pre-wrap text-xs sm:text-sm font-normal">{entry.text}</p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Bottom Transcript Footer Tag */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                Verified Ismaili Center Houston Data
+              </span>
+              <span className="font-mono text-[10px]">AI Phonebot 2.4</span>
+            </div>
           </div>
         </div>
-
-        {/* Right Column: Touch-Tone Telephone Keypad & Reception Actions (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div className="border-b border-slate-100 dark:border-slate-800 pb-4 flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Grid3X3 className="w-4 h-4 text-rose-600" />
-                <span>Touch-Tone Keypad</span>
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Press any number below to hear information
-              </p>
+      ) : (
+        /* Alternative 3 Columns Side-by-Side Layout */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 items-stretch w-full">
+          {/* Column 1: Virtual Phone Console */}
+          <div className="col-span-1 md:col-span-1 lg:col-span-4 flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-lg border border-slate-800 space-y-2.5 min-h-[470px]">
+            {/* Top Status Header */}
+            <div className="w-full flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-1.5 font-mono">
+              <span className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                  callState === 'connected' 
+                    ? 'bg-emerald-400 animate-pulse' 
+                    : callState === 'on_hold' 
+                    ? 'bg-amber-400 animate-bounce' 
+                    : callState === 'ringing' 
+                    ? 'bg-amber-400 animate-ping' 
+                    : 'bg-slate-500'
+                }`} />
+                <span className="font-bold text-slate-200 tracking-wider text-[11px] sm:text-xs">
+                  {callState === 'connected' ? 'CALL ACTIVE' : callState === 'on_hold' ? 'ON HOLD' : callState === 'ringing' ? 'CONNECTING...' : 'STANDBY'}
+                </span>
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-slate-400 font-sans font-bold bg-slate-800/80 px-1.5 py-0.5 rounded hidden sm:inline">
+                  {telemetry.telephonyCodec}
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-200 font-bold text-xs">
+                  {callState === 'connected' || callState === 'on_hold' ? formatTimer(callSeconds) : '00:00'}
+                </span>
+              </div>
             </div>
-            <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold uppercase tracking-wider">
-              KEYPAD READY
-            </span>
+
+            {/* Caller Identification Centerpiece */}
+            <div className="text-center space-y-1 py-0.5">
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold text-rose-400 uppercase tracking-wider bg-rose-950/40 border border-rose-800/50">
+                Automated Voice Line
+              </span>
+              <h3 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
+                Ismaili Center Houston
+              </h3>
+              <p className="text-[11px] sm:text-xs text-slate-300 font-medium">
+                Phone: +1 (713) 522-2026
+              </p>
+              
+              <div className="pt-0.5">
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-slate-800/90 text-slate-200 border border-slate-700 max-w-full truncate">
+                  {statusText}
+                </span>
+              </div>
+            </div>
+
+            {/* Reactive Sound Waveform Visualizer */}
+            <div className="w-full bg-slate-950/90 rounded-xl p-2 border border-slate-800 flex items-center justify-center space-x-1 sm:space-x-1.5 h-8 sm:h-9">
+              {[40, 65, 85, 95, 70, 50, 80, 100, 60, 45, 75, 55].map((h, i) => {
+                const isAnimated = (operatorSpeaking || isListening) && (callState === 'connected' || callState === 'ringing');
+                return (
+                  <span
+                    key={i}
+                    className={`w-1 sm:w-1.5 rounded-full transition-all duration-150 ${
+                      operatorSpeaking 
+                        ? 'bg-rose-500 animate-pulse' 
+                        : isListening 
+                        ? 'bg-emerald-400 animate-pulse' 
+                        : callState === 'on_hold'
+                        ? 'bg-amber-400 animate-pulse'
+                        : 'bg-slate-700'
+                    }`}
+                    style={{
+                      height: isAnimated ? `${Math.max(6, (h * ((i % 3) + 1.2)) / 4.5)}px` : '4px',
+                      animationDelay: `${(i * 0.08).toFixed(2)}s`,
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Accessible Pace & Voice Selector */}
+            <div className="grid grid-cols-2 gap-1.5 text-xs">
+              <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
+                <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Voice:</span>
+                <select
+                  value={selectedVoiceType}
+                  onChange={(e) => setSelectedVoiceType(e.target.value as any)}
+                  className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
+                >
+                  <option value="uk-male" className="bg-slate-900">UK Male</option>
+                  <option value="us-female" className="bg-slate-900">US Female</option>
+                  <option value="system" className="bg-slate-900">Device</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
+                <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Pace:</span>
+                <select
+                  value={speechRate}
+                  onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                  className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
+                >
+                  <option value={0.85} className="bg-slate-900">0.85x Gentle</option>
+                  <option value={0.92} className="bg-slate-900">0.92x Normal</option>
+                  <option value={1.0} className="bg-slate-900">1.0x Fast</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Primary Action Section */}
+            <div className="w-full flex flex-col justify-end space-y-1.5">
+              {callState === 'idle' || callState === 'ended' ? (
+                <div className="w-full space-y-1 py-1">
+                  <button
+                    type="button"
+                    onClick={startCall}
+                    className="w-full py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base sm:text-lg shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                  >
+                    <Phone className="w-5 h-5 fill-current shrink-0" />
+                    <span>Start AI Voice Helper</span>
+                  </button>
+                  <p className="text-[11px] text-slate-400 text-center">
+                    Tap to speak or press any number on keypad
+                  </p>
+                </div>
+              ) : (
+                <div className="w-full space-y-1.5">
+                  {userInterimSpeech && (
+                    <div className="w-full text-center px-2 py-1 rounded-lg bg-rose-950/60 border border-rose-800 text-rose-200 text-xs italic animate-pulse truncate">
+                      Hearing: "{userInterimSpeech}..."
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    disabled={callState === 'on_hold'}
+                    onClick={() => {
+                      if (operatorSpeaking) {
+                        window.speechSynthesis.cancel();
+                        setOperatorSpeaking(false);
+                      }
+                      if (isListening) {
+                        stopListening();
+                        setStatusText('Voice paused • Tap to talk again');
+                      } else {
+                        startListening();
+                      }
+                    }}
+                    className={`w-full py-2.5 sm:py-3 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-md active:scale-95 disabled:opacity-50 ${
+                      operatorSpeaking
+                        ? 'bg-amber-600/30 text-amber-300 border-2 border-amber-500/50 hover:bg-amber-600/40'
+                        : isListening
+                        ? 'bg-rose-600 text-white border-2 border-rose-400 animate-pulse shadow-rose-900/50'
+                        : isProcessingVoice
+                        ? 'bg-slate-800 text-slate-300 border border-slate-700'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-400'
+                    }`}
+                  >
+                    {operatorSpeaking ? (
+                      <>
+                        <Volume2 className="w-4 h-4 animate-bounce shrink-0" />
+                        <span>Speaking (Tap Interrupt)</span>
+                      </>
+                    ) : isListening ? (
+                      <>
+                        <Mic className="w-4 h-4 animate-pulse text-white shrink-0" />
+                        <span>Listening... Speak Now</span>
+                      </>
+                    ) : isProcessingVoice ? (
+                      <>
+                        <Sparkles className="w-4 h-4 animate-spin text-rose-400 shrink-0" />
+                        <span>AI Thinking...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-4 h-4 shrink-0" />
+                        <span>Tap to Speak Voice</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="grid grid-cols-5 gap-1">
+                    <button
+                      type="button"
+                      onClick={toggleHold}
+                      className={`py-1.5 px-0.5 rounded-lg border text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                        callState === 'on_hold'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 animate-pulse'
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                      }`}
+                      title={callState === 'on_hold' ? 'Resume Call' : 'Hold Call'}
+                    >
+                      {callState === 'on_hold' ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
+                      <span className="text-[9px]">{callState === 'on_hold' ? 'Resume' : 'Hold'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsMicActive(!isMicActive)}
+                      className={`py-1.5 px-0.5 rounded-lg border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                        isMicActive
+                          ? 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border-emerald-500/40'
+                          : 'bg-rose-950/60 text-rose-400 border-rose-800'
+                      }`}
+                      title={isMicActive ? 'Mute Mic' : 'Unmute Mic'}
+                    >
+                      {isMicActive ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
+                      <span className="text-[9px]">{isMicActive ? 'Mic On' : 'Mic Off'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = !isMuted;
+                        setIsMuted(next);
+                        if (next && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                          window.speechSynthesis.cancel();
+                        }
+                      }}
+                      className={`py-1.5 px-0.5 rounded-lg border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                        !isMuted
+                          ? 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
+                          : 'bg-rose-950/60 text-rose-400 border-rose-800'
+                      }`}
+                      title={isMuted ? 'Turn Sound On' : 'Mute Sound'}
+                    >
+                      {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                      <span className="text-[9px]">{isMuted ? 'Muted' : 'Sound'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsTransferModalOpen(true)}
+                      className="py-1.5 px-0.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white text-xs font-bold border border-emerald-500/50 transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95"
+                      title="Transfer to Human Staff"
+                    >
+                      <PhoneForwarded className="w-3.5 h-3.5" />
+                      <span className="text-[9px]">Staff</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={endCall}
+                      className="py-1.5 px-0.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer"
+                      title="End Call"
+                    >
+                      <PhoneOff className="w-3.5 h-3.5 fill-current" />
+                      <span className="text-[9px]">End</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Spoken Topics Chips */}
+              <div className="pt-0.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Quick Spoken Topics:
+                </span>
+                <div className="grid grid-cols-2 gap-1">
+                  {[
+                    'What are visiting hours?',
+                    'What time is evening prayer?',
+                    'Book an architectural tour',
+                    'Where is free parking?',
+                  ].map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => {
+                        addTranscriptEntry('You (Voice Prompt)', prompt);
+                        handleUserVoiceInput(prompt);
+                      }}
+                      disabled={operatorSpeaking || isProcessingVoice || callState === 'on_hold'}
+                      className="p-1 rounded-md text-[11px] bg-slate-800/80 hover:bg-rose-950/60 text-slate-200 hover:text-rose-200 border border-slate-700 text-left transition-all truncate active:scale-95 disabled:opacity-50 cursor-pointer"
+                      title={prompt}
+                    >
+                      "{prompt}"
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Dialpad Matrix with generous button sizing */}
-          <div className="grid grid-cols-3 gap-3">
-            {keypadItems.map((item) => (
-              <button
-                key={item.digit}
-                type="button"
-                onClick={item.handler}
-                className="flex flex-col items-center justify-center py-3.5 px-2 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500 text-slate-800 dark:text-slate-100 shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95 group"
-              >
-                <span className="text-2xl font-bold font-mono group-hover:text-rose-600 dark:group-hover:text-rose-400">
-                  {item.digit}
-                </span>
-                <span className="text-[10px] font-semibold font-mono text-slate-400 dark:text-slate-500 tracking-wider mt-0.5">
-                  {item.sub}
-                </span>
-              </button>
-            ))}
-          </div>
+          {/* Column 2: Keypad */}
+          <div className="col-span-1 md:col-span-1 lg:col-span-4 flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 min-h-[470px]">
+            {/* Keypad Header */}
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Grid3X3 className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>Keypad</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Tap numbers to trigger answers anytime
+                </p>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold uppercase tracking-wider">
+                READY
+              </span>
+            </div>
 
-          {/* Quick Reception Tasks: Tour Booking & Voicemail Intake */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
-              Automated Reception Tasks:
-            </span>
-            <div className="grid grid-cols-2 gap-2">
+            {/* Dialpad Matrix with Large Fonts */}
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 flex-1 items-center py-0.5">
+              {keypadItems.map((item) => (
+                <button
+                  key={item.digit}
+                  type="button"
+                  onClick={item.handler}
+                  className="flex flex-col items-center justify-center py-2 sm:py-2.5 px-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500 text-slate-800 dark:text-slate-100 shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95 group"
+                  title={`${item.label} (Keypad [${item.digit}])`}
+                >
+                  <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-mono group-hover:text-rose-600 dark:group-hover:text-rose-400 text-slate-900 dark:text-white leading-none">
+                    {item.digit}
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-bold font-mono text-slate-500 dark:text-slate-400 tracking-wider mt-0.5">
+                    {item.sub}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Quick Tasks: Official Tours & Leave Message */}
+            <div className="grid grid-cols-2 gap-1.5 pt-0.5 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setIsBookingModalOpen(true)}
-                className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-left space-y-0.5 transition-all cursor-pointer"
+                className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-left space-y-0.5 transition-all cursor-pointer"
               >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
-                  <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Official Tour Portal</span>
-                  <ExternalLink className="w-3 h-3 text-slate-400" />
+                <div className="flex items-center gap-1 text-xs font-bold text-slate-900 dark:text-white">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="truncate">Official Tours</span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                  Register on official website
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  Tour registration portal
                 </p>
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsMessageModalOpen(true)}
-                className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-blue-500 text-left space-y-0.5 transition-all cursor-pointer"
+                className="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 hover:border-blue-500 text-left space-y-0.5 transition-all cursor-pointer"
               >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
-                  <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Leave Message</span>
+                <div className="flex items-center gap-1 text-xs font-bold text-slate-900 dark:text-white">
+                  <MessageSquare className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span className="truncate">Leave Message</span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                  Front-desk voicemail intake
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  Staff voicemail
                 </p>
               </button>
             </div>
+
+            {/* Keypad Directory Guide firmly bounded */}
+            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-0.5">
+              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-slate-600 dark:text-slate-300">
+                <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[1]</strong> Talk AI</span>
+                <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[2]</strong> Hours</span>
+                <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[3]</strong> Prayers</span>
+                <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[4]</strong> Tours</span>
+                <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[5]</strong> Parking</span>
+                <span><strong className="text-rose-600 dark:text-rose-400 font-mono font-bold text-xs">[6]</strong> Gardens</span>
+                <span className="col-span-2 text-amber-700 dark:text-amber-300 pt-0.5 border-t border-slate-200 dark:border-slate-700 font-semibold text-[10px] sm:text-[11px]">
+                  <strong className="font-mono text-xs text-amber-800 dark:text-amber-200">[0]</strong> Human Staff (+1 713-522-2026)
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Clean Keypad Directory Guide */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-2.5">
-            <p className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
-              Touch-Tone Menu Directory:
-            </p>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[1]</strong> Talk with AI</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[2]</strong> Visiting Hours</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[3]</strong> Prayer Times</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[4]</strong> Free Tours</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[5]</strong> Free Parking</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[6]</strong> Gardens & Building</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[7]</strong> Aga Khan Info</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[8]</strong> What to Wear</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[9]</strong> Repeat Menu</span>
-              <span className="font-medium"><strong className="text-rose-600 font-mono">[*]</strong> Start Over</span>
-              <span className="font-medium col-span-2 text-amber-700 dark:text-amber-300 pt-1 border-t border-slate-200 dark:border-slate-700">
-                <strong className="font-mono">[0]</strong> Human Staff (+1 713-522-2026)
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Real-time Call Transcript with Intent Recognition Badges */}
-      <div className="bg-white dark:bg-[#131d2e] rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center text-rose-600">
-              <FileText className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Call Conversation & Real-Time Intent Stream
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Live transcript with speech-to-text decoding and classified intent tags
-              </p>
-            </div>
-          </div>
-          <span className="text-xs text-slate-400 font-mono">
-            Houston Central Time (CT)
-          </span>
-        </div>
-
-        <div 
-          ref={transcriptBottomRef}
-          className="h-64 overflow-y-auto space-y-3.5 pr-2 text-xs"
-        >
-          {transcript.length === 0 ? (
-            <div className="text-center py-12 space-y-3 max-w-md mx-auto">
-              <Radio className="w-9 h-9 text-slate-300 dark:text-slate-600 mx-auto" />
-              <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-sm">
-                Press <strong>"Start AI Voice Helper"</strong> above. Once connected, what you say and the AI answers will show here like a text conversation.
-              </p>
-            </div>
-          ) : (
-            transcript.map((entry, idx) => {
-              const isUser = entry.speaker.startsWith('You');
-              return (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-2xl border transition-all ${
-                    isUser
-                      ? 'bg-rose-50/90 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60 text-rose-950 dark:text-rose-100 ml-6 sm:ml-12'
-                      : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 mr-6 sm:mr-12'
-                  }`}
-                >
-                  <div className="flex items-center justify-between font-semibold mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className={isUser ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-900 dark:text-white font-bold'}>
-                        {entry.speaker}
-                      </span>
-                      {entry.intent && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                          {entry.intent}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-mono font-normal">
-                      {entry.time}
-                    </span>
-                  </div>
-                  <p className="leading-relaxed whitespace-pre-wrap text-sm">{entry.text}</p>
+          {/* Column 3: Real-Time Live Conversation Stream */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 shadow-sm space-y-2.5 min-h-[470px]">
+            {/* Transcript Header */}
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-1.5">
+              <div className="flex items-center space-x-2">
+                <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center text-rose-600 shrink-0">
+                  <FileText className="w-3.5 h-3.5" />
                 </div>
-              );
-            })
-          )}
-        </div>
-      </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                    Live Conversation Stream
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Real-time speech &amp; keypad transcript
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-1.5">
+                <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                  Houston CT
+                </span>
+                {transcript.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setTranscript([])}
+                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Clear conversation stream"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
 
-      {/* Human Staff Fallback & Contact Card */}
-      <div className="rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="space-y-1.5 max-w-xl">
-            <h4 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-emerald-600" />
-              <span>Have questions not answered by the AI bot?</span>
-            </h4>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Our human staff members are available on the official phone line to assist with visiting arrangements, special group tours, accessibility needs, or community inquiries.
-            </p>
+            {/* Transcript Scrollable Area */}
+            <div 
+              ref={transcriptBottomRef}
+              className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[300px] min-h-[140px]"
+            >
+              {transcript.length === 0 ? (
+                <div className="h-full min-h-[140px] flex flex-col items-center justify-center text-center p-4 space-y-2">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                    <Radio className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    No Active Conversation Yet
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
+                    Press <strong>"Start AI Voice Helper"</strong> or any keypad number to begin. Spoken words and responses will appear here in real time.
+                  </p>
+                </div>
+              ) : (
+                transcript.map((entry, idx) => {
+                  const isUser = entry.speaker.startsWith('You');
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-2.5 sm:p-3 rounded-xl border transition-all ${
+                        isUser
+                          ? 'bg-rose-50/95 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60 text-rose-950 dark:text-rose-100 ml-3 sm:ml-6'
+                          : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 mr-3 sm:mr-6'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-semibold mb-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className={isUser ? 'text-rose-700 dark:text-rose-400 font-bold text-xs sm:text-sm' : 'text-slate-900 dark:text-white font-bold text-xs sm:text-sm'}>
+                            {entry.speaker}
+                          </span>
+                          {entry.intent && (
+                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                              {entry.intent}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-mono font-normal">
+                          {entry.time}
+                        </span>
+                      </div>
+                      <p className="leading-relaxed whitespace-pre-wrap text-xs sm:text-sm font-normal">{entry.text}</p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Bottom Transcript Footer Tag */}
+            <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                Verified Ismaili Center Houston Data
+              </span>
+              <span className="font-mono text-[10px]">AI Phonebot 2.4</span>
+            </div>
           </div>
+        </div>
+      )}
 
-          <div className="flex items-center gap-3 flex-wrap">
+      {/* Human Staff Fallback Bar - Compact 1-line layout */}
+      <div className="rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 px-3 py-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 text-center sm:text-left">
+            <HelpCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Have questions not answered by the AI bot? Official human staff is available.</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsTransferModalOpen(true)}
-              className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
             >
               <Phone className="w-3.5 h-3.5 fill-current" />
-              <span>Call +1 (713) 522-2026</span>
+              <span>Staff: +1 (713) 522-2026</span>
             </button>
             <a
-              href="https://ismailicenter.org"
+              href="https://the.ismaili/us/en/spaces/ismaili-center-houston"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1.5 px-4 py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+              className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
             >
-              <span>Visit ismailicenter.org</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <span>the.ismaili Portal</span>
+              <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </div>

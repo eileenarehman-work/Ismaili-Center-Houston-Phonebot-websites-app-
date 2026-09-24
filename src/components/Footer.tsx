@@ -9,18 +9,18 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
   return (
-    <footer className="mt-16 border-t border-slate-200/80 dark:border-slate-800 bg-[#f7f6f2] dark:bg-[#080d17] text-slate-600 dark:text-slate-400 text-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <footer className="mt-12 border-t border-slate-200/80 dark:border-slate-800 bg-[#f7f6f2] dark:bg-[#080d17] text-slate-600 dark:text-slate-400 text-sm">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-200/60 dark:border-slate-800">
           
           {/* Brand Col */}
           <div className="md:col-span-2 space-y-3">
             <Logo size="md" />
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md leading-relaxed mt-2">
+            <p className="text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed mt-2">
               An ambassadorial civic, cultural, and spiritual hub in Houston, Texas. Designed by Farshid Moussavi with Persian-inspired charbagh gardens by Nelson Byrd Woltz.
             </p>
-            <div className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-300 pt-1">
-              <MapPin className="w-3.5 h-3.5 text-[#007ba8]" />
+            <div className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300 pt-1">
+              <MapPin className="w-4 h-4 text-[#007ba8]" />
               <span>Montrose Boulevard &amp; Allen Parkway, Houston, TX 77019</span>
             </div>
           </div>
@@ -34,46 +34,46 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
               <li>
                 <button
                   type="button"
-                  onClick={() => onSelectTab('assistant')}
-                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors"
+                  onClick={() => onSelectTab('hotline')}
+                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors cursor-pointer"
                 >
-                  AI Ambassador Assistant
+                  AI Phonebot
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  onClick={() => onSelectTab('hotline')}
-                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors"
+                  onClick={() => onSelectTab('assistant')}
+                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors cursor-pointer"
                 >
-                  Voice Hotline Simulator
+                  AI Assistant
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => onSelectTab('schedule')}
-                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors"
+                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors cursor-pointer"
                 >
-                  Jamatkhana Prayer Schedule
+                  Timings &amp; Prayer Schedule
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => onSelectTab('visitor')}
-                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors"
+                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors cursor-pointer"
                 >
-                  Visitor Hours &amp; Architecture
+                  Visitor &amp; Architecture Guide
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => onSelectTab('videos')}
-                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors"
+                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors cursor-pointer"
                 >
-                  Videos &amp; Official Documentaries
+                  Media &amp; Video Showcase
                 </button>
               </li>
             </ul>

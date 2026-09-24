@@ -11,11 +11,123 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
   }
 }
 
+/* ==========================================================================
+   SMOOTH LIGHT & DARK MODE THEME TRANSITIONS
+   ========================================================================== */
+html,
+body {
+  transition: background-color 280ms ease, color 280ms ease;
+}
+
+html.dark,
+body.dark {
+  background-color: #0b1320;
+  color: #f1f5f9;
+}
+
+html:not(.dark),
+body:not(.dark) {
+  background-color: #f7f6f2;
+  color: #1e293b;
+}
+
+/* Smooth transition for theme colors across containers, cards, headers, buttons */
+header,
+main,
+footer,
+nav,
+section,
+article,
+div,
+.theme-transition {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 250ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fast or animating elements exempt from color transitions to prevent jitter */
+.no-theme-transition,
+.animate-pulse,
+.animate-spin,
+.animate-bounce,
+.animate-wave-bar,
+iframe,
+canvas,
+video,
+img {
+  transition-property: none !important;
+}
+
+/* Font override - strictly clean modern sans-serif */
 .font-cinzel {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* ==========================================================================
+   SCROLL-TRIGGERED REVEAL ANIMATIONS (Professional & Engaging)
+   ========================================================================== */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-delay-1 {
+  transition-delay: 90ms;
+}
+
+.scroll-reveal-delay-2 {
+  transition-delay: 180ms;
+}
+
+.scroll-reveal-delay-3 {
+  transition-delay: 270ms;
+}
+
+.scroll-reveal-delay-4 {
+  transition-delay: 360ms;
+}
+
+/* Subtle scale-in reveal */
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.96) translateY(16px);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-scale.revealed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Respect user preferences and reduced motion settings */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .scroll-reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+.reduced-motion .scroll-reveal,
+.reduced-motion .scroll-reveal-scale {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 @keyframes wave {

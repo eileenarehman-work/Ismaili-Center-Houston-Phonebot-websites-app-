@@ -152,6 +152,59 @@ export function formatCentralTimestamp(date: Date = new Date()): string {
 }
 
 /**
+ * Returns exact Central Time date, time, and full formatted string
+ */
+export function getCentralDateTime(date: Date = new Date()): {
+  date: string;       // e.g. "Sep 24, 2026"
+  time: string;       // e.g. "11:15 AM CT"
+  weekday: string;    // e.g. "Thursday"
+  full: string;       // e.g. "Thursday, Sep 24, 2026 at 11:15 AM CT"
+  shortFull: string;  // e.g. "Sep 24, 2026, 11:15 AM CT"
+  iso: string;
+} {
+  const timeZone = 'America/Chicago';
+  const weekday = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'long' }).format(date);
+  const dateStr = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+  const timeStr = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date) + ' CT';
+
+  return {
+    date: dateStr,
+    time: timeStr,
+    weekday,
+    full: `${weekday}, ${dateStr} at ${timeStr}`,
+    shortFull: `${dateStr}, ${timeStr}`,
+    iso: date.toISOString(),
+  };
+}
+
+/**
+ * Formats any input (Date, string, number) into verified Date + Time in Central Time
+ */
+export function formatCentralDateAndTime(input?: string | Date | number): { date: string; time: string; full: string } {
+  if (!input) {
+    const current = getCentralDateTime();
+    return { date: current.date, time: current.time, full: current.shortFull };
+  }
+  const d = typeof input === 'string' || typeof input === 'number' ? new Date(input) : input;
+  if (isNaN(d.getTime())) {
+    const fallback = getCentralDateTime();
+    return { date: fallback.date, time: fallback.time, full: String(input) };
+  }
+  const dt = getCentralDateTime(d);
+  return { date: dt.date, time: dt.time, full: dt.shortFull };
+}
+
+/**
  * Accurately formats a timestamp or date relative to current Central Time.
  * If the date occurred today -> "Today at [h:mm A] CT"
  * If the date occurred yesterday -> "Yesterday at [h:mm A] CT"

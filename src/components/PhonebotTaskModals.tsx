@@ -17,6 +17,7 @@ import {
 import { saveCallerMessage } from '../utils/phonebotStorage.ts';
 import { logLifespanEvent } from '../utils/userHistoryStorage.ts';
 import { OFFICIAL_TOUR_URL } from '../utils/experiencesStorage.ts';
+import { useTranslation } from '../context/LanguageContext.tsx';
 
 // 1. OFFICIAL TOUR WEBSITE REDIRECT (ZERO EMBEDDED / INTERNAL REGISTRATION)
 interface TourBookingModalProps {
@@ -30,6 +31,7 @@ export const TourBookingModal: React.FC<TourBookingModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const handleProceedToOfficialSite = () => {
@@ -60,9 +62,11 @@ export const TourBookingModal: React.FC<TourBookingModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Official Tour Registration
+                {t('modal.tour_title', 'Official Tour Registration')}
               </h3>
-              <p className="text-xs text-slate-500">Redirecting to the official Ismaili Center portal</p>
+              <p className="text-xs text-slate-500">
+                {t('modal.tour_sub', 'Redirecting to the official Ismaili Center portal')}
+              </p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
@@ -74,10 +78,10 @@ export const TourBookingModal: React.FC<TourBookingModalProps> = ({
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
             <div className="flex items-center space-x-2 text-emerald-700 dark:text-emerald-400 font-bold">
               <ShieldCheck className="w-4 h-4" />
-              <span>Direct Link to the Official Ismaili Center Portal</span>
+              <span>{t('modal.tour_direct_link', 'Direct Link to the Official Ismaili Center Portal')}</span>
             </div>
             <p className="leading-relaxed">
-              To guarantee verified availability and accurate docent scheduling, all tour registrations are hosted exclusively on the official Ismaili Center website (<strong>the.ismaili</strong>).
+              {t('modal.tour_desc', 'To guarantee verified availability and accurate docent scheduling, all tour registrations are hosted exclusively on the official Ismaili Center website (the.ismaili).')}
             </p>
           </div>
 
@@ -85,22 +89,30 @@ export const TourBookingModal: React.FC<TourBookingModalProps> = ({
             <div className="flex items-start space-x-2">
               <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-slate-900 dark:text-white block">Public Tour Days &amp; Hours:</strong>
-                <span>Tuesdays, Thursdays, Saturdays &amp; Sundays • 10:30 AM &amp; 2:00 PM Central Time</span>
+                <strong className="text-slate-900 dark:text-white block">
+                  {t('modal.tour_days_hours', 'Public Tour Days & Hours:')}
+                </strong>
+                <span>
+                  {t('modal.tour_days_val', 'Tuesdays, Thursdays, Saturdays & Sundays • 10:30 AM & 2:00 PM Central Time')}
+                </span>
               </div>
             </div>
             <div className="flex items-start space-x-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-slate-900 dark:text-white block">Free Admission:</strong>
-                <span>Guided architectural walkthroughs are complimentary. Advance registration secures your entry pass.</span>
+                <strong className="text-slate-900 dark:text-white block">
+                  {t('modal.free_admission_title', 'Free Admission:')}
+                </strong>
+                <span>
+                  {t('modal.free_admission_val', 'Guided architectural walkthroughs are complimentary. Advance registration secures your entry pass.')}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-[11px] flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>Registration opens in a new tab on the official portal.</span>
+            <span>{t('modal.tour_notice', 'Registration opens in a new tab on the official portal.')}</span>
           </div>
         </div>
 
@@ -110,14 +122,14 @@ export const TourBookingModal: React.FC<TourBookingModalProps> = ({
             onClick={onClose}
             className="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold cursor-pointer"
           >
-            Cancel
+            {t('modal.cancel', 'Cancel')}
           </button>
           <button
             type="button"
             onClick={handleProceedToOfficialSite}
             className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer active:scale-95 transition-all"
           >
-            <span>Go to Official Tour Website</span>
+            <span>{t('modal.go_to_tour', 'Go to Official Tour Website')}</span>
             <ExternalLink className="w-4 h-4" />
           </button>
         </div>
@@ -141,9 +153,10 @@ export const TakeMessageModal: React.FC<TakeMessageModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const [callerName, setCallerName] = useState('');
   const [callerPhone, setCallerPhone] = useState('');
-  const [department, setDepartment] = useState('Front Desk & Visitor Services');
+  const [department, setDepartment] = useState('Visitor Services & Tours');
   const [messageText, setMessageText] = useState('');
   const [urgency, setUrgency] = useState<'routine' | 'urgent'>('routine');
 
@@ -178,9 +191,11 @@ export const TakeMessageModal: React.FC<TakeMessageModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Leave Message for Staff
+                {t('modal.msg_title', 'Leave Message for Staff')}
               </h3>
-              <p className="text-xs text-slate-500">Automated voicemail & callback logging</p>
+              <p className="text-xs text-slate-500">
+                {t('modal.msg_sub', 'Automated voicemail & callback logging')}
+              </p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
@@ -192,7 +207,7 @@ export const TakeMessageModal: React.FC<TakeMessageModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Your Name *
+                {t('modal.your_name', 'Your Name *')}
               </label>
               <input
                 type="text"
@@ -206,7 +221,7 @@ export const TakeMessageModal: React.FC<TakeMessageModalProps> = ({
 
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Callback Phone *
+                {t('modal.callback_phone', 'Callback Phone *')}
               </label>
               <input
                 type="tel"
@@ -222,43 +237,43 @@ export const TakeMessageModal: React.FC<TakeMessageModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Department
+                {t('modal.department', 'Department')}
               </label>
               <select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:border-blue-500"
               >
-                <option value="Visitor Services & Tours">Visitor Services & Tours</option>
-                <option value="Community & Interfaith">Community & Interfaith</option>
-                <option value="Facilities & Auditorium">Facilities & Auditorium</option>
-                <option value="General Information">General Information</option>
+                <option value="Visitor Services & Tours">{t('modal.dept_visitor', 'Visitor Services & Tours')}</option>
+                <option value="Community & Interfaith">{t('modal.dept_community', 'Community & Interfaith')}</option>
+                <option value="Facilities & Auditorium">{t('modal.dept_facilities', 'Facilities & Auditorium')}</option>
+                <option value="General Information">{t('modal.dept_general', 'General Information')}</option>
               </select>
             </div>
 
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Urgency
+                {t('modal.urgency', 'Urgency')}
               </label>
               <select
                 value={urgency}
                 onChange={(e) => setUrgency(e.target.value as any)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:border-blue-500"
               >
-                <option value="routine">Routine Inquiry</option>
-                <option value="urgent">Urgent Callback</option>
+                <option value="routine">{t('modal.routine', 'Routine Inquiry')}</option>
+                <option value="urgent">{t('modal.urgent', 'Urgent Callback')}</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Your Message *
+              {t('modal.your_message', 'Your Message *')}
             </label>
             <textarea
               required
               rows={3}
-              placeholder="Please provide details regarding your question or request..."
+              placeholder={t('modal.message_placeholder', 'Please provide details regarding your question or request...')}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:border-blue-500"
@@ -271,13 +286,13 @@ export const TakeMessageModal: React.FC<TakeMessageModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold cursor-pointer"
             >
-              Cancel
+              {t('modal.cancel', 'Cancel')}
             </button>
             <button
               type="submit"
               className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md cursor-pointer active:scale-95"
             >
-              Submit Message
+              {t('modal.submit_message', 'Submit Message')}
             </button>
           </div>
         </form>
@@ -301,6 +316,7 @@ export const WarmTransferModal: React.FC<WarmTransferModalProps> = ({
   department,
   onExecuteTransfer,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -313,9 +329,11 @@ export const WarmTransferModal: React.FC<WarmTransferModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Human Staff Transfer
+                {t('modal.transfer_title', 'Human Staff Transfer')}
               </h3>
-              <p className="text-xs text-slate-500">Connecting to Information Line</p>
+              <p className="text-xs text-slate-500">
+                {t('modal.transfer_sub', 'Connecting to Information Line')}
+              </p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
@@ -326,24 +344,24 @@ export const WarmTransferModal: React.FC<WarmTransferModalProps> = ({
         <div className="space-y-3 text-xs">
           <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60 space-y-1.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-              Transfer Destination:
+              {t('modal.transfer_dest', 'Transfer Destination:')}
             </span>
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-900 dark:text-white text-sm">
-                {department || 'Information Line & Visitor Services'}
+                {department || t('modal.dept_visitor', 'Visitor Services & Tours')}
               </span>
               <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                 +1 (713) 522-2026
               </span>
             </div>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[11px] pt-1">
-              The AI Phonebot will announce the warm transfer, play the switchboard connection tone, and open direct phone dialing.
+              {t('modal.transfer_desc', 'The AI Phonebot will announce the warm transfer, play the switchboard connection tone, and open direct phone dialing.')}
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] flex items-center gap-2">
             <Building className="w-4 h-4 text-slate-400 shrink-0" />
-            <span>Center staff are available during regular business hours (Houston Central Time).</span>
+            <span>{t('modal.transfer_hours', 'Center staff are available during regular business hours (Houston Central Time).')}</span>
           </div>
         </div>
 
@@ -353,7 +371,7 @@ export const WarmTransferModal: React.FC<WarmTransferModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold cursor-pointer text-xs"
           >
-            Stay on AI Bot
+            {t('modal.stay_on_bot', 'Stay on AI Bot')}
           </button>
           <button
             type="button"
@@ -364,10 +382,11 @@ export const WarmTransferModal: React.FC<WarmTransferModalProps> = ({
             className="inline-flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md cursor-pointer active:scale-95 text-xs"
           >
             <Phone className="w-3.5 h-3.5 fill-current" />
-            <span>Confirm Transfer (+1 713-522-2026)</span>
+            <span>{t('modal.confirm_transfer', 'Confirm Transfer (+1 713-522-2026)')}</span>
           </button>
         </div>
       </div>
     </div>
   );
 };
+

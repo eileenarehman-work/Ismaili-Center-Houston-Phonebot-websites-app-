@@ -11,7 +11,7 @@ import {
   ArrowRight,
   ShieldAlert
 } from 'lucide-react';
-import { verifyAdminPassword, setAdminAuth, ADMIN_PASSKEY } from '../utils/adminAuth.ts';
+import { verifyAdminPassword, setAdminAuth } from '../utils/adminAuth.ts';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -71,7 +71,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         onClose();
       }, 350);
     } else {
-      setError(`Incorrect administrator password. Please use passkey ${ADMIN_PASSKEY} and try again.`);
+      setError('Incorrect administrator password. Only authorized team leads have access.');
       setPassword('');
       passwordInputRef.current?.focus();
     }
@@ -106,7 +106,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             <KeyRound className="w-6 h-6 text-amber-200" />
           </div>
 
-          <h2 id="admin-login-title" className="text-xl font-bold font-cinzel tracking-wide text-white">
+          <h2 id="admin-login-title" className="text-xl font-extrabold tracking-tight text-white">
             Staff &amp; Admin Gateway
           </h2>
           <p className="text-xs text-amber-100/90 mt-1">
@@ -119,9 +119,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 flex items-start space-x-2.5">
             <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
             <div className="space-y-0.5">
-              <span className="font-bold block">Administrator Sign-In</span>
+              <span className="font-bold block">Lead &amp; Administrator Sign-In</span>
               <p className="text-[11px] text-amber-800 dark:text-amber-300/80">
-                Enter your administrator password to access schedule controls, official tour links, verbatim call audit logs, voicemails, and center announcements.
+                Restricted area. Please enter your administrator password to access schedule controls, verified call transcripts, voicemails, and system telemetry.
               </p>
             </div>
           </div>
@@ -133,10 +133,10 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 htmlFor="admin-password-input"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
               >
-                Password / Passkey
+                Lead Password
               </label>
-              <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
-                Passkey: 298402384
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                Authorized Personnel Only
               </span>
             </div>
             <div className="relative">
@@ -152,7 +152,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                   setPassword(e.target.value);
                   if (error) setError(null);
                 }}
-                placeholder="Enter password or passkey (298402384)..."
+                placeholder="Enter lead password..."
                 className="w-full pl-10 pr-11 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-mono"
                 required
                 autoComplete="current-password"

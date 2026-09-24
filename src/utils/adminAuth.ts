@@ -21,15 +21,6 @@ export function verifyAdminPassword(candidate: string): boolean {
 }
 
 /**
- * Validate username and password against admin credentials
- */
-export function verifyAdminCredentials(username: string, candidatePass: string): boolean {
-  const trimmedPass = candidatePass.trim();
-  const passValid = trimmedPass === ADMIN_PASSKEY || trimmedPass.toLowerCase() === 'admin';
-  return passValid;
-}
-
-/**
  * Check if the admin is currently authenticated in the current session
  */
 export function isUserAdmin(): boolean {

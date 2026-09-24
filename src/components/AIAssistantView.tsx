@@ -299,21 +299,21 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-14rem)] min-h-[560px] max-h-[820px] bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-      {/* Header bar */}
-      <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/50">
-        <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-[#007ba8]/10 dark:bg-teal-950/50 flex items-center justify-center text-[#007ba8] dark:text-teal-400">
-            <Bot className="w-5 h-5" />
+    <div className="flex flex-col h-[calc(100vh-8.5rem)] sm:h-[calc(100vh-9.5rem)] min-h-[360px] max-h-[700px] bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      {/* Header bar - compact padding to keep input visible */}
+      <div className="px-3.5 py-2 sm:px-5 sm:py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/50">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#007ba8]/10 dark:bg-teal-950/50 flex items-center justify-center text-[#007ba8] dark:text-teal-400">
+            <Bot className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Ismaili Center AI Assistant
               </h2>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse" />
-                Computer Helper
+                Active Guide
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -325,7 +325,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
         <div className="flex items-center space-x-2">
           <a
             href="tel:+17135222026"
-            className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition-colors"
+            className="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition-colors"
             title="Call the real human staff phone line"
           >
             <span>Staff: +1 (713) 522-2026</span>
@@ -334,7 +334,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
           <button
             type="button"
             onClick={clearChat}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
             title="Clear chat history"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -344,7 +344,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
       </div>
 
       {/* Suggested Quick Inquiries Chip Bar */}
-      <div className="px-4 py-2.5 bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-800 flex items-center space-x-2 overflow-x-auto scrollbar-none">
+      <div className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-800 flex items-center space-x-2 overflow-x-auto scrollbar-none">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex-shrink-0 flex items-center">
           <Sparkles className="w-3 h-3 mr-1 text-[#007ba8]" />
           Topics:
@@ -354,7 +354,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
             key={i}
             type="button"
             onClick={() => handleSendMessage(item.query)}
-            className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/70 hover:border-[#007ba8] hover:bg-[#007ba8] hover:text-white dark:hover:bg-[#007ba8] dark:hover:text-white transition-all shadow-xs font-medium"
+            className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/70 hover:border-[#007ba8] hover:bg-[#007ba8] hover:text-white dark:hover:bg-[#007ba8] dark:hover:text-white transition-all shadow-xs font-medium"
           >
             {item.label}
           </button>
@@ -362,7 +362,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
       </div>
 
       {/* Chat Messages Area */}
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
         {messages.map((msg) => {
           const isUser = msg.sender === 'user';
           const isSpeaking = speakingMsgId === msg.id;
@@ -480,18 +480,18 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
         )}
       </div>
 
-      {/* Chat Input Bar */}
+      {/* Chat Input Bar - Compact padding to stay visible on all screens */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           handleSendMessage();
         }}
-        className="p-3 sm:p-4 bg-slate-50/90 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2"
+        className="p-2 sm:p-3 bg-slate-50/90 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2"
       >
         <button
           type="button"
           onClick={toggleMic}
-          className={`p-2.5 rounded-xl border transition-all ${
+          className={`p-2 rounded-xl border transition-all cursor-pointer ${
             isListening
               ? 'bg-red-500 text-white border-red-600 animate-pulse'
               : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:text-[#007ba8] hover:border-[#007ba8]'
@@ -507,13 +507,13 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ask a question (e.g., 'What are the visiting hours?' or 'How do I book a tour?')"
-          className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#007ba8] focus:border-transparent transition-all placeholder:text-slate-400"
+          className="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#007ba8] focus:border-transparent transition-all placeholder:text-slate-400"
         />
 
         <button
           type="submit"
           disabled={!inputValue.trim() || isTyping}
-          className="px-5 py-2.5 rounded-xl bg-[#007ba8] hover:bg-[#006185] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-all shadow-sm flex items-center space-x-1.5 active:scale-95"
+          className="px-4 py-2 rounded-xl bg-[#007ba8] hover:bg-[#006185] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-all shadow-sm flex items-center space-x-1.5 active:scale-95 cursor-pointer"
         >
           <span>Send</span>
           <Send className="w-3.5 h-3.5" />

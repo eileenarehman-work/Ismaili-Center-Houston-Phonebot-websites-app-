@@ -114,6 +114,8 @@ export interface LifespanEvent {
   id: string;
   timestamp: string;
   isoDate: string;
+  date?: string;
+  time?: string;
   type: LifespanEventType;
   title: string;
   summary: string;
@@ -134,9 +136,11 @@ export interface AdminAnnouncement {
 // Anonymous Call Log & Verbatim Direct Transcript for Administrative Auditing
 export interface CallTranscriptTurn {
   id: string;
-  speaker: 'Anonymous Caller' | 'AI Phonebot' | 'System';
+  speaker: 'Anonymous Caller' | 'AI Phonebot' | 'System' | string;
   text: string;
   timestamp: string;
+  date?: string;
+  time?: string;
   intent?: string;
 }
 
@@ -144,6 +148,9 @@ export interface AnonymousCallRecord {
   id: string;
   callNumber: number;
   anonymousCallerId: string; // e.g. "Anonymous Caller #001"
+  date: string;              // e.g. "Sep 24, 2026"
+  time: string;              // e.g. "11:15 AM CT"
+  isoTimestamp: string;      // ISO 8601 string
   startTime: string;
   endTime: string;
   durationSeconds: number;

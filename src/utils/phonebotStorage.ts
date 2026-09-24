@@ -1,9 +1,9 @@
 import { CallerMessage, TourReservation, PhonebotCallMetrics } from '../types.ts';
 import { logLifespanEvent } from './userHistoryStorage.ts';
 
-const MESSAGES_KEY = 'ich_phonebot_messages_v2';
-const RESERVATIONS_KEY = 'ich_phonebot_reservations_v2';
-const METRICS_KEY = 'ich_phonebot_metrics_v2';
+const MESSAGES_KEY = 'ich_phonebot_messages_v3';
+const RESERVATIONS_KEY = 'ich_phonebot_reservations_v3';
+const METRICS_KEY = 'ich_phonebot_metrics_v3';
 
 // Purge any legacy fabricated mock entries from previous versions
 if (typeof window !== 'undefined') {
@@ -11,6 +11,9 @@ if (typeof window !== 'undefined') {
     localStorage.removeItem('ich_phonebot_messages_v1');
     localStorage.removeItem('ich_phonebot_reservations_v1');
     localStorage.removeItem('ich_phonebot_metrics_v1');
+    localStorage.removeItem('ich_phonebot_messages_v2');
+    localStorage.removeItem('ich_phonebot_reservations_v2');
+    localStorage.removeItem('ich_phonebot_metrics_v2');
   } catch {}
 }
 

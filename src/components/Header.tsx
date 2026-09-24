@@ -80,11 +80,11 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isAdminDropdownOpen]);
 
-  // Each tab configured with distinct signature colors for enhanced usability and engagement
+  // Each tab configured with concise labels and distinct signature colors for maximum viewport efficiency
   const tabs: TabConfig[] = [
     {
       id: 'hotline',
-      label: 'AI Phonebot Hotline',
+      label: 'AI Phonebot',
       icon: <PhoneCall className="w-4 h-4" />,
       shortcut: '1',
       colorName: 'Rose Coral',
@@ -112,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'schedule',
-      label: 'Jamatkhana Schedule',
+      label: 'Timings',
       icon: <Clock className="w-4 h-4" />,
       shortcut: '3',
       colorName: 'Emerald Green',
@@ -126,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'visitor',
-      label: 'Visitor Info',
+      label: 'Visitor',
       icon: <Info className="w-4 h-4" />,
       shortcut: '4',
       colorName: 'Warm Amber',
@@ -140,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'videos',
-      label: 'Videos & Media',
+      label: 'Media',
       icon: <Tv className="w-4 h-4" />,
       shortcut: '5',
       colorName: 'Royal Purple',
@@ -154,7 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
     ...(isAdmin ? [{
       id: 'admin' as NavigationTab,
-      label: 'Admin Console',
+      label: 'Admin',
       icon: <ShieldCheck className="w-4 h-4" />,
       shortcut: '6',
       colorName: 'Amber Gold',
@@ -170,14 +170,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-[#f7f6f2]/95 dark:bg-[#0b1320]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main top bar */}
-        <div className="py-3.5 flex items-center justify-between gap-4">
+      <div className="w-full px-3 sm:px-6 lg:px-8 xl:px-12">
+        {/* Main top bar - compact height to preserve viewport */}
+        <div className="py-2 sm:py-2.5 flex items-center justify-between gap-3">
           
           {/* Brand Logo matching user screenshot */}
           <div 
             onClick={() => onSelectTab('hotline')} 
-            className="cursor-pointer group flex items-center"
+            className="cursor-pointer group flex items-center shrink-0"
             title="Ismaili Center Houston Guide"
           >
             <Logo size="md" />
@@ -188,11 +188,11 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Central Time indicator */}
             {centralTimeDisplay && (
               <div 
-                className="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-1.5 text-xs text-slate-600 dark:text-slate-300"
+                className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300"
                 title="Current time in Houston (Central Time)"
               >
-                <Clock className="w-3.5 h-3.5 text-[#007ba8] dark:text-teal-400" />
-                <span className="font-semibold text-slate-800 dark:text-slate-100 font-mono">
+                <Clock className="w-4 h-4 text-[#007ba8] dark:text-teal-400" />
+                <span className="font-bold text-slate-800 dark:text-slate-100 font-mono text-sm">
                   {centralTimeDisplay}
                 </span>
               </div>
@@ -201,23 +201,23 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Next prayer countdown pill */}
             <div 
               onClick={() => onSelectTab('schedule')}
-              className="cursor-pointer px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2 text-xs hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors"
+              className="cursor-pointer px-4 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2 text-sm hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors"
               title="Next congregational prayer in Houston Central Time"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 dark:text-slate-400 font-medium">Next:</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{upcomingSessionText}</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-slate-600 dark:text-slate-400 font-medium">Next:</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-bold">{upcomingSessionText}</span>
             </div>
 
             <a
               href="https://the.ismaili/us/en/spaces/ismaili-center-houston/tours"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-[#007ba8]/10 hover:bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 dark:bg-teal-950/40 text-xs font-semibold transition-all border border-[#007ba8]/20"
+              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-[#007ba8]/10 hover:bg-[#007ba8]/20 text-[#007ba8] dark:text-teal-300 dark:bg-teal-950/40 text-sm font-bold transition-all border border-[#007ba8]/30"
               title="Official Ismaili Center Houston Portal - Guided Architectural Tours"
             >
               <span>Book Tour</span>
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
 
@@ -257,8 +257,8 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={() => onOpenAdmin('calls')}
                   className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400 transition-all cursor-pointer active:scale-95 group"
-                  title="Staff & Admin Access (Passkey required)"
-                  aria-label="Open Admin Login with Passkey"
+                  title="Staff & Lead Access"
+                  aria-label="Open Lead & Admin Login"
                 >
                   <KeyRound className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:rotate-45 group-hover:text-amber-500 transition-transform duration-200" />
                   <span className="font-bold">Admin Key</span>
@@ -278,7 +278,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className="text-xs font-bold text-slate-900 dark:text-white">Admin Quick Navigation</span>
                     </div>
                     <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
-                      Passkey Active
+                      Session Active
                     </span>
                   </div>
 
@@ -469,9 +469,9 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Desktop Navigation Tabs - Evenly Spaced Architectural Layout */}
+        {/* Desktop Navigation Tabs - Full Horizontal Tab Bar with High Legibility & Compact Padding */}
         <nav 
-          className="hidden md:grid gap-2 sm:gap-2.5 py-2.5 border-t border-slate-200/60 dark:border-slate-800 w-full"
+          className="hidden md:grid gap-2 py-1.5 sm:py-2 border-t border-slate-200/60 dark:border-slate-800 w-full"
           style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
         >
           {tabs.map((tab) => {
@@ -482,24 +482,46 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={() => onSelectTab(tab.id)}
                 title={`${tab.label} (Press ${tab.shortcut})`}
-                className={`w-full flex items-center justify-center space-x-2 px-2.5 sm:px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer select-none text-center ${
+                className={`w-full flex items-center justify-center space-x-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-200 cursor-pointer select-none text-center ${
                   isActive
                     ? `${tab.activeClass} shadow-md`
                     : `${tab.inactiveClass} ${tab.inactiveHoverClass}`
                 }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
+                <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
                 <span className={`shrink-0 ${isActive ? 'text-white' : tab.iconColorClass}`}>
                   {tab.icon}
                 </span>
-                <span className="truncate">{tab.label}</span>
+                <span className="whitespace-nowrap font-bold text-sm sm:text-base">{tab.label}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold shrink-0 ${
+                  className={`text-xs px-1.5 py-0.5 rounded-md font-mono font-bold shrink-0 ${
                     isActive ? tab.badgeActiveClass : tab.badgeInactiveClass
                   }`}
                 >
                   {tab.shortcut}
                 </span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Mobile Horizontal Quick-Tab Strip - View all full tab names directly on mobile without scrolling */}
+        <nav className="flex md:hidden overflow-x-auto py-1.5 px-0 gap-1.5 scrollbar-none border-t border-slate-200/60 dark:border-slate-800 w-full">
+          {tabs.map((tab) => {
+            const isActive = currentTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => onSelectTab(tab.id)}
+                className={`shrink-0 flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  isActive
+                    ? `${tab.activeClass} shadow-sm`
+                    : `${tab.inactiveClass} ${tab.inactiveHoverClass}`
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
+                <span>{tab.label}</span>
               </button>
             );
           })}
@@ -572,8 +594,8 @@ export const Header: React.FC<HeaderProps> = ({
                     <KeyRound className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
                     <span>Admin Console Active</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white font-mono text-[9px] font-bold">
-                    Passkey: 298402384
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-mono text-[9px] font-bold">
+                    Lead Authorized
                   </span>
                 </div>
 
@@ -662,7 +684,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="font-bold">Admin Login (Key Access)</span>
                 </div>
                 <span className="px-2 py-0.5 rounded-full font-mono text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                  Passkey Required
+                  Authorized Leads
                 </span>
               </button>
             )}

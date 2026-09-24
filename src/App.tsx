@@ -186,7 +186,7 @@ export default function App() {
       {/* Center Broadcast Announcement Banner (Controlled via Admin Console) */}
       {announcement.enabled && announcement.message && !isAnnouncementDismissed && (
         <div 
-          className={`px-4 py-2.5 text-xs sm:text-sm border-b transition-colors shadow-xs ${
+          className={`w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-2.5 text-xs sm:text-sm border-b transition-colors shadow-xs ${
             announcement.type === 'alert'
               ? 'bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200'
               : announcement.type === 'schedule'
@@ -194,7 +194,7 @@ export default function App() {
               : 'bg-[#007ba8]/10 border-[#007ba8]/30 text-[#005a7d] dark:text-teal-200'
           }`}
         >
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="w-full flex items-center justify-between gap-3">
             <div className="flex items-center space-x-2.5 flex-1 min-w-0">
               {announcement.type === 'alert' && <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />}
               {announcement.type === 'schedule' && <Bell className="w-4 h-4 text-amber-600 shrink-0" />}
@@ -223,9 +223,9 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div key={currentTab} className="animate-in fade-in duration-300">
+      {/* Main Container - Full Browser Tab Width & Low-Scroll Viewport */}
+      <main className="flex-1 w-full px-2 sm:px-4 lg:px-6 xl:px-8 py-1.5 sm:py-2.5">
+        <div key={currentTab} className="w-full animate-in fade-in duration-300">
           {currentTab === 'assistant' && (
             <AIAssistantView onNavigateToTab={setCurrentTab} />
           )}
@@ -268,7 +268,7 @@ export default function App() {
         onUpdateSettings={setAccessibilitySettings}
       />
 
-      {/* Admin Login Modal (Password: 298402384) */}
+      {/* Admin Login Modal (Authorized Leads) */}
       <AdminLoginModal
         isOpen={isAdminLoginOpen}
         onClose={() => setIsAdminLoginOpen(false)}
