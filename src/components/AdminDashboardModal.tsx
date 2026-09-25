@@ -1839,7 +1839,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   return (
     <div
       id="admin-dashboard-backdrop"
-      className="fixed inset-0 z-50 overflow-y-auto overscroll-contain flex flex-col justify-start items-center p-2 sm:p-4 bg-black/80 backdrop-blur-md transition-opacity animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs transition-opacity animate-in fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="admin-dashboard-title"

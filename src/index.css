@@ -7,47 +7,22 @@
     --brand-teal: #007ba8;
     --brand-teal-hover: #006185;
     --brand-teal-light: #e6f2f7;
-    --app-zoom-level: 1;
-    --base-font-size: 20px;
-  }
-
-  @media (max-width: 639px) {
-    :root {
-      --base-font-size: 18.5px;
-    }
-  }
-
-  @media (min-width: 640px) and (max-width: 1023px) {
-    :root {
-      --base-font-size: 19.5px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    :root {
-      --base-font-size: 20.5px;
-    }
   }
 
   html {
     scroll-behavior: smooth;
-    font-size: calc(var(--base-font-size, 20px) * var(--app-zoom-level, 1));
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
   }
 
   body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 1rem;
+    font-size: 16px;
     line-height: 1.6;
     overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 /* ==========================================================================
-   TACTILE BUTTON CLICK, HOVER & ZOOM-SCALING MICRO-ANIMATIONS
+   TACTILE BUTTON CLICK & HOVER MICRO-ANIMATIONS
    ========================================================================== */
 button,
 [role="button"],
@@ -64,53 +39,12 @@ a.btn:active,
   transform: scale(0.965);
 }
 
-/* OK, confirm, and modal primary action buttons: stay 100% visible, accessible and grow on zoom */
-.modal-ok-btn,
-#accessibility-ok-btn,
-#accessibility-ok-top-btn,
-#accessibility-ok-floating-btn,
-#tour-confirm-btn,
-#transfer-confirm-btn {
-  font-size: calc(1rem * (0.88 + 0.12 * var(--app-zoom-level, 1)));
-  min-height: calc(2.85rem * (0.85 + 0.15 * var(--app-zoom-level, 1)));
-  padding-left: calc(1.35rem * var(--app-zoom-level, 1));
-  padding-right: calc(1.35rem * var(--app-zoom-level, 1));
-  transition: transform 0.14s ease, background-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-/* Keypad buttons scale up on zoom for high touchability */
-.keypad-item-btn {
-  min-height: calc(3.4rem * var(--app-zoom-level, 1));
-  padding-top: calc(0.45rem * var(--app-zoom-level, 1));
-  padding-bottom: calc(0.45rem * var(--app-zoom-level, 1));
-  transition: all 0.16s ease;
-}
-
-/* Key action and voice hotline buttons scale up dynamically with zoom */
-.btn-zoom-scale,
-.primary-action-btn {
-  min-height: calc(2.85rem * var(--app-zoom-level, 1));
-  font-size: calc(0.95rem * (0.85 + 0.15 * var(--app-zoom-level, 1)));
-  padding-left: calc(1.15rem * var(--app-zoom-level, 1));
-  padding-right: calc(1.15rem * var(--app-zoom-level, 1));
-}
-
 .card-hover-lift {
   transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.26s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 
 .card-hover-lift:hover {
   transform: translateY(-2px);
-}
-
-/* Modal sticky footer safety: ensures OK / Done buttons are always pinned, visible and clickable */
-.modal-sticky-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 40;
-  flex-shrink: 0;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
 
 /* ==========================================================================

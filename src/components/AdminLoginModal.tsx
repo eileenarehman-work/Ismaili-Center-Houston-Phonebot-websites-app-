@@ -80,7 +80,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   return (
     <div
       id="admin-login-backdrop"
-      className="fixed inset-0 z-50 overflow-y-auto overscroll-contain flex flex-col justify-start items-center p-2 sm:p-4 bg-black/80 backdrop-blur-md transition-all animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs transition-all animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -89,10 +89,10 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       aria-labelledby="admin-login-title"
     >
       <div 
-        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden my-auto shrink-0 max-h-[92dvh] sm:max-h-[88dvh] flex flex-col animate-in zoom-in-95 duration-200"
+        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Modal Top Banner */}
-        <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white p-6 relative shrink-0">
+        <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white p-6 relative">
           <button
             type="button"
             onClick={onClose}
