@@ -128,11 +128,27 @@ export function applyAccessibilityToDOM(settings: AccessibilitySettings): void {
     body.classList.add('cursor-xlarge');
   }
 
-  // 4. Zoom / UI Scaling
-  // We apply CSS zoom to the document root and set custom CSS variable
-  const zoomRatio = settings.zoomLevel / 100;
-  (html.style as any).zoom = `${settings.zoomLevel}%`;
+  // 4. Zoom / UI & Font Scaling (GitHub & High-DPI optimized)
+  // Generous base font sizing ensures high legibility on GitHub Pages, monitors, and mobile.
+  // Scales the root font-size so all rem-based typography, buttons, and layout scale cleanly.
+  const zoomRatio = (settings.zoomLevel || 100) / 100;
   html.style.setProperty('--app-zoom-level', `${zoomRatio}`);
+  
+  let basePx = 20.5;
+  if (typeof window !== 'undefined') {
+    if (window.innerWidth < 640) {
+      basePx = 18.5;
+    } else if (window.innerWidth < 1024) {
+      basePx = 19.5;
+    } else {
+      basePx = 20.5;
+    }
+  }
+  html.style.setProperty('--base-font-size', `${basePx}px`);
+  html.style.fontSize = `calc(${basePx}px * var(--app-zoom-level, 1))`;
+  (html.style as any).zoom = ''; // Clear legacy zoom property to prevent layout displacement
+  html.setAttribute('data-zoom-level', `${settings.zoomLevel || 100}`);
+  body.setAttribute('data-zoom-level', `${settings.zoomLevel || 100}`);
 
   // 5. Dyslexia-Friendly Font
   if (settings.dyslexiaFont) {

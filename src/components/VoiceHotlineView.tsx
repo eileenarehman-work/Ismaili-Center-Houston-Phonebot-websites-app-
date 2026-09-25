@@ -947,7 +947,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
                     <button
                       type="button"
                       onClick={startCall}
-                      className="w-full py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base sm:text-lg shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                      className="btn-zoom-scale w-full py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base sm:text-lg shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                     >
                       <Phone className="w-5 h-5 fill-current shrink-0" />
                       <span>Start AI Voice Helper</span>
@@ -981,7 +981,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
                           startListening();
                         }
                       }}
-                      className={`w-full py-2.5 sm:py-3 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-md active:scale-95 disabled:opacity-50 ${
+                      className={`btn-zoom-scale w-full py-2.5 sm:py-3 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-md active:scale-95 disabled:opacity-50 ${
                         operatorSpeaking
                           ? 'bg-amber-600/30 text-amber-300 border-2 border-amber-500/50 hover:bg-amber-600/40'
                           : isListening
@@ -1143,7 +1143,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
                     key={item.digit}
                     type="button"
                     onClick={item.handler}
-                    className="flex flex-col items-center justify-center py-2 sm:py-2.5 px-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500 text-slate-800 dark:text-slate-100 shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95 group"
+                    className="keypad-item-btn flex flex-col items-center justify-center py-2 sm:py-2.5 px-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500 text-slate-800 dark:text-slate-100 shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95 group"
                     title={`${item.label} (Keypad [${item.digit}])`}
                   >
                     <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-mono group-hover:text-rose-600 dark:group-hover:text-rose-400 text-slate-900 dark:text-white leading-none">

@@ -43,11 +43,18 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
   const { t } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Close on Escape key
+  // Close on Escape or Enter key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (!isOpen) return;
+      if (e.key === 'Escape') {
         onClose();
+      } else if (e.key === 'Enter') {
+        // If user is not currently focused on an interactive button or input, Enter acts as OK/Done
+        const target = e.target as HTMLElement | null;
+        if (!target || (target.tagName !== 'BUTTON' && target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && target.tagName !== 'SELECT')) {
+          onClose();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -81,12 +88,12 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
   };
 
   const handleZoomChange = (delta: number) => {
-    const validLevels = [90, 100, 110, 125, 150];
+    const validLevels = [90, 100, 110, 125, 150, 175, 200];
     const currentIndex = validLevels.indexOf(settings.zoomLevel);
     
     if (currentIndex === -1) {
       // Find closest
-      const nextLevel = Math.max(90, Math.min(150, settings.zoomLevel + delta * 10));
+      const nextLevel = Math.max(90, Math.min(200, settings.zoomLevel + delta * 15));
       onUpdateSettings({ ...settings, zoomLevel: nextLevel });
       return;
     }
@@ -137,7 +144,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
   return (
     <div 
       id="accessibility-settings-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200 animate-in fade-in"
+      className="fixed inset-0 z-50 flex flex-col justify-start items-center p-2 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto overscroll-contain transition-opacity duration-200 animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -147,44 +154,57 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
     >
       <div 
         ref={modalRef}
-        className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[88dvh] my-auto overflow-hidden animate-in zoom-in-95 duration-150 shrink-0 relative"
       >
-        {/* Modal Header */}
-        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-950/40">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#007ba8]/10 dark:bg-[#007ba8]/20 flex items-center justify-center text-[#007ba8] dark:text-teal-400">
+        {/* Modal Header (Sticky Top with Guaranteed Always-Accessible Quick OK) */}
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2.5 bg-slate-50/98 dark:bg-slate-950/98 backdrop-blur-md sticky top-0 z-30 shrink-0 shadow-xs">
+          <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+            <div className="w-10 h-10 rounded-2xl bg-[#007ba8]/10 dark:bg-[#007ba8]/20 flex items-center justify-center text-[#007ba8] dark:text-teal-400 shrink-0">
               <Sliders className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h2 id="accessibility-title" className="text-lg font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2 flex-wrap">
+                <h2 id="accessibility-title" className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white truncate">
                   {t('settings.title', 'Display & Accessibility Settings')}
                 </h2>
                 {activeCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 font-mono text-[11px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-[#007ba8]/15 text-[#007ba8] dark:text-teal-300 font-mono text-[11px] font-bold shrink-0">
                     {activeCount} active
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                 {t('settings.subtitle', 'Customize text size, contrast, colors, and reading tools')}
               </p>
             </div>
           </div>
 
-          <button
-            id="accessibility-close-btn"
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            aria-label="Close settings"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-2 shrink-0">
+            <button
+              type="button"
+              id="accessibility-ok-top-btn"
+              onClick={onClose}
+              className="modal-ok-btn px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl bg-[#007ba8] hover:bg-[#006185] active:bg-[#004e6b] text-white font-bold text-xs sm:text-sm flex items-center space-x-1.5 cursor-pointer shadow-md active:scale-95 transition-all ring-2 ring-white/20 shrink-0 min-h-[36px]"
+              title="OK (Apply settings and close)"
+              aria-label="OK, apply settings and close"
+            >
+              <Check className="w-4 h-4 stroke-[2.5]" />
+              <span>OK</span>
+            </button>
+            <button
+              id="accessibility-close-btn"
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              aria-label="Close settings"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto space-y-6 text-sm">
+        {/* Modal Scrollable Body - min-h-0 guarantees flex shrink and sticky footer preservation */}
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 text-sm flex-1 min-h-0 overscroll-contain focus:outline-none">
 
           {/* SECTION 1: THEME SELECTION */}
           <div className="space-y-2.5">
@@ -403,7 +423,7 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
                 <button
                   type="button"
                   onClick={() => handleZoomChange(1)}
-                  disabled={settings.zoomLevel >= 150}
+                  disabled={settings.zoomLevel >= 200}
                   className="flex-1 sm:flex-initial p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   title="Zoom In (+)"
                   aria-label="Zoom in"
@@ -413,15 +433,15 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
               </div>
 
               {/* Preset buttons */}
-              <div className="grid grid-cols-5 gap-1.5 w-full">
-                {[90, 100, 110, 125, 150].map((pct) => (
+              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 w-full">
+                {[90, 100, 110, 125, 150, 175, 200].map((pct) => (
                   <button
                     key={pct}
                     type="button"
                     onClick={() => setZoomPreset(pct)}
-                    className={`py-2 px-1 rounded-xl text-xs font-mono font-semibold transition-all cursor-pointer ${
+                    className={`py-2 px-1.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all cursor-pointer text-center min-h-[36px] ${
                       settings.zoomLevel === pct
-                        ? 'bg-[#007ba8] text-white shadow-xs'
+                        ? 'bg-[#007ba8] text-white shadow-xs ring-2 ring-[#007ba8]/30 scale-102'
                         : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
@@ -601,26 +621,43 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
 
         </div>
 
-        {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 flex items-center justify-between">
+        {/* Modal Sticky Footer - Guaranteed to remain pinned, visible, and 100% clickable at any zoom level */}
+        <div className="modal-sticky-footer px-4 sm:px-6 py-3 sm:py-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/98 dark:bg-slate-950/98 backdrop-blur-md flex items-center justify-between gap-3 sticky bottom-0 z-40 shrink-0 shadow-lg">
           <button
             type="button"
             onClick={handleResetDefaults}
-            className="inline-flex items-center space-x-1.5 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-semibold cursor-pointer py-1.5 px-2.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center space-x-1.5 text-xs sm:text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-semibold cursor-pointer py-2 px-3 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors shrink-0"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-4 h-4" />
             <span>{t('settings.reset_btn', 'Reset Defaults')}</span>
           </button>
 
           <button
             type="button"
+            id="accessibility-ok-btn"
             onClick={onClose}
-            className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#007ba8] hover:bg-[#006185] text-white font-bold text-xs shadow-sm transition-all cursor-pointer active:scale-95"
+            className="modal-ok-btn inline-flex items-center justify-center space-x-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl bg-[#007ba8] hover:bg-[#006185] active:bg-[#004e6b] text-white font-extrabold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95 min-h-[46px] min-w-[130px] ring-2 ring-white/30 shrink-0"
+            title="OK (Apply settings and close)"
+            aria-label="OK, apply settings and close"
           >
-            <Check className="w-4 h-4" />
-            <span>{t('settings.close_btn', 'Done')}</span>
+            <Check className="w-5 h-5 stroke-[2.5]" />
+            <span>{t('settings.close_btn', 'OK / Done')}</span>
           </button>
         </div>
+      </div>
+
+      {/* Floating Quick OK Button for Mobile / Extreme Zoom Accessibility */}
+      <div className="sm:hidden fixed bottom-3 right-3 z-60 pointer-events-auto">
+        <button
+          type="button"
+          id="accessibility-ok-floating-btn"
+          onClick={onClose}
+          className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#007ba8] hover:bg-[#006185] text-white font-bold text-xs shadow-2xl border-2 border-white/50 active:scale-95 cursor-pointer backdrop-blur-md ring-2 ring-black/20"
+          aria-label="OK, apply settings and close"
+        >
+          <Check className="w-4 h-4 stroke-[3]" />
+          <span>OK</span>
+        </button>
       </div>
     </div>
   );

@@ -36,6 +36,8 @@ interface HeaderProps {
   activeAccessibilityCount?: number;
   upcomingSessionText: string;
   centralTimeDisplay?: string;
+  zoomLevel?: number;
+  onQuickZoom?: (delta: number) => void;
 }
 
 interface TabConfig {
@@ -63,6 +65,8 @@ export const Header: React.FC<HeaderProps> = ({
   activeAccessibilityCount = 0,
   upcomingSessionText,
   centralTimeDisplay,
+  zoomLevel = 100,
+  onQuickZoom,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
@@ -442,12 +446,39 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Accessibility & Display Settings Button (Replaces the Light/Dark Mode button) */}
+            {/* Quick Zoom Stepper for Instant GitHub Text & Button Scaling */}
+            {onQuickZoom && (
+              <div className="flex items-center space-x-1 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onQuickZoom(-1)}
+                  className="px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs sm:text-sm cursor-pointer active:scale-95 transition-all"
+                  title="Make Font & Buttons Smaller (Zoom Out)"
+                  aria-label="Decrease text size"
+                >
+                  A-
+                </button>
+                <span className="font-mono text-xs font-bold text-[#007ba8] dark:text-teal-400 px-1">
+                  {zoomLevel}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onQuickZoom(1)}
+                  className="px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-[#007ba8] dark:text-teal-400 font-bold text-xs sm:text-sm cursor-pointer active:scale-95 transition-all"
+                  title="Make Font & Buttons Bigger (Zoom In)"
+                  aria-label="Increase text size"
+                >
+                  A+
+                </button>
+              </div>
+            )}
+
+            {/* Accessibility & Display Settings Button */}
             <button
               id="header-settings-btn"
               type="button"
               onClick={onOpenSettings}
-              className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 hover:text-[#007ba8] dark:hover:text-teal-300 transition-all cursor-pointer active:scale-95 group"
+              className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 hover:text-[#007ba8] dark:hover:text-teal-300 transition-all cursor-pointer active:scale-95 group shrink-0"
               title="Display & Accessibility Settings"
               aria-label="Open display and accessibility settings"
             >
