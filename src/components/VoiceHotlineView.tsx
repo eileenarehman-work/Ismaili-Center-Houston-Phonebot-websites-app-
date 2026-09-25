@@ -839,7 +839,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
           {/* Top Row: Phone Console & Keypad side-by-side on desktop/horizontal */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch w-full scroll-reveal">
             {/* Top-Left: Virtual Phone Console (Phone Button & Voice Controls) */}
-            <div className="flex flex-col p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-lg border border-slate-800 space-y-2.5">
+            <div className="flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-lg border border-slate-800 space-y-2.5 min-h-[470px]">
               {/* Top Status Header */}
               <div className="w-full flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-1.5 font-mono">
                 <span className="flex items-center gap-1.5">
@@ -886,19 +886,73 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
                 </div>
               </div>
 
-              {/* Primary Action Call Button - Placed directly here with zero dead space so finding it is effortless */}
-              <div className="w-full space-y-1.5 pt-0.5">
+              {/* Reactive Sound Waveform Visualizer */}
+              <div className="w-full bg-slate-950/90 rounded-xl p-2 border border-slate-800 flex items-center justify-center space-x-1 sm:space-x-1.5 h-8 sm:h-9">
+                {[40, 65, 85, 95, 70, 50, 80, 100, 60, 45, 75, 55].map((h, i) => {
+                  const isAnimated = (operatorSpeaking || isListening) && (callState === 'connected' || callState === 'ringing');
+                  return (
+                    <span
+                      key={i}
+                      className={`w-1 sm:w-1.5 rounded-full transition-all duration-150 ${
+                        operatorSpeaking 
+                          ? 'bg-rose-500 animate-pulse' 
+                          : isListening 
+                          ? 'bg-emerald-400 animate-pulse' 
+                          : callState === 'on_hold'
+                          ? 'bg-amber-400 animate-pulse'
+                          : 'bg-slate-700'
+                      }`}
+                      style={{
+                        height: isAnimated ? `${Math.max(6, (h * ((i % 3) + 1.2)) / 4.5)}px` : '4px',
+                        animationDelay: `${(i * 0.08).toFixed(2)}s`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Accessible Pace & Voice Selector */}
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
+                  <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Voice:</span>
+                  <select
+                    value={selectedVoiceType}
+                    onChange={(e) => setSelectedVoiceType(e.target.value as any)}
+                    className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
+                  >
+                    <option value="uk-male" className="bg-slate-900">UK Male</option>
+                    <option value="us-female" className="bg-slate-900">US Female</option>
+                    <option value="system" className="bg-slate-900">Device</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
+                  <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Pace:</span>
+                  <select
+                    value={speechRate}
+                    onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                    className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
+                  >
+                    <option value={0.85} className="bg-slate-900">0.85x Gentle</option>
+                    <option value={0.92} className="bg-slate-900">0.92x Normal</option>
+                    <option value={1.0} className="bg-slate-900">1.0x Fast</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Primary Action Section: Big Phone Call Button / Voice Station */}
+              <div className="w-full flex flex-col justify-end space-y-1.5">
                 {callState === 'idle' || callState === 'ended' ? (
-                  <div className="w-full space-y-1">
+                  <div className="w-full space-y-1 py-1">
                     <button
                       type="button"
                       onClick={startCall}
-                      className="btn-zoom-scale w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-base sm:text-lg shadow-lg hover:shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2.5 active:scale-95 cursor-pointer ring-2 ring-emerald-400/40"
+                      className="btn-zoom-scale w-full py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base sm:text-lg shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                     >
                       <Phone className="w-5 h-5 fill-current shrink-0" />
                       <span>Start AI Voice Helper</span>
                     </button>
-                    <p className="text-[11px] text-slate-400 text-center font-medium">
+                    <p className="text-[11px] text-slate-400 text-center">
                       Tap to speak or press any number on keypad
                     </p>
                   </div>
@@ -1030,96 +1084,42 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
                         <span className="text-[9px]">End</span>
                       </button>
                     </div>
-
-                    {/* Quick Spoken Topics Chips in-call */}
-                    <div className="pt-0.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                        Quick Spoken Topics:
-                      </span>
-                      <div className="grid grid-cols-2 gap-1">
-                        {[
-                          'What are visiting hours?',
-                          'What time is evening prayer?',
-                          'Book an architectural tour',
-                          'Where is free parking?',
-                        ].map((prompt) => (
-                          <button
-                            key={prompt}
-                            type="button"
-                            onClick={() => {
-                              addTranscriptEntry('You (Voice Prompt)', prompt);
-                              handleUserVoiceInput(prompt);
-                            }}
-                            disabled={operatorSpeaking || isProcessingVoice || callState === 'on_hold'}
-                            className="p-1 rounded-md text-[11px] bg-slate-800/80 hover:bg-rose-950/60 text-slate-200 hover:text-rose-200 border border-slate-700 text-left transition-all truncate active:scale-95 disabled:opacity-50 cursor-pointer"
-                            title={prompt}
-                          >
-                            "{prompt}"
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 )}
-              </div>
 
-              {/* Reactive Sound Waveform Visualizer */}
-              <div className="w-full bg-slate-950/90 rounded-xl p-2 border border-slate-800 flex items-center justify-center space-x-1 sm:space-x-1.5 h-8 sm:h-9">
-                {[40, 65, 85, 95, 70, 50, 80, 100, 60, 45, 75, 55].map((h, i) => {
-                  const isAnimated = (operatorSpeaking || isListening) && (callState === 'connected' || callState === 'ringing');
-                  return (
-                    <span
-                      key={i}
-                      className={`w-1 sm:w-1.5 rounded-full transition-all duration-150 ${
-                        operatorSpeaking 
-                          ? 'bg-rose-500 animate-pulse' 
-                          : isListening 
-                          ? 'bg-emerald-400 animate-pulse' 
-                          : callState === 'on_hold' 
-                          ? 'bg-amber-400 animate-pulse' 
-                          : 'bg-slate-700'
-                      }`}
-                      style={{
-                        height: isAnimated ? `${Math.max(6, (h * ((i % 3) + 1.2)) / 4.5)}px` : '4px',
-                        animationDelay: `${(i * 0.08).toFixed(2)}s`,
-                      }}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Accessible Pace & Voice Selector */}
-              <div className="grid grid-cols-2 gap-1.5 text-xs">
-                <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
-                  <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Voice:</span>
-                  <select
-                    value={selectedVoiceType}
-                    onChange={(e) => setSelectedVoiceType(e.target.value as any)}
-                    className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
-                  >
-                    <option value="uk-male" className="bg-slate-900">UK Male</option>
-                    <option value="us-female" className="bg-slate-900">US Female</option>
-                    <option value="system" className="bg-slate-900">Device</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2 py-1">
-                  <span className="text-slate-400 font-semibold shrink-0 text-[11px]">Pace:</span>
-                  <select
-                    value={speechRate}
-                    onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                    className="bg-transparent text-slate-200 text-xs outline-none w-full font-medium cursor-pointer"
-                  >
-                    <option value={0.85} className="bg-slate-900">0.85x Gentle</option>
-                    <option value={0.92} className="bg-slate-900">0.92x Normal</option>
-                    <option value={1.0} className="bg-slate-900">1.0x Fast</option>
-                  </select>
+                {/* Quick Spoken Topics Chips */}
+                <div className="pt-0.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Quick Spoken Topics:
+                  </span>
+                  <div className="grid grid-cols-2 gap-1">
+                    {[
+                      'What are visiting hours?',
+                      'What time is evening prayer?',
+                      'Book an architectural tour',
+                      'Where is free parking?',
+                    ].map((prompt) => (
+                      <button
+                        key={prompt}
+                        type="button"
+                        onClick={() => {
+                          addTranscriptEntry('You (Voice Prompt)', prompt);
+                          handleUserVoiceInput(prompt);
+                        }}
+                        disabled={operatorSpeaking || isProcessingVoice || callState === 'on_hold'}
+                        className="p-1 rounded-md text-[11px] bg-slate-800/80 hover:bg-rose-950/60 text-slate-200 hover:text-rose-200 border border-slate-700 text-left transition-all truncate active:scale-95 disabled:opacity-50 cursor-pointer"
+                        title={prompt}
+                      >
+                        "{prompt}"
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Top-Right: Keypad & Directory */}
-            <div className="flex flex-col bg-white dark:bg-[#131d2e] rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 min-h-[470px]">
               {/* Keypad Header */}
               <div className="border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
                 <div>

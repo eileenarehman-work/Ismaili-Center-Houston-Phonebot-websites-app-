@@ -188,16 +188,16 @@ export const Header: React.FC<HeaderProps> = ({
             <Logo size="md" />
           </div>
 
-          {/* Quick status pills - Central Time & Next Session (desktop) - Matching uniform dimensions */}
-          <div className="hidden lg:flex items-center space-x-2.5">
+          {/* Quick status pills - Central Time & Next Session (desktop) */}
+          <div className="hidden lg:flex items-center space-x-3">
             {/* Central Time indicator */}
             {centralTimeDisplay && (
               <div 
-                className="h-11 sm:h-12 px-4 sm:px-5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2.5 text-sm sm:text-base text-slate-700 dark:text-slate-300 shrink-0 select-none"
+                className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300"
                 title="Current time in Houston (Central Time)"
               >
-                <Clock className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-[#007ba8] dark:text-teal-400 shrink-0" />
-                <span className="font-bold text-slate-800 dark:text-slate-100 font-mono text-sm sm:text-base">
+                <Clock className="w-4 h-4 text-[#007ba8] dark:text-teal-400" />
+                <span className="font-bold text-slate-800 dark:text-slate-100 font-mono text-sm">
                   {centralTimeDisplay}
                 </span>
               </div>
@@ -206,10 +206,10 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Next prayer countdown pill */}
             <div 
               onClick={() => onSelectTab('schedule')}
-              className="cursor-pointer h-11 sm:h-12 px-4 sm:px-5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2.5 text-sm sm:text-base hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors shrink-0 select-none"
+              className="cursor-pointer px-4 py-1.5 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-xs flex items-center space-x-2 text-sm hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors"
               title="Next congregational prayer in Houston Central Time"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-slate-600 dark:text-slate-400 font-medium">Next:</span>
               <span className="text-emerald-700 dark:text-emerald-400 font-bold">{upcomingSessionText}</span>
             </div>
@@ -218,42 +218,42 @@ export const Header: React.FC<HeaderProps> = ({
               href="https://the.ismaili/us/en/spaces/ismaili-center-houston/tours"
               target="_blank"
               rel="noopener noreferrer"
-              className="h-11 sm:h-12 inline-flex items-center space-x-2 px-4 sm:px-5 rounded-full bg-[#007ba8]/10 hover:bg-[#007ba8]/20 text-[#007ba8] dark:text-teal-300 dark:bg-teal-950/40 text-sm sm:text-base font-bold transition-all border border-[#007ba8]/30 shrink-0 shadow-xs active:scale-95"
+              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-[#007ba8]/10 hover:bg-[#007ba8]/20 text-[#007ba8] dark:text-teal-300 dark:bg-teal-950/40 text-sm font-bold transition-all border border-[#007ba8]/30"
               title="Official Ismaili Center Houston Portal - Guided Architectural Tours"
             >
               <span>Book Tour</span>
-              <ExternalLink className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
 
-          {/* Right Action buttons - Uniform height and size */}
-          <div className="flex items-center space-x-2.5">
+          {/* Right Action buttons */}
+          <div className="flex items-center space-x-2">
             {/* Organized Admin Key Button & Navigation Hub */}
-            <div className="relative shrink-0" ref={adminDropdownRef}>
+            <div className="relative" ref={adminDropdownRef}>
               {isAdmin ? (
-                <div className="h-11 sm:h-12 inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/15 dark:bg-amber-500/25 shadow-xs ring-1 ring-amber-500/40 text-sm sm:text-base font-bold shrink-0">
+                <div className="inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/15 dark:bg-amber-500/25 shadow-xs ring-1 ring-amber-500/40 text-xs font-semibold">
                   {/* Main Admin Console trigger */}
                   <button
                     id="header-admin-key-btn"
                     type="button"
                     onClick={() => onOpenAdmin('calls')}
-                    className="h-full flex items-center space-x-2 pl-4 sm:pl-5 pr-2.5 text-amber-900 dark:text-amber-100 hover:bg-amber-500/20 transition-colors cursor-pointer rounded-l-full font-bold"
+                    className="flex items-center space-x-1.5 pl-3 pr-2 py-1.5 text-amber-900 dark:text-amber-100 hover:bg-amber-500/20 transition-colors cursor-pointer rounded-l-full"
                     title="Open Admin Console"
                   >
-                    <KeyRound className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400 animate-pulse shrink-0" />
-                    <span>Admin Active</span>
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+                    <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
+                    <span className="font-bold">Admin Active</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
                   </button>
 
                   {/* Dropdown toggle for quick navigation */}
                   <button
                     type="button"
                     onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
-                    className="h-full px-2.5 sm:px-3 text-amber-800 dark:text-amber-200 hover:bg-amber-500/30 border-l border-amber-500/40 transition-colors cursor-pointer rounded-r-full flex items-center justify-center"
+                    className="px-2 py-1.5 text-amber-800 dark:text-amber-200 hover:bg-amber-500/30 border-l border-amber-500/40 transition-colors cursor-pointer rounded-r-full"
                     title="Admin Quick Navigation Menu"
                     aria-expanded={isAdminDropdownOpen}
                   >
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isAdminDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isAdminDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </div>
               ) : (
@@ -261,13 +261,13 @@ export const Header: React.FC<HeaderProps> = ({
                   id="header-admin-key-btn"
                   type="button"
                   onClick={() => onOpenAdmin('calls')}
-                  className="h-11 sm:h-12 flex items-center space-x-2 px-4 sm:px-5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400 transition-all cursor-pointer active:scale-95 group shrink-0"
+                  className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400 transition-all cursor-pointer active:scale-95 group"
                   title="Staff & Lead Access"
                   aria-label="Open Lead & Admin Login"
                 >
-                  <KeyRound className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-slate-500 dark:text-slate-400 group-hover:rotate-45 group-hover:text-amber-500 transition-transform duration-200 shrink-0" />
-                  <span>Admin Key</span>
-                  <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-xs text-slate-500 dark:text-slate-400 font-mono font-bold">
+                  <KeyRound className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:rotate-45 group-hover:text-amber-500 transition-transform duration-200" />
+                  <span className="font-bold">Admin Key</span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-700 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                     Staff
                   </span>
                 </button>
@@ -446,25 +446,25 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Quick Zoom Stepper for Instant GitHub Text & Button Scaling - Uniform Height & Size */}
+            {/* Quick Zoom Stepper for Instant GitHub Text & Button Scaling */}
             {onQuickZoom && (
-              <div className="h-11 sm:h-12 flex items-center space-x-1 px-3 sm:px-3.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 shadow-xs shrink-0 select-none">
+              <div className="flex items-center space-x-1 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs shrink-0">
                 <button
                   type="button"
                   onClick={() => onQuickZoom(-1)}
-                  className="h-full px-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm sm:text-base cursor-pointer active:scale-95 transition-all flex items-center"
+                  className="px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs sm:text-sm cursor-pointer active:scale-95 transition-all"
                   title="Make Font & Buttons Smaller (Zoom Out)"
                   aria-label="Decrease text size"
                 >
                   A-
                 </button>
-                <span className="font-mono text-xs sm:text-sm font-bold text-[#007ba8] dark:text-teal-400 px-1">
+                <span className="font-mono text-xs font-bold text-[#007ba8] dark:text-teal-400 px-1">
                   {zoomLevel}%
                 </span>
                 <button
                   type="button"
                   onClick={() => onQuickZoom(1)}
-                  className="h-full px-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-[#007ba8] dark:text-teal-400 font-bold text-sm sm:text-base cursor-pointer active:scale-95 transition-all flex items-center"
+                  className="px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-[#007ba8] dark:text-teal-400 font-bold text-xs sm:text-sm cursor-pointer active:scale-95 transition-all"
                   title="Make Font & Buttons Bigger (Zoom In)"
                   aria-label="Increase text size"
                 >
@@ -473,19 +473,19 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
 
-            {/* Accessibility & Display Settings Button - Uniform Height & Size */}
+            {/* Accessibility & Display Settings Button */}
             <button
               id="header-settings-btn"
               type="button"
               onClick={onOpenSettings}
-              className="h-11 sm:h-12 flex items-center space-x-2 px-4 sm:px-5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 hover:text-[#007ba8] dark:hover:text-teal-300 transition-all cursor-pointer active:scale-95 group shrink-0"
+              className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:border-[#007ba8] dark:hover:border-teal-400 hover:text-[#007ba8] dark:hover:text-teal-300 transition-all cursor-pointer active:scale-95 group shrink-0"
               title="Display & Accessibility Settings"
               aria-label="Open display and accessibility settings"
             >
-              <Settings className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300 group-hover:rotate-45 transition-transform duration-300 group-hover:text-[#007ba8] dark:group-hover:text-teal-300 shrink-0" />
+              <Settings className="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:rotate-45 transition-transform duration-300 group-hover:text-[#007ba8] dark:group-hover:text-teal-300" />
               <span className="hidden sm:inline">Settings</span>
               {activeAccessibilityCount > 0 && (
-                <span className="w-2.5 h-2.5 rounded-full bg-[#007ba8] dark:bg-teal-400 animate-pulse shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-[#007ba8] dark:bg-teal-400 animate-pulse" />
               )}
             </button>
 
@@ -493,7 +493,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="h-11 w-11 md:hidden flex items-center justify-center rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-slate-800 shrink-0"
+              className="md:hidden p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-slate-800"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -501,9 +501,9 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Desktop Navigation Tabs - Slightly larger with high prominence and uniform touch target */}
+        {/* Desktop Navigation Tabs - Full Horizontal Tab Bar with High Legibility & Compact Padding */}
         <nav 
-          className="hidden md:grid gap-2.5 py-2 sm:py-2.5 border-t border-slate-200/60 dark:border-slate-800 w-full"
+          className="hidden md:grid gap-2 py-1.5 sm:py-2 border-t border-slate-200/60 dark:border-slate-800 w-full"
           style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
         >
           {tabs.map((tab) => {
@@ -515,21 +515,19 @@ export const Header: React.FC<HeaderProps> = ({
                 whileTap={{ scale: 0.96 }}
                 onClick={() => onSelectTab(tab.id)}
                 title={`${tab.label} (Press ${tab.shortcut})`}
-                className={`w-full min-h-[50px] sm:min-h-[52px] flex items-center justify-center space-x-2.5 px-3 sm:px-4 py-3 rounded-xl text-base sm:text-lg font-extrabold transition-all duration-200 cursor-pointer select-none text-center shadow-xs ${
+                className={`w-full flex items-center justify-center space-x-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-200 cursor-pointer select-none text-center ${
                   isActive
                     ? `${tab.activeClass} shadow-md`
                     : `${tab.inactiveClass} ${tab.inactiveHoverClass}`
                 }`}
               >
-                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
+                <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
                 <span className={`shrink-0 ${isActive ? 'text-white' : tab.iconColorClass}`}>
-                  {React.isValidElement(tab.icon) 
-                    ? React.cloneElement(tab.icon as React.ReactElement<{ className?: string }>, { className: 'w-5 h-5' }) 
-                    : tab.icon}
+                  {tab.icon}
                 </span>
-                <span className="whitespace-nowrap font-extrabold text-base sm:text-lg">{tab.label}</span>
+                <span className="whitespace-nowrap font-bold text-sm sm:text-base">{tab.label}</span>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-md font-mono font-bold shrink-0 ${
+                  className={`text-xs px-1.5 py-0.5 rounded-md font-mono font-bold shrink-0 ${
                     isActive ? tab.badgeActiveClass : tab.badgeInactiveClass
                   }`}
                 >
@@ -540,8 +538,8 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </nav>
 
-        {/* Mobile Horizontal Quick-Tab Strip - Slightly larger tab items */}
-        <nav className="flex md:hidden overflow-x-auto py-2 px-0 gap-2 scrollbar-none border-t border-slate-200/60 dark:border-slate-800 w-full">
+        {/* Mobile Horizontal Quick-Tab Strip - View all full tab names directly on mobile without scrolling */}
+        <nav className="flex md:hidden overflow-x-auto py-1.5 px-0 gap-1.5 scrollbar-none border-t border-slate-200/60 dark:border-slate-800 w-full">
           {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
             return (
@@ -550,13 +548,13 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 whileTap={{ scale: 0.94 }}
                 onClick={() => onSelectTab(tab.id)}
-                className={`shrink-0 min-h-[42px] flex items-center space-x-2 px-4 py-2 rounded-xl text-sm sm:text-base font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`shrink-0 flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
                     ? `${tab.activeClass} shadow-sm`
                     : `${tab.inactiveClass} ${tab.inactiveHoverClass}`
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
                 <span>{tab.label}</span>
               </motion.button>
             );
