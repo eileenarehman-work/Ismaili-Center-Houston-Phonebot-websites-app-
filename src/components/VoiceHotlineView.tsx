@@ -837,7 +837,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
       {mobileLayoutMode === 'stacked' ? (
         <div className="space-y-3 sm:space-y-4 w-full">
           {/* Top Row: Phone Console & Keypad side-by-side on desktop/horizontal */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch w-full scroll-reveal">
             {/* Top-Left: Virtual Phone Console (Phone Button & Voice Controls) */}
             <div className="flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-lg border border-slate-800 space-y-2.5 min-h-[470px]">
               {/* Top Status Header */}
@@ -1205,7 +1205,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
           </div>
 
           {/* Bottom Row: Real-Time Live Conversation Stream (Full Width on Bottom) */}
-          <div className="flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 sm:p-5 shadow-sm space-y-2.5 w-full min-h-[260px]">
+          <div className="flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 sm:p-5 shadow-sm space-y-2.5 w-full min-h-[260px] scroll-reveal scroll-reveal-delay-1">
             {/* Transcript Header */}
             <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
               <div className="flex items-center space-x-2">
@@ -1763,7 +1763,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
       )}
 
       {/* Human Staff Fallback Bar - Compact 1-line layout */}
-      <div className="rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 px-3 py-2">
+      <div className="rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 px-3 py-2 scroll-reveal scroll-reveal-delay-2">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 text-center sm:text-left">
             <HelpCircle className="w-4 h-4 text-emerald-600 shrink-0" />

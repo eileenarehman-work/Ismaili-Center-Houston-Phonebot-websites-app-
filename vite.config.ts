@@ -69,7 +69,10 @@ export default defineConfig(() => {
   const githubRepoBase = process.env.GITHUB_REPOSITORY
     ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/`
     : undefined;
-  const base = process.env.BASE_PATH || githubRepoBase || './';
+  let base = process.env.BASE_PATH || githubRepoBase || './';
+  if (base && !base.endsWith('/') && base !== './') {
+    base = `${base}/`;
+  }
 
   return {
     base,

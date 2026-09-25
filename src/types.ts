@@ -94,6 +94,13 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 export type ContrastMode = 'normal' | 'high' | 'yellow-black';
 export type CursorSize = 'normal' | 'large' | 'extra-large';
 
+export interface LanguageOption {
+  code: string;
+  nativeName: string;
+  englishName: string;
+  dir: 'ltr' | 'rtl' | string;
+}
+
 export interface AccessibilitySettings {
   theme: ThemeMode;
   contrast: ContrastMode;
@@ -105,6 +112,7 @@ export interface AccessibilitySettings {
   enhancedFocus: boolean;
   readingGuide: boolean;
   textToSpeech: boolean;
+  language?: string;
 }
 
 // Lifespan User History Types

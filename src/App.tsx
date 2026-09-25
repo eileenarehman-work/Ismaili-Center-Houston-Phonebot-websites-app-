@@ -24,10 +24,25 @@ import {
   getTourReservations, 
   getPhonebotMetrics 
 } from './utils/phonebotStorage.ts';
-import { Info, Bell, AlertTriangle, X } from 'lucide-react';
+import { Info, Bell, AlertTriangle, X, ArrowUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('hotline');
+  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+
+  // Monitor scroll position for smooth scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 280);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   
   // Accessibility & Display Settings State
   const [accessibilitySettings, setAccessibilitySettings] = useState<AccessibilitySettings>(() => {
@@ -224,38 +239,67 @@ export default function App() {
       )}
 
       {/* Main Container - Full Browser Tab Width & Low-Scroll Viewport */}
-      <main className="flex-1 w-full px-2 sm:px-4 lg:px-6 xl:px-8 py-1.5 sm:py-2.5">
-        <div key={currentTab} className="w-full animate-in fade-in duration-300">
-          {currentTab === 'assistant' && (
-            <AIAssistantView onNavigateToTab={setCurrentTab} />
-          )}
-          {/* Pass isAdmin to VoiceHotlineView: Pipeline inspector button hidden in normal version */}
-          {currentTab === 'hotline' && <VoiceHotlineView isAdmin={isAdmin} />}
-          {currentTab === 'schedule' && (
-            <ScheduleView
-              upcomingSessionText={upcomingSessionText}
-              upcomingSessionName={upcomingSessionName}
-              centralTimeDisplay={centralTimeDisplay}
-            />
-          )}
-          {currentTab === 'visitor' && <VisitorInfoView />}
-          {currentTab === 'videos' && <VideosView />}
-          {currentTab === 'admin' && isAdmin && (
-            <AdminDashboardModal
-              isOpen={true}
-              embedded={true}
-              onClose={() => setCurrentTab('hotline')}
-              onLogout={handleAdminLogout}
-              initialTab={adminInitialTab}
-              onOpenPipelineInspector={() => setIsPipelineInspectorOpen(true)}
-              telemetry={telemetry}
-            />
-          )}
-        </div>
+      <main className="flex-1 w-full px-2 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 overflow-x-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={currentTab}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full"
+          >
+            {currentTab === 'assistant' && (
+              <AIAssistantView onNavigateToTab={setCurrentTab} />
+            )}
+            {/* Pass isAdmin to VoiceHotlineView: Pipeline inspector button hidden in normal version */}
+            {currentTab === 'hotline' && <VoiceHotlineView isAdmin={isAdmin} />}
+            {currentTab === 'schedule' && (
+              <ScheduleView
+                upcomingSessionText={upcomingSessionText}
+                upcomingSessionName={upcomingSessionName}
+                centralTimeDisplay={centralTimeDisplay}
+              />
+            )}
+            {currentTab === 'visitor' && <VisitorInfoView />}
+            {currentTab === 'videos' && <VideosView />}
+            {currentTab === 'admin' && isAdmin && (
+              <AdminDashboardModal
+                isOpen={true}
+                embedded={true}
+                onClose={() => setCurrentTab('hotline')}
+                onLogout={handleAdminLogout}
+                initialTab={adminInitialTab}
+                onOpenPipelineInspector={() => setIsPipelineInspectorOpen(true)}
+                telemetry={telemetry}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Footer */}
       <Footer onSelectTab={setCurrentTab} />
+
+      {/* Smooth Floating Scroll-To-Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            type="button"
+            onClick={handleScrollToTop}
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            className="fixed bottom-6 right-6 z-40 p-3 rounded-full bg-[#007ba8] text-white shadow-xl hover:bg-[#006185] border border-white/20 transition-colors cursor-pointer flex items-center justify-center group"
+            title="Scroll to Top"
+            aria-label="Scroll to top of page"
+          >
+            <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Reading Guide Ruler Overlay */}
       <ReadingGuide enabled={accessibilitySettings.readingGuide} />

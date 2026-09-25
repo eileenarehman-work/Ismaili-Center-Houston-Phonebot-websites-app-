@@ -111,27 +111,50 @@ Guided 45-minute architectural tours run throughout open days. Admission is comp
     },
   },
 
-  // 2. TOUR BOOKING & ADMISSION
+  // 2. GUIDED ARCHITECTURAL TOURS & RESERVATIONS
   {
-    id: 'tours_and_admission',
-    keywords: ['tour', 'tours', 'book', 'booking', 'reserve', 'reservation', 'ticket', 'tickets', 'cost', 'fee', 'price', 'admission', 'free', 'register'],
-    phrases: ['how to book a tour', 'guided tour', 'architectural tour', 'how much does it cost', 'is it free', 'tour booking', 'reserve a spot'],
-    title: 'Tour Reservations & Free Admission',
+    id: 'guided_tours_and_booking',
+    keywords: ['tour', 'tours', 'book', 'booking', 'reserve', 'reservation', 'docent', 'walkthrough', 'register', 'registration', 'signup', 'slot', 'slots'],
+    phrases: ['how to book a tour', 'book a tour', 'guided tour', 'architectural tour', 'how do i book a tour', 'tour booking', 'reserve a spot', 'tour reservation', 'sign up for a tour', 'schedule a tour', 'take a tour'],
+    title: 'Guided Architectural Tours & Reservations',
     generateResponse: () => ({
-      text: `### Guided Architectural Tours & Admission
+      text: `### Guided Architectural Tours & Reservations
 
-- **Admission Cost**: **100% Free** for all visitors, families, and students.
-- **Tour Format**: 45-minute guided architectural walkthroughs led by knowledgeable docents.
+- **How to Book**: Free 45-minute guided architectural tours can be booked directly on the official portal at [the.ismaili/us/ismaili-center-houston](https://the.ismaili/us/ismaili-center-houston).
+- **Tour Cost**: **100% Free** of charge for all visitors, families, and student groups.
+- **Tour Format**: 45-minute docent-led walkthroughs exploring the architecture, shaded verandahs, ceramic screens, and 11-acre Persian gardens.
+- **Tour Days & Times**: Guided tours run throughout public visiting days (**Tuesdays, Thursdays, Saturdays, and Sundays**) between **10:00 AM and 4:00 PM Central Time**.
 - **What You Will Experience**:
-  - The breathtaking geometric ceramic facade screens (*mashrabiya*) and triangular verandahs by architect Farshid Moussavi.
-  - The 11 acres of Persian-inspired *charbagh* gardens and native Texas flora landscaped by Nelson Byrd Woltz.
-  - The civic auditorium, cultural exhibition galleries, and community spaces.
-- **Official Tour Registration**: All tour bookings are hosted exclusively on the official Ismaili Center portal at [the.ismaili/us/ismaili-center-houston](https://the.ismaili/us/ismaili-center-houston). Please reserve directly on the official site.
-- **Walk-Ins**: Accommodated on public days (Tuesday, Thursday, Saturday, Sunday) on a space-available basis, though advance online booking on the official portal is strongly encouraged.`,
+  - The soaring geometric ceramic facade screens (*mashrabiya*) and triangular verandahs by architect Farshid Moussavi OBE, RA.
+  - The 11 acres of contemporary Persian-inspired *charbagh* gardens and native Texas flora landscaped by Nelson Byrd Woltz.
+  - The civic auditorium, cultural exhibition galleries, and community gathering spaces.
+- **Walk-Ins**: Walk-in guests are accommodated on public days on a space-available basis, though advance online booking on the official portal is strongly encouraged to guarantee your preferred time slot.
+- **Need Assistance?**: If you need help reserving or have group inquiries, please call human staff at **+1 (713) 522-2026**.`,
       followUps: [
         'What are the visitor hours on weekends?',
         'Who designed the building?',
         'What is the dress code for visitors?',
+      ],
+    }),
+  },
+
+  // 2B. ADMISSION & GENERAL ENTRY PRICING
+  {
+    id: 'admission_and_costs',
+    keywords: ['cost', 'fee', 'price', 'pricing', 'admission', 'ticket', 'tickets', 'free', 'charge', 'pay', 'expensive'],
+    phrases: ['how much does it cost', 'how much is admission', 'is it free', 'ticket price', 'admission fee', 'do i need a ticket', 'cost to enter', 'admission cost'],
+    title: 'Free Admission & General Entry',
+    generateResponse: () => ({
+      text: `### Free Admission & Entry Pricing
+
+- **Admission Cost**: **100% Free** of charge for all visitors, families, and student groups.
+- **General Access**: No tickets or admission fees are required to stroll the 11-acre gardens, shaded verandas, or cultural exhibition spaces during public hours.
+- **Guided Tours**: Guided 45-minute architectural docent tours are also completely free; reserving your slot online in advance at [the.ismaili/us/ismaili-center-houston](https://the.ismaili/us/ismaili-center-houston) is recommended.
+- **Parking**: Complimentary on-site visitor parking is available free of charge during public visiting hours.`,
+      followUps: [
+        'How do I book a free tour?',
+        'What are the public visiting hours?',
+        'Where is parking located?',
       ],
     }),
   },
@@ -402,8 +425,18 @@ While every Ismaili Center houses a Jamatkhana within its complex, the two serve
   // 13. CAN NON-MUSLIMS VISIT? (PUBLIC ACCESS)
   {
     id: 'public_access_non_muslims',
-    keywords: ['non-muslim', 'non-muslims', 'anyone', 'everyone', 'public', 'welcome', 'allowed', 'can i visit', 'interfaith'],
-    phrases: ['can non muslims visit', 'is it open to everyone', 'am i allowed to go', 'can anyone visit'],
+    keywords: ['non-muslim', 'non-muslims', 'nonmuslim', 'nonmuslims', 'non', 'anyone', 'everyone', 'public', 'welcome', 'allowed', 'interfaith'],
+    phrases: [
+      'can non-muslims visit', 
+      'can non muslims visit', 
+      'can non-muslim visit', 
+      'can non muslim visit', 
+      'is it open to everyone', 
+      'am i allowed to go', 
+      'can anyone visit',
+      'who can visit',
+      'open to the public'
+    ],
     title: 'Public Welcome & Interfaith Inclusivity',
     generateResponse: () => ({
       text: `### Yes! All Visitors Are Warmly Welcome
@@ -450,8 +483,24 @@ While every Ismaili Center houses a Jamatkhana within its complex, the two serve
   // 15. CONTACT INFO & OFFICIAL CHANNELS
   {
     id: 'contact_and_official',
-    keywords: ['contact', 'phone', 'call', 'number', 'email', 'website', 'official', 'hotline', 'representative', 'operator'],
-    phrases: ['phone number', 'how to contact', 'official website', 'call the center', 'information desk', 'talk to operator', 'customer service'],
+    keywords: ['contact', 'phone', 'call', 'number', 'email', 'website', 'official', 'hotline', 'representative', 'operator', 'human', 'staff', 'person', 'agent', 'desk', 'line', '713', 'speak', 'talk'],
+    phrases: [
+      'phone number', 
+      'how to contact', 
+      'official website', 
+      'call the center', 
+      'information desk', 
+      'talk to operator', 
+      'customer service',
+      'speak with a human',
+      'speak to a human',
+      'speak with a person',
+      'speak to a person',
+      'talk to a person',
+      'talk to staff',
+      'call human staff',
+      'information line'
+    ],
     title: 'Official Contact & Communication',
     generateResponse: () => ({
       text: `### Official Contact & Information Channels
@@ -759,9 +808,14 @@ export function queryKnowledgeEngine(rawQuery: string): AssistantResponse {
     const topMatch = scoredTopics[0].topic;
     const generated = topMatch.generateResponse(query, dayName, timeStr);
 
-    // If second topic also had high relevance, append a synthesized note
+    // Only append a second topic if user asked a compound query with very close matching relevance
     let finalReply = generated.text;
-    if (scoredTopics.length > 1 && scoredTopics[1].score >= 6) {
+    if (
+      scoredTopics.length > 1 &&
+      scoredTopics[1].score >= 8 &&
+      scoredTopics[0].score < 14 &&
+      scoredTopics[1].score >= scoredTopics[0].score * 0.75
+    ) {
       const secondary = scoredTopics[1].topic.generateResponse(query, dayName, timeStr);
       finalReply += `\n\n---\n${secondary.text}`;
     }
@@ -877,23 +931,43 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
     q.includes('speak to you')
   ) {
     reply = "I am speaking directly with you! Please ask me any question about visiting hours, Jamatkhana prayer schedules, architectural tours, or the Center.";
+  // Guided Architectural Tours & Booking (Priority for tour/booking queries)
+  } else if (
+    q === '4' ||
+    q === 'four' ||
+    q === 'press 4' ||
+    q === 'press four' ||
+    q.includes('tour') ||
+    q.includes('book') ||
+    q.includes('reserve') ||
+    q.includes('reservation') ||
+    q.includes('docent') ||
+    q.includes('ticket')
+  ) {
+    reply = "Guided architectural tours are completely free and last approximately forty-five minutes. Tours run throughout public visiting days on Tuesdays, Thursdays, Saturdays, and Sundays between 10:00 AM and 4:00 PM Houston Central Time. You can book your free reservation online at ismailicenter dot org or tap 'Book Tour' right on your screen. Press 1 to ask another question, or press 0 for human staff.";
+  } else if (
+    q.includes('cost') ||
+    q.includes('price') ||
+    q.includes('admission') ||
+    q.includes('how much') ||
+    q.includes('is it free') ||
+    q.includes('fee')
+  ) {
+    reply = "Admission to the Ismaili Center Houston and its eleven-acre gardens is completely free for all visitors. Guided architectural tours are also one hundred percent free. Press 4 to reserve a tour, or press 1 to ask me another question.";
   } else if (
     q === '2' ||
     q === 'two' ||
     q === 'press 2' ||
     q === 'press two' ||
-    q.includes('tour') ||
-    q.includes('book') ||
-    q.includes('visit') ||
-    q.includes('open') ||
     q.includes('hour') ||
-    q.includes('when') ||
-    q.includes('admission') ||
-    q.includes('ticket') ||
-    q.includes('cost') ||
-    q.includes('free')
+    q.includes('open') ||
+    q.includes('close') ||
+    q.includes('when is it open') ||
+    q.includes('what time') ||
+    q.includes('visiting hours') ||
+    q.includes('when do you open')
   ) {
-    reply = "The Ismaili Center Houston welcomes all visitors on Tuesdays, Thursdays, Saturdays, and Sundays. Our building and cultural exhibitions are open from 10:00 AM to 4:00 PM Central Time, and the eleven-acre gardens open early at 8:00 AM. Admission is completely free of charge, and you can reserve complimentary guided architectural tours online at ismailicenter dot org.";
+    reply = "The Ismaili Center Houston welcomes all visitors on Tuesdays, Thursdays, Saturdays, and Sundays. Our building and cultural exhibitions are open from 10:00 AM to 4:00 PM Central Time, and the eleven-acre gardens open early at 8:00 AM. Admission is completely free of charge. Press 4 to learn about guided tours, or press 1 to ask me any question.";
   } else if (
     q === '3' ||
     q === 'three' ||
@@ -907,15 +981,6 @@ export function queryPhoneKnowledgeEngine(cleanMessage: string): AssistantRespon
     q.includes('jamatkhana')
   ) {
     reply = "All Jamatkhana prayer times are in US Central Time. Daily silent meditation is from 4:00 to 5:00 AM, followed by morning prayer from 5:00 to 5:30 AM. Evening prayer takes place at 7:00 PM Monday through Thursday, Saturday, and Sunday, and at 7:30 PM on Fridays. While the prayer hall is dedicated to congregational worship, our civic galleries and gardens are open to everyone on visitor days.";
-  } else if (
-    q === '4' ||
-    q === 'four' ||
-    q === 'press 4' ||
-    q === 'press four' ||
-    q.includes('guided tour') ||
-    q.includes('architectural tour')
-  ) {
-    reply = "Guided architectural tours are available on Tuesdays, Thursdays, Saturdays, and Sundays. Each tour lasts approximately forty-five minutes and explores Farshid Moussavi's architecture and the eleven-acre Persian-inspired gardens. You can reserve free tickets online at ismailicenter dot org.";
   } else if (
     q === '5' ||
     q === 'five' ||

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Logo } from './Logo.tsx';
 import { NavigationTab } from '../types.ts';
 import { 
@@ -477,9 +478,10 @@ export const Header: React.FC<HeaderProps> = ({
           {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 type="button"
+                whileTap={{ scale: 0.96 }}
                 onClick={() => onSelectTab(tab.id)}
                 title={`${tab.label} (Press ${tab.shortcut})`}
                 className={`w-full flex items-center justify-center space-x-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-200 cursor-pointer select-none text-center ${
@@ -500,7 +502,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   {tab.shortcut}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </nav>
@@ -510,9 +512,10 @@ export const Header: React.FC<HeaderProps> = ({
           {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 type="button"
+                whileTap={{ scale: 0.94 }}
                 onClick={() => onSelectTab(tab.id)}
                 className={`shrink-0 flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
@@ -522,7 +525,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-white' : tab.dotColorClass}`} />
                 <span>{tab.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </nav>
