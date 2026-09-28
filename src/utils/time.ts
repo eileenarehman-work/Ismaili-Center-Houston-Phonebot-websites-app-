@@ -188,6 +188,36 @@ export function getCentralDateTime(date: Date = new Date()): {
 }
 
 /**
+ * Robust cross-platform date parser compatible with all computer OS and browsers
+ * (Safeguards against Safari, Firefox, Edge, and mobile WebKit date parsing discrepancies)
+ */
+export function parseCrossPlatformDate(input?: string | Date | number): Date {
+  if (!input) return new Date(NaN);
+  if (input instanceof Date) return input;
+  if (typeof input === 'number') return new Date(input);
+  if (typeof input !== 'string') return new Date(NaN);
+
+  const trimmed = input.trim();
+  if (!trimmed) return new Date(NaN);
+
+  // 1. Standard ISO parse
+  let d = new Date(trimmed);
+  if (!isNaN(d.getTime())) return d;
+
+  // 2. Remove timezone suffixes and colloquial words that break Safari/Firefox JavaScriptCore
+  // e.g., "Sep 24, 2026, 11:15 AM CT" -> "Sep 24, 2026, 11:15 AM"
+  const sanitized = trimmed
+    .replace(/\b(CT|CDT|CST)\b/gi, '')
+    .replace(/\s+at\s+/gi, ' ')
+    .trim();
+
+  d = new Date(sanitized);
+  if (!isNaN(d.getTime())) return d;
+
+  return new Date(NaN);
+}
+
+/**
  * Formats any input (Date, string, number) into verified Date + Time in Central Time
  */
 export function formatCentralDateAndTime(input?: string | Date | number): { date: string; time: string; full: string } {
@@ -195,7 +225,7 @@ export function formatCentralDateAndTime(input?: string | Date | number): { date
     const current = getCentralDateTime();
     return { date: current.date, time: current.time, full: current.shortFull };
   }
-  const d = typeof input === 'string' || typeof input === 'number' ? new Date(input) : input;
+  const d = parseCrossPlatformDate(input);
   if (isNaN(d.getTime())) {
     const fallback = getCentralDateTime();
     return { date: fallback.date, time: fallback.time, full: String(input) };
@@ -224,7 +254,7 @@ export function formatRelativeCentralTimestamp(input?: string | Date | number): 
     if (input.startsWith('Today at ')) {
       return input;
     }
-    date = new Date(input);
+    date = parseCrossPlatformDate(input);
   } else if (typeof input === 'number') {
     date = new Date(input);
   } else {

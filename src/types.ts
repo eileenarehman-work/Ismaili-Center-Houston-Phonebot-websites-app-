@@ -105,7 +105,7 @@ export interface AccessibilitySettings {
   theme: ThemeMode;
   contrast: ContrastMode;
   cursorSize: CursorSize;
-  zoomLevel: number; // e.g. 90, 100, 110, 125, 150
+  zoomLevel: number; // e.g. 80, 90, 100, 110, 125, 150
   dyslexiaFont: boolean;
   reducedMotion: boolean;
   highlightLinks: boolean;

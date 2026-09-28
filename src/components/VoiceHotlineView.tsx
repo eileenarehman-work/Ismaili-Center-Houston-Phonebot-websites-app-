@@ -340,7 +340,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
     lastBotSpeechTextRef.current = text;
     lastBotSpeechTimeRef.current = Date.now();
 
-    // Phonetically humanize text: ensures "Ismaili" is pronounced "Iss-my-lee", expands times, formats phone number
+    // Phonetically humanize text: ensures "Ismaili" is pronounced accurately as "Ismaili" (not "es ismaili"), expands times, formats phone number
     const spokenText = humanizeSpokenText(text);
 
     const utterance = new SpeechSynthesisUtterance(spokenText);

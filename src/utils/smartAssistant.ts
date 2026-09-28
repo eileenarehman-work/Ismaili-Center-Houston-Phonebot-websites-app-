@@ -891,15 +891,16 @@ export function cleanSpokenPhoneText(text: string): string {
     .replace(/[*#~`_\[\]]/g, '')
     // Clean raw URLs
     .replace(/https?:\/\/[^\s]+/g, 'at ismailicenter dot org')
-    // Ensure "Ismaili" is strictly pronounced with crisp 'S' ("Iss-my-lee") and NEVER with 'SH' ("Ishmaili")
-    .replace(/\bIsmailis\b/g, 'Iss-my-lees')
-    .replace(/\bismailis\b/g, 'iss-my-lees')
-    .replace(/\bIsmaili's\b/g, "Iss-my-lee's")
-    .replace(/\bismaili's\b/g, "iss-my-lee's")
-    .replace(/\bIsmaili\b/g, 'Iss-my-lee')
-    .replace(/\bismaili\b/g, 'iss-my-lee')
-    .replace(/\bISMAILI\b/g, 'Iss-my-lee')
-    .replace(/\bIsmailism\b/g, 'Iss-my-lee-ism')
+    // PRONUNCIATION INTEGRITY:
+    // Ensure "Ismaili" is pronounced accurately as "Ismaili" and NEVER "es ismaili", "es-my-lee", or spelled out
+    .replace(/\bISMAILIS\b/g, 'Ismailis')
+    .replace(/\bISMAILI\b/g, 'Ismaili')
+    .replace(/\bISMAILISM\b/g, 'Ismailism')
+    .replace(/\bIss-my-lees\b/gi, 'Ismailis')
+    .replace(/\bIss-my-lee's\b/gi, "Ismaili's")
+    .replace(/\bIss-my-lee\b/gi, 'Ismaili')
+    .replace(/\bes\s+ismaili\b/gi, 'Ismaili')
+    .replace(/\bes-ismaili\b/gi, 'Ismaili')
     // Smooth time dashes like 10:00 AM – 4:00 PM -> 10:00 AM to 4:00 PM
     .replace(/(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[–—\-]\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))/g, '$1 to $2')
     // Smooth phone number for speech synthesis

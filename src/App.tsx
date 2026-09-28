@@ -92,6 +92,15 @@ export default function App() {
     setAnnouncement(getAdminAnnouncement());
   };
 
+  useEffect(() => {
+    window.addEventListener('ich_phonebot_data_updated', handleRefreshData);
+    window.addEventListener('storage', handleRefreshData);
+    return () => {
+      window.removeEventListener('ich_phonebot_data_updated', handleRefreshData);
+      window.removeEventListener('storage', handleRefreshData);
+    };
+  }, []);
+
   // Synchronize accessibility settings with DOM and persistent storage
   useEffect(() => {
     applyAccessibilityToDOM(accessibilitySettings);

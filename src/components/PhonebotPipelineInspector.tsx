@@ -242,7 +242,7 @@ export const PhonebotPipelineInspector: React.FC<PhonebotPipelineInspectorProps>
                     {telemetry.ttsEngine}
                   </p>
                   <div className="pt-1 text-[10px] text-rose-600 dark:text-rose-400 font-medium border-t border-slate-100 dark:border-slate-700/60">
-                    Phonetic "Iss-my-lee"
+                    Pronunciation: "Ismaili"
                   </div>
                 </div>
 

@@ -1,248 +1,310 @@
 import { CallerMessage, TourReservation, PhonebotCallMetrics } from '../types.ts';
 import { logLifespanEvent } from './userHistoryStorage.ts';
+import { getCentralDateTime } from './time.ts';
 
-const MESSAGES_KEY = 'ich_phonebot_messages_v3';
-const RESERVATIONS_KEY = 'ich_phonebot_reservations_v3';
-const METRICS_KEY = 'ich_phonebot_metrics_v3';
+const MESSAGES_KEY = 'ich_phonebot_messages_v4';
+const RESERVATIONS_KEY = 'ich_phonebot_reservations_v4';
+const METRICS_KEY = 'ich_phonebot_metrics_v4';
+
+// In-memory fallback ensuring 100% compatibility across all computers (Safari private mode, restricted iframes, disabled storage)
+const memoryStorage: Record<string, string> = {};
+
+function safeGet(key: string): string | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
+    }
+  } catch {}
+  return memoryStorage[key] || null;
+}
+
+function safeSet(key: string, val: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, val);
+    }
+  } catch {}
+  memoryStorage[key] = val;
+}
+
+function safeRemove(key: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(key);
+    }
+  } catch {}
+  delete memoryStorage[key];
+}
+
+// Known legacy fabricated mock caller names and IDs from older templates - strictly eliminated
+const FABRICATED_CALLER_NAMES = new Set([
+  'David Reynolds',
+  'Noorudin Valliani',
+  'Salima Manji',
+  'Sarah Jenkins',
+  'Dr. Tariq Merchant',
+]);
+
+const FABRICATED_MESSAGE_IDS = new Set([
+  'msg-today-1',
+  'msg-yesterday-1',
+  'msg-yesterday-2',
+]);
+
+const FABRICATED_VISITOR_NAMES = new Set([
+  'Aliyah Patel',
+  'Farhan Karmali',
+  'Elena Rostova',
+  'Marcus Chen',
+]);
+
+const FABRICATED_RESERVATION_IDS = new Set([
+  'res-today-1',
+  'res-yesterday-1',
+]);
 
 // Purge any legacy fabricated mock entries from previous versions
 if (typeof window !== 'undefined') {
   try {
-    localStorage.removeItem('ich_phonebot_messages_v1');
-    localStorage.removeItem('ich_phonebot_reservations_v1');
-    localStorage.removeItem('ich_phonebot_metrics_v1');
-    localStorage.removeItem('ich_phonebot_messages_v2');
-    localStorage.removeItem('ich_phonebot_reservations_v2');
-    localStorage.removeItem('ich_phonebot_metrics_v2');
+    safeRemove('ich_phonebot_messages_v1');
+    safeRemove('ich_phonebot_reservations_v1');
+    safeRemove('ich_phonebot_metrics_v1');
+    safeRemove('ich_phonebot_messages_v2');
+    safeRemove('ich_phonebot_reservations_v2');
+    safeRemove('ich_phonebot_metrics_v2');
+    safeRemove('ich_phonebot_messages_v3');
+    safeRemove('ich_phonebot_reservations_v3');
+    safeRemove('ich_phonebot_metrics_v3');
   } catch {}
 }
 
-// Accurate default messages with timestamps from yesterday and today
-const INITIAL_MESSAGES: CallerMessage[] = [
-  {
-    id: 'msg-today-1',
-    callerName: 'David Reynolds',
-    callerPhone: '(713) 555-0176',
-    department: 'Administration',
-    messageText: 'Following up regarding photography and sketch easel guidelines in the public garden courtyards during morning visiting hours.',
-    urgency: 'routine',
-    createdAt: 'Today at 10:15 AM CT',
-    status: 'pending',
-  },
-  {
-    id: 'msg-yesterday-2',
-    callerName: 'Noorudin Valliani',
-    callerPhone: '(713) 555-0198',
-    department: 'Visitor Services',
-    messageText: 'Inquiring about designated ADA parking and step-free entrance locations near Montrose Blvd for Saturday tour with elderly parents.',
-    urgency: 'routine',
-    createdAt: 'Yesterday at 05:40 PM CT',
-    status: 'reviewed',
-  },
-  {
-    id: 'msg-yesterday-1',
-    callerName: 'Salima Manji',
-    callerPhone: '(832) 555-0142',
-    department: 'Tours & Architecture',
-    messageText: 'Requesting details on guided architectural tour bookings for an educational group of 15 visitors from Austin.',
-    urgency: 'routine',
-    createdAt: 'Yesterday at 03:15 PM CT',
-    status: 'reviewed',
-  },
-];
+// Strict zero-fabrication initial state: empty arrays
+export const INITIAL_MESSAGES: CallerMessage[] = [];
+export const INITIAL_RESERVATIONS: TourReservation[] = [];
 
-// Accurate default reservations with timestamps from yesterday and today
-const INITIAL_RESERVATIONS: TourReservation[] = [
-  {
-    id: 'res-today-1',
-    confirmationCode: 'ICH-TOUR-2026-9432',
-    visitorName: 'Aliyah Patel',
-    partySize: 2,
-    tourDate: 'Sunday, Sep 27',
-    timeSlot: '01:30 PM',
-    contactEmailOrPhone: 'aliyah.patel@example.com',
-    createdAt: 'Today at 09:45 AM CT',
-    status: 'confirmed',
-  },
-  {
-    id: 'res-yesterday-1',
-    confirmationCode: 'ICH-TOUR-2026-7821',
-    visitorName: 'Farhan Karmali',
-    partySize: 4,
-    tourDate: 'Saturday, Sep 26',
-    timeSlot: '10:30 AM',
-    contactEmailOrPhone: '(713) 555-0182',
-    createdAt: 'Yesterday at 02:30 PM CT',
-    status: 'confirmed',
-  },
-];
-
-// Initial call metrics
-const INITIAL_METRICS: PhonebotCallMetrics = {
-  totalCalls: 4,
-  inquiriesResolved: 4,
-  toursBooked: 2,
-  messagesRecorded: 3,
+export const INITIAL_METRICS: PhonebotCallMetrics = {
+  totalCalls: 0,
+  inquiriesResolved: 0,
+  toursBooked: 0,
+  messagesRecorded: 0,
   handoffsEscalated: 0,
-  minutesSaved: 28,
+  minutesSaved: 0,
 };
 
+/**
+ * Retrieve genuine caller messages. Strictly non-fabricated.
+ */
 export function getCallerMessages(): CallerMessage[] {
-  if (typeof window === 'undefined') return INITIAL_MESSAGES;
+  const raw = safeGet(MESSAGES_KEY);
+  if (!raw) {
+    safeSet(MESSAGES_KEY, JSON.stringify([]));
+    return [];
+  }
   try {
-    const raw = localStorage.getItem(MESSAGES_KEY);
-    if (!raw) {
-      localStorage.setItem(MESSAGES_KEY, JSON.stringify(INITIAL_MESSAGES));
-      return INITIAL_MESSAGES;
-    }
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(MESSAGES_KEY, JSON.stringify(INITIAL_MESSAGES));
-      return INITIAL_MESSAGES;
-    }
-    // Filter out any unwanted test names
-    const filtered = parsed.filter((m: CallerMessage) => !['Sarah Jenkins', 'Dr. Tariq Merchant'].includes(m.callerName));
-
-    // ACCURACY NORMALIZATION:
-    // If all existing messages have "Today at", update older messages to "Yesterday at ..."
-    const allToday = filtered.every((m: CallerMessage) => m.createdAt && m.createdAt.includes('Today'));
-    if (allToday && filtered.length >= 2) {
-      const midpoint = Math.ceil(filtered.length / 2);
-      const normalized = filtered.map((m: CallerMessage, idx: number) => {
-        if (idx >= midpoint) {
-          return {
-            ...m,
-            createdAt: m.createdAt.replace('Today at', 'Yesterday at'),
-          };
-        }
-        return m;
-      });
-      localStorage.setItem(MESSAGES_KEY, JSON.stringify(normalized));
-      return normalized;
+      safeSet(MESSAGES_KEY, JSON.stringify([]));
+      return [];
     }
 
-    return filtered;
+    // Filter out any fabricated or mock entries
+    const genuine = parsed.filter(
+      (m: CallerMessage) =>
+        m &&
+        m.id &&
+        !FABRICATED_MESSAGE_IDS.has(m.id) &&
+        !FABRICATED_CALLER_NAMES.has(m.callerName)
+    );
+
+    if (genuine.length !== parsed.length) {
+      safeSet(MESSAGES_KEY, JSON.stringify(genuine));
+    }
+
+    return genuine;
   } catch {
-    return INITIAL_MESSAGES;
+    safeSet(MESSAGES_KEY, JSON.stringify([]));
+    return [];
   }
 }
 
+/**
+ * Save a real caller message left by a visitor.
+ */
 export function saveCallerMessage(msg: Omit<CallerMessage, 'id' | 'createdAt' | 'status'>): CallerMessage {
   const current = getCallerMessages();
+  const central = getCentralDateTime();
   const newMsg: CallerMessage = {
     ...msg,
-    id: `msg-${Date.now()}`,
-    createdAt: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' CT',
+    id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    createdAt: `Today at ${central.time}`,
     status: 'pending',
   };
   const updated = [newMsg, ...current];
-  try {
-    localStorage.setItem(MESSAGES_KEY, JSON.stringify(updated));
-    incrementMetric('messagesRecorded');
-    incrementMetric('minutesSaved', 6);
-    logLifespanEvent({
-      type: 'caller_message',
-      title: `Voicemail Recorded: ${newMsg.callerName}`,
-      summary: `${newMsg.callerName} (${newMsg.callerPhone}) left a message for ${newMsg.department}.`,
-      userIdentifier: `${newMsg.callerName} (${newMsg.callerPhone})`,
-      status: 'pending',
-      details: {
-        department: newMsg.department,
-        urgency: newMsg.urgency,
-        message: newMsg.messageText,
-      },
-    });
-  } catch {}
+  safeSet(MESSAGES_KEY, JSON.stringify(updated));
+  incrementMetric('messagesRecorded');
+  incrementMetric('minutesSaved', 6);
+
+  logLifespanEvent({
+    type: 'caller_message',
+    title: `Voicemail Recorded: ${newMsg.callerName}`,
+    summary: `${newMsg.callerName} (${newMsg.callerPhone}) left a message for ${newMsg.department}.`,
+    userIdentifier: `${newMsg.callerName} (${newMsg.callerPhone})`,
+    status: 'pending',
+    details: {
+      department: newMsg.department,
+      urgency: newMsg.urgency,
+      message: newMsg.messageText,
+    },
+  });
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('ich_phonebot_data_updated'));
+    } catch {}
+  }
+
   return newMsg;
 }
 
-export function updateMessageStatus(id: string, status: 'pending' | 'reviewed' | 'resolved') {
+export function updateMessageStatus(id: string, status: 'pending' | 'reviewed' | 'resolved'): CallerMessage[] {
   const current = getCallerMessages();
   const updated = current.map(m => m.id === id ? { ...m, status } : m);
-  try {
-    localStorage.setItem(MESSAGES_KEY, JSON.stringify(updated));
-  } catch {}
+  safeSet(MESSAGES_KEY, JSON.stringify(updated));
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('ich_phonebot_data_updated'));
+    } catch {}
+  }
+
   return updated;
 }
 
-export function deleteCallerMessage(id: string) {
+export function deleteCallerMessage(id: string): CallerMessage[] {
   const current = getCallerMessages();
   const updated = current.filter(m => m.id !== id);
-  try {
-    localStorage.setItem(MESSAGES_KEY, JSON.stringify(updated));
-  } catch {}
+  safeSet(MESSAGES_KEY, JSON.stringify(updated));
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('ich_phonebot_data_updated'));
+    } catch {}
+  }
+
   return updated;
 }
 
+/**
+ * Retrieve genuine tour reservations/intake inquiries. Strictly non-fabricated.
+ */
 export function getTourReservations(): TourReservation[] {
-  if (typeof window === 'undefined') return INITIAL_RESERVATIONS;
+  const raw = safeGet(RESERVATIONS_KEY);
+  if (!raw) {
+    safeSet(RESERVATIONS_KEY, JSON.stringify([]));
+    return [];
+  }
   try {
-    const raw = localStorage.getItem(RESERVATIONS_KEY);
-    if (!raw) {
-      localStorage.setItem(RESERVATIONS_KEY, JSON.stringify(INITIAL_RESERVATIONS));
-      return INITIAL_RESERVATIONS;
-    }
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return INITIAL_RESERVATIONS;
-    return parsed.filter((r: TourReservation) => !['Elena Rostova', 'Marcus Chen'].includes(r.visitorName));
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      safeSet(RESERVATIONS_KEY, JSON.stringify([]));
+      return [];
+    }
+
+    // Filter out any fabricated or mock entries
+    const genuine = parsed.filter(
+      (r: TourReservation) =>
+        r &&
+        r.id &&
+        !FABRICATED_RESERVATION_IDS.has(r.id) &&
+        !FABRICATED_VISITOR_NAMES.has(r.visitorName)
+    );
+
+    if (genuine.length !== parsed.length) {
+      safeSet(RESERVATIONS_KEY, JSON.stringify(genuine));
+    }
+
+    return genuine;
   } catch {
-    return INITIAL_RESERVATIONS;
+    safeSet(RESERVATIONS_KEY, JSON.stringify([]));
+    return [];
   }
 }
 
+/**
+ * Save a real tour reservation/intake inquiry.
+ */
 export function saveTourReservation(res: Omit<TourReservation, 'id' | 'confirmationCode' | 'createdAt' | 'status'>): TourReservation {
   const current = getTourReservations();
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+  const central = getCentralDateTime();
   const newRes: TourReservation = {
     ...res,
-    id: `res-${Date.now()}`,
+    id: `res-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     confirmationCode: `ICH-TOUR-2026-${randomSuffix}`,
-    createdAt: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' CT',
+    createdAt: `Today at ${central.time}`,
     status: 'confirmed',
   };
   const updated = [newRes, ...current];
-  try {
-    localStorage.setItem(RESERVATIONS_KEY, JSON.stringify(updated));
-    incrementMetric('toursBooked');
-    incrementMetric('inquiriesResolved');
-    incrementMetric('minutesSaved', 8);
-    logLifespanEvent({
-      type: 'tour_booking',
-      title: `Tour Reserved: ${newRes.visitorName}`,
-      summary: `Confirmed architectural tour for ${newRes.partySize} ${newRes.partySize === 1 ? 'person' : 'people'} on ${newRes.tourDate} at ${newRes.timeSlot}.`,
-      userIdentifier: `${newRes.visitorName} (${newRes.contactEmailOrPhone})`,
-      status: 'confirmed',
-      details: {
-        confirmationCode: newRes.confirmationCode,
-        partySize: newRes.partySize,
-        tourDate: newRes.tourDate,
-        timeSlot: newRes.timeSlot,
-      },
-    });
-  } catch {}
+  safeSet(RESERVATIONS_KEY, JSON.stringify(updated));
+  incrementMetric('toursBooked');
+  incrementMetric('inquiriesResolved');
+  incrementMetric('minutesSaved', 8);
+
+  logLifespanEvent({
+    type: 'tour_booking',
+    title: `Tour Reserved: ${newRes.visitorName}`,
+    summary: `Confirmed architectural tour for ${newRes.partySize} ${newRes.partySize === 1 ? 'person' : 'people'} on ${newRes.tourDate} at ${newRes.timeSlot}.`,
+    userIdentifier: `${newRes.visitorName} (${newRes.contactEmailOrPhone})`,
+    status: 'confirmed',
+    details: {
+      confirmationCode: newRes.confirmationCode,
+      partySize: newRes.partySize,
+      tourDate: newRes.tourDate,
+      timeSlot: newRes.timeSlot,
+    },
+  });
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('ich_phonebot_data_updated'));
+    } catch {}
+  }
+
   return newRes;
 }
 
 export function getPhonebotMetrics(): PhonebotCallMetrics {
-  if (typeof window === 'undefined') return INITIAL_METRICS;
+  const raw = safeGet(METRICS_KEY);
+  if (!raw) {
+    safeSet(METRICS_KEY, JSON.stringify(INITIAL_METRICS));
+    return { ...INITIAL_METRICS };
+  }
   try {
-    const raw = localStorage.getItem(METRICS_KEY);
-    if (!raw) {
-      localStorage.setItem(METRICS_KEY, JSON.stringify(INITIAL_METRICS));
-      return INITIAL_METRICS;
-    }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return {
+      totalCalls: Number(parsed.totalCalls) || 0,
+      inquiriesResolved: Number(parsed.inquiriesResolved) || 0,
+      toursBooked: Number(parsed.toursBooked) || 0,
+      messagesRecorded: Number(parsed.messagesRecorded) || 0,
+      handoffsEscalated: Number(parsed.handoffsEscalated) || 0,
+      minutesSaved: Number(parsed.minutesSaved) || 0,
+    };
   } catch {
-    return INITIAL_METRICS;
+    return { ...INITIAL_METRICS };
   }
 }
 
-export function incrementMetric(field: keyof PhonebotCallMetrics, amount: number = 1) {
+export function incrementMetric(field: keyof PhonebotCallMetrics, amount: number = 1): PhonebotCallMetrics {
   const current = getPhonebotMetrics();
-  current[field] += amount;
-  try {
-    localStorage.setItem(METRICS_KEY, JSON.stringify(current));
-  } catch {}
+  current[field] = (current[field] || 0) + amount;
+  safeSet(METRICS_KEY, JSON.stringify(current));
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('ich_phonebot_data_updated'));
+    } catch {}
+  }
+
   return current;
 }
 
@@ -284,7 +346,7 @@ export function generateVapiAgentConfig(): string {
     name: "Ismaili Center Houston AI Phonebot",
     voice: {
       provider: "11labs",
-      voiceId: "brian", // Or George / Natural British Male
+      voiceId: "brian",
       stability: 0.75,
       similarityBoost: 0.85,
     },

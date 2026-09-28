@@ -81,12 +81,12 @@ export const AccessibilitySettingsModal: React.FC<AccessibilitySettingsModalProp
   };
 
   const handleZoomChange = (delta: number) => {
-    const validLevels = [90, 100, 110, 125, 150];
+    const validLevels = [80, 90, 100, 110, 125, 150];
     const currentIndex = validLevels.indexOf(settings.zoomLevel);
     
     if (currentIndex === -1) {
       // Find closest
-      const nextLevel = Math.max(90, Math.min(150, settings.zoomLevel + delta * 10));
+      const nextLevel = Math.max(80, Math.min(150, settings.zoomLevel + delta * 5));
       onUpdateSettings({ ...settings, zoomLevel: nextLevel });
       return;
     }

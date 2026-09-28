@@ -6,6 +6,36 @@ import { getCentralDateTime, formatCentralDateAndTime } from './time.ts';
 const ANONYMOUS_CALLS_KEY = 'ich_anonymous_calls_v2';
 const LEGACY_ANONYMOUS_KEY = 'ich_anonymous_calls_v1';
 
+// Universal in-memory fallback for computers with restricted or private storage
+const memoryStore: Record<string, string> = {};
+
+function safeGet(key: string): string | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
+    }
+  } catch {}
+  return memoryStore[key] || null;
+}
+
+function safeSet(key: string, val: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, val);
+    }
+  } catch {}
+  memoryStore[key] = val;
+}
+
+function safeRemove(key: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(key);
+    }
+  } catch {}
+  delete memoryStore[key];
+}
+
 // Honest, non-fabricated initial state: zero fake calls
 export const INITIAL_CALLS: AnonymousCallRecord[] = [];
 
@@ -24,35 +54,31 @@ const FABRICATED_CALL_IDS = new Set([
  * Purges any legacy fabricated mock entries and guarantees every call has verified Date & Time.
  */
 export function getAnonymousCalls(): AnonymousCallRecord[] {
-  if (typeof window === 'undefined') return INITIAL_CALLS;
   try {
     // Purge legacy storage key if present
-    if (localStorage.getItem(LEGACY_ANONYMOUS_KEY)) {
+    const oldRaw = safeGet(LEGACY_ANONYMOUS_KEY);
+    if (oldRaw) {
       try {
-        const oldRaw = localStorage.getItem(LEGACY_ANONYMOUS_KEY);
-        if (oldRaw) {
-          const oldCalls = JSON.parse(oldRaw);
-          if (Array.isArray(oldCalls)) {
-            // Only migrate non-fabricated calls
-            const realOnly = oldCalls.filter((c: any) => !FABRICATED_CALL_IDS.has(c.id));
-            if (realOnly.length > 0 && !localStorage.getItem(ANONYMOUS_CALLS_KEY)) {
-              localStorage.setItem(ANONYMOUS_CALLS_KEY, JSON.stringify(realOnly));
-            }
+        const oldCalls = JSON.parse(oldRaw);
+        if (Array.isArray(oldCalls)) {
+          const realOnly = oldCalls.filter((c: any) => !FABRICATED_CALL_IDS.has(c.id));
+          if (realOnly.length > 0 && !safeGet(ANONYMOUS_CALLS_KEY)) {
+            safeSet(ANONYMOUS_CALLS_KEY, JSON.stringify(realOnly));
           }
         }
-        localStorage.removeItem(LEGACY_ANONYMOUS_KEY);
       } catch {}
+      safeRemove(LEGACY_ANONYMOUS_KEY);
     }
 
-    const raw = localStorage.getItem(ANONYMOUS_CALLS_KEY);
+    const raw = safeGet(ANONYMOUS_CALLS_KEY);
     if (!raw) {
-      localStorage.setItem(ANONYMOUS_CALLS_KEY, JSON.stringify([]));
+      safeSet(ANONYMOUS_CALLS_KEY, JSON.stringify([]));
       return [];
     }
 
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      localStorage.setItem(ANONYMOUS_CALLS_KEY, JSON.stringify([]));
+      safeSet(ANONYMOUS_CALLS_KEY, JSON.stringify([]));
       return [];
     }
 
@@ -71,7 +97,7 @@ export function getAnonymousCalls(): AnonymousCallRecord[] {
       });
 
     if (genuineCalls.length !== parsed.length) {
-      localStorage.setItem(ANONYMOUS_CALLS_KEY, JSON.stringify(genuineCalls));
+      safeSet(ANONYMOUS_CALLS_KEY, JSON.stringify(genuineCalls));
     }
 
     return genuineCalls;
@@ -122,14 +148,7 @@ export function saveAnonymousCall(
   };
 
   const updated = [newRecord, ...existing];
-
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(ANONYMOUS_CALLS_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.warn('Error persisting call record to localStorage', e);
-    }
-  }
+  safeSet(ANONYMOUS_CALLS_KEY, JSON.stringify(updated));
 
   // Synchronize Phonebot total call metrics
   incrementMetric('totalCalls', 1);
@@ -177,13 +196,7 @@ export function saveAnonymousCall(
 export function deleteAnonymousCall(id: string): AnonymousCallRecord[] {
   const existing = getAnonymousCalls();
   const updated = existing.filter((c) => c.id !== id);
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(ANONYMOUS_CALLS_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.warn('Error deleting call record', e);
-    }
-  }
+  safeSet(ANONYMOUS_CALLS_KEY, JSON.stringify(updated));
   return updated;
 }
 
@@ -191,12 +204,7 @@ export function deleteAnonymousCall(id: string): AnonymousCallRecord[] {
  * Clear all call records (admin reset)
  */
 export function clearAnonymousCalls(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(ANONYMOUS_CALLS_KEY, JSON.stringify([]));
-  } catch (e) {
-    console.warn('Error clearing call records', e);
-  }
+  safeSet(ANONYMOUS_CALLS_KEY, JSON.stringify([]));
 }
 
 /**

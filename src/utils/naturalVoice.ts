@@ -3,8 +3,8 @@
  * 
  * Strict configuration:
  * 1. Exclusively uses "Google UK English Male (en-GB)"
- * 2. Phonetic correction ensuring "Ismaili" is always pronounced with a crisp 'S'
- *    ("Iss-my-lee") and NEVER with a 'SH' ("Ishmaili")
+ * 2. Proper pronunciation ensuring "Ismaili" is pronounced accurately as "Ismaili"
+ *    and NEVER as "es ismaili", "es-my-lee", or spelled out letter-by-letter
  */
 
 /**
@@ -89,9 +89,8 @@ export function getSelectedVoice(voiceType: 'uk-male' | 'us-female' | 'system', 
 
 /**
  * Phonetically pre-processes text before sending to SpeechSynthesis:
- * - Phonetically replaces "Ismaili" -> "Iss-my-lee" so speech engines never pronounce it as "Ishmaili"
- * - Phonetically replaces "Ismailis" -> "Iss-my-lees"
- * - Replaces "Ismaili's" -> "Iss-my-lee's"
+ * - Ensures "Ismaili" is pronounced accurately as "Ismaili" (NOT "es ismaili", "es-my-lee", or spelled out)
+ * - Normalizes all-caps "ISMAILI" to "Ismaili" so engines don't spell "I-S-M-A-I-L-I"
  * - Formats times (10:00 AM -> 10:00 A M, Central Time)
  * - Inserts natural breathing pauses
  * - Strips all markdown, symbols, asterisks, brackets, and raw URLs
@@ -115,17 +114,18 @@ export function humanizeSpokenText(text: string): string {
     .replace(/[*#~`_\[\]]/g, '')
     .replace(/https?:\/\/[^\s]+/g, 'at ismailicenter dot org');
 
-  // 2. CRITICAL PHONETIC FIX: Pronounce "Ismaili" strictly with crisp 'S' ("Iss-my-lee") and NEVER "Ishmaili"
-  // Many TTS engines mistakenly associate "Ismail" with "Ishmael", causing an unwanted "sh" sound.
-  // Using "Iss-my-lee" guarantees unvoiced /s/ and correct diphthong /maɪ/.
-  t = t.replace(/\bIsmailis\b/g, 'Iss-my-lees');
-  t = t.replace(/\bismailis\b/g, 'iss-my-lees');
-  t = t.replace(/\bIsmaili's\b/g, "Iss-my-lee's");
-  t = t.replace(/\bismaili's\b/g, "iss-my-lee's");
-  t = t.replace(/\bIsmaili\b/g, 'Iss-my-lee');
-  t = t.replace(/\bismaili\b/g, 'iss-my-lee');
-  t = t.replace(/\bISMAILI\b/g, 'Iss-my-lee');
-  t = t.replace(/\bIsmailism\b/g, 'Iss-my-lee-ism');
+  // 2. PRONUNCIATION INTEGRITY:
+  // Pronounce "Ismaili" accurately as "Ismaili" and NEVER "es ismaili" or "es-my-lee".
+  // Prevent TTS engines from spelling out all-caps "ISMAILI" (which sounds like "eye-es-...")
+  t = t.replace(/\bISMAILIS\b/g, 'Ismailis');
+  t = t.replace(/\bISMAILI\b/g, 'Ismaili');
+  t = t.replace(/\bISMAILISM\b/g, 'Ismailism');
+  // Strip any accidental legacy phonetic substitutions or "es ismaili" artifacts
+  t = t.replace(/\bIss-my-lees\b/gi, 'Ismailis');
+  t = t.replace(/\bIss-my-lee's\b/gi, "Ismaili's");
+  t = t.replace(/\bIss-my-lee\b/gi, 'Ismaili');
+  t = t.replace(/\bes\s+ismaili\b/gi, 'Ismaili');
+  t = t.replace(/\bes-ismaili\b/gi, 'Ismaili');
 
   // Additional Islamic architectural / center terms for natural pronunciation
   t = t.replace(/\bJamatkhana\b/g, 'Jah-maht-khana');

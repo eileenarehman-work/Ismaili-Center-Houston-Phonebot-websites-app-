@@ -270,6 +270,21 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       if (!embedded) {
         document.body.style.overflow = 'hidden';
       }
+
+      const handleDataUpdate = () => {
+        refreshData();
+      };
+
+      window.addEventListener('ich_history_updated', handleDataUpdate);
+      window.addEventListener('ich_phonebot_data_updated', handleDataUpdate);
+      window.addEventListener('storage', handleDataUpdate);
+
+      return () => {
+        window.removeEventListener('ich_history_updated', handleDataUpdate);
+        window.removeEventListener('ich_phonebot_data_updated', handleDataUpdate);
+        window.removeEventListener('storage', handleDataUpdate);
+        document.body.style.overflow = '';
+      };
     } else {
       document.body.style.overflow = '';
     }
@@ -1190,7 +1205,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                                 </span>
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-slate-700 dark:text-slate-300">
                                   <Calendar className="w-2.5 h-2.5 text-amber-500" />
-                                  <span>{evt.date || 'Sep 24, 2026'}</span>
+                                  <span>{evt.date || 'Today'}</span>
                                 </span>
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-slate-700 dark:text-slate-300">
                                   <Clock className="w-2.5 h-2.5 text-amber-500" />
@@ -1370,7 +1385,15 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
               <div className="space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-8">No messages recorded in mailbox.</p>
+                  <div className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-slate-500">
+                    <Inbox className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      No voicemails or intake messages recorded yet.
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Real messages left by callers through the Voice Hotline will appear here automatically. Zero data is fabricated.
+                    </p>
+                  </div>
                 ) : (
                   messages.map((msg) => (
                     <div
