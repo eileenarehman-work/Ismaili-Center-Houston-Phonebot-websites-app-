@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Clock, 
   Sun, 
@@ -12,6 +12,7 @@ import {
   Hourglass
 } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal.ts';
+import { getLatestSyncedData, subscribeToSyncUpdates, SyncedIsmailiPayload } from '../utils/syncData.ts';
 
 interface ScheduleViewProps {
   upcomingSessionText: string;
@@ -25,12 +26,26 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
   centralTimeDisplay,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [syncedData, setSyncedData] = useState<SyncedIsmailiPayload>(() => getLatestSyncedData());
 
   // Activate scroll-triggered reveal animations
   useScrollReveal();
 
+  useEffect(() => {
+    const unsub = subscribeToSyncUpdates((data) => setSyncedData(data));
+    const handleStorage = () => setSyncedData(getLatestSyncedData());
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      unsub();
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
+  const prayerSchedule = syncedData.centerData.prayerSchedule;
+  const visitingHours = syncedData.centerData.visitingHours;
+
   const copySchedule = () => {
-    const text = `Ismaili Center Houston - Jamatkhana Prayer Schedule (Central Time):\n- Bandagi: 4:00 AM – 5:00 AM daily CT\n- Morning Dua: 5:00 AM – 5:30 AM daily CT\n- Evening Prayer: 7:00 PM (Mon-Thu, Sat, Sun); 7:30 PM (Fridays) CT\n\nVisitor Hours: Tuesdays, Thursdays, Saturdays, and Sundays (Building: 10:00 AM – 4:00 PM CT; Gardens: 8:00 AM – 4:00 PM CT). Tours: https://ismailicenter.org/tour-booking/`;
+    const text = `Ismaili Center Houston - Jamatkhana Prayer Schedule (Central Time):\n- Bandagi: ${prayerSchedule.bandagi}\n- Morning Dua: ${prayerSchedule.morningDua}\n- Evening Prayer: ${prayerSchedule.eveningPrayerStandard}; ${prayerSchedule.eveningPrayerFriday}\n\nVisitor Hours: ${visitingHours.days.join(', ')} (Building: ${visitingHours.buildingHours}; Gardens: ${visitingHours.gardensHours}). Tours: https://ismailicenter.org/tour-booking/`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -106,7 +121,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             </div>
             <div className="pt-3 border-t border-amber-200/60 dark:border-amber-800/40">
               <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
-                4:00 AM – 5:00 AM
+                {prayerSchedule.bandagi}
               </p>
               <span className="text-[11px] text-slate-400 font-medium">Daily</span>
             </div>
@@ -127,7 +142,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             </div>
             <div className="pt-3 border-t border-teal-200/60 dark:border-teal-800/40">
               <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
-                5:00 AM – 5:30 AM
+                {prayerSchedule.morningDua}
               </p>
             </div>
           </div>
@@ -148,11 +163,11 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             <div className="pt-3 border-t border-indigo-200/60 dark:border-indigo-800/40 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Fridays:</span>
-                <span className="text-lg font-bold text-slate-800 dark:text-slate-100">7:30 PM</span>
+                <span className="text-lg font-bold text-slate-800 dark:text-slate-100">{prayerSchedule.eveningPrayerFriday}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Mon – Thu, Sat & Sun:</span>
-                <span className="text-lg font-bold text-slate-800 dark:text-slate-100">7:00 PM</span>
+                <span className="text-lg font-bold text-slate-800 dark:text-slate-100">{prayerSchedule.eveningPrayerStandard}</span>
               </div>
             </div>
           </div>

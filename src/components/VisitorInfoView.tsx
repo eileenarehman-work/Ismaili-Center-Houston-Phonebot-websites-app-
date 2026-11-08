@@ -28,6 +28,7 @@ import { CenterExperience, NavigationTab } from '../types.ts';
 import { useScrollReveal } from '../hooks/useScrollReveal.ts';
 import { getSmartAssistantResponse, extractSuggestedFollowUps } from '../utils/smartAssistant.ts';
 import { humanizeSpokenText, getGoogleUKEnglishMaleVoice } from '../utils/naturalVoice.ts';
+import { getLatestSyncedData, subscribeToSyncUpdates, SyncedIsmailiPayload } from '../utils/syncData.ts';
 
 interface VisitorInfoViewProps {
   activeTab?: 'navigations' | 'events';
@@ -57,6 +58,7 @@ export const VisitorInfoView: React.FC<VisitorInfoViewProps> = ({
   const [experiences, setExperiences] = useState<CenterExperience[]>(() => getCenterExperiences());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const [syncedData, setSyncedData] = useState<SyncedIsmailiPayload>(() => getLatestSyncedData());
 
   // Interactive Navigation & Google Maps Guide State
   const [navQuery, setNavQuery] = useState('');
@@ -85,9 +87,14 @@ The Ismaili Center Houston is located at the intersection of Montrose Boulevard 
   useEffect(() => {
     const handleStorageChange = () => {
       setExperiences(getCenterExperiences());
+      setSyncedData(getLatestSyncedData());
     };
+    const unsub = subscribeToSyncUpdates((data) => setSyncedData(data));
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => {
+      unsub();
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleAskNav = async (queryText: string) => {
@@ -566,25 +573,25 @@ The Ismaili Center Houston is located at the intersection of Montrose Boulevard 
                   <span>Public Visitor Opening Days</span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  Tuesdays, Thursdays, Saturdays &amp; Sundays
+                  {syncedData.centerData.visitingHours.days.join(', ')}
                 </h3>
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200">
                   <span className="flex items-center space-x-1.5">
                     <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span><strong>Building:</strong> 10:00 AM – 4:00 PM</span>
+                    <span><strong>Building:</strong> {syncedData.centerData.visitingHours.buildingHours}</span>
                   </span>
                   <span className="flex items-center space-x-1.5">
                     <TreePine className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span><strong>Gardens:</strong> 8:00 AM – 4:00 PM</span>
+                    <span><strong>Gardens:</strong> {syncedData.centerData.visitingHours.gardensHours}</span>
                   </span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-200/60 dark:bg-emerald-800/50 text-emerald-800 dark:text-emerald-200 text-xs font-semibold">
-                    Admission is Free
+                    {syncedData.centerData.visitingHours.admission || 'Admission is Free'}
                   </span>
                 </div>
               </div>
 
               <a
-                href={OFFICIAL_TOUR_URL}
+                href={syncedData.centerData.visitingHours.officialTourPortal || OFFICIAL_TOUR_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-all shadow-md self-start md:self-center flex-shrink-0 active:scale-95 cursor-pointer"

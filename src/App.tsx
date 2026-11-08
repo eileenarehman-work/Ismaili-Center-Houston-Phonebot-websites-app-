@@ -13,6 +13,7 @@ import { AdminLoginModal } from './components/AdminLoginModal.tsx';
 import { AdminDashboardModal } from './components/AdminDashboardModal.tsx';
 import { PhonebotPipelineInspector } from './components/PhonebotPipelineInspector.tsx';
 import { calculateCentralPrayerCountdown, getCentralTimeInfo } from './utils/time.ts';
+import { subscribeToSyncUpdates } from './utils/syncData.ts';
 import { 
   getStoredAccessibilitySettings, 
   saveAccessibilitySettings, 
@@ -140,7 +141,14 @@ export default function App() {
     calculateCountdown();
     // Update every 5 seconds for real-time accuracy and ticking clock
     const interval = setInterval(calculateCountdown, 5000);
-    return () => clearInterval(interval);
+    const unsub = subscribeToSyncUpdates(() => calculateCountdown());
+    const handleStorage = () => calculateCountdown();
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      clearInterval(interval);
+      unsub();
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   // Global Keyboard Shortcuts (1-5 for instant desktop navigation)
@@ -164,10 +172,10 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isAdmin]);
 
-  const [adminInitialTab, setAdminInitialTab] = useState<'calls' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony'>('calls');
+  const [adminInitialTab, setAdminInitialTab] = useState<'calls' | 'timings' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony'>('calls');
 
   // Handle Admin Key Button Click with optional direct navigation tab
-  const handleOpenAdmin = (tab: 'calls' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony' = 'calls') => {
+  const handleOpenAdmin = (tab: 'calls' | 'timings' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony' = 'calls') => {
     setAdminInitialTab(tab);
     if (isAdmin) {
       handleRefreshData();

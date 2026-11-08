@@ -277,6 +277,49 @@ export function saveSyncedData(payload: SyncedIsmailiPayload): void {
 }
 
 /**
+ * Updates prayer schedule and/or visiting hours directly from Admin Console
+ */
+export function updateCenterTimings(timings: {
+  prayerSchedule?: Partial<OfficialCenterData['prayerSchedule']>;
+  visitingHours?: Partial<OfficialCenterData['visitingHours']>;
+}): SyncedIsmailiPayload {
+  const current = getLatestSyncedData();
+  const updated: SyncedIsmailiPayload = {
+    ...current,
+    centerData: {
+      ...current.centerData,
+      visitingHours: {
+        ...current.centerData.visitingHours,
+        ...(timings.visitingHours || {}),
+      },
+      prayerSchedule: {
+        ...current.centerData.prayerSchedule,
+        ...(timings.prayerSchedule || {}),
+      },
+    },
+  };
+  saveSyncedData(updated);
+  return updated;
+}
+
+/**
+ * Resets center timings back to baseline official default values
+ */
+export function resetCenterTimingsToDefault(): SyncedIsmailiPayload {
+  const current = getLatestSyncedData();
+  const updated: SyncedIsmailiPayload = {
+    ...current,
+    centerData: {
+      ...current.centerData,
+      visitingHours: OFFICIAL_CENTER_INFO.visitingHours,
+      prayerSchedule: OFFICIAL_CENTER_INFO.prayerSchedule,
+    },
+  };
+  saveSyncedData(updated);
+  return updated;
+}
+
+/**
  * Fetches real-time data directly from the official Ismaili Center website's public API / RSS feeds
  */
 export async function syncOfficialIsmailiData(force: boolean = false): Promise<SyncedIsmailiPayload> {

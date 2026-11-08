@@ -45,6 +45,8 @@ import {
 import { 
   syncOfficialIsmailiData, 
   getLatestSyncedData, 
+  updateCenterTimings,
+  resetCenterTimingsToDefault,
   SyncedIsmailiPayload 
 } from '../utils/syncData.ts';
 import { 
@@ -106,7 +108,7 @@ interface AdminDashboardModalProps {
   onLogout: () => void;
   onOpenPipelineInspector: () => void;
   telemetry: TelephonyPipelineTelemetry;
-  initialTab?: 'calls' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony';
+  initialTab?: 'calls' | 'timings' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony';
   embedded?: boolean;
 }
 
@@ -119,7 +121,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   initialTab = 'calls',
   embedded = false,
 }) => {
-  const [activeTab, setActiveTab] = useState<'calls' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'calls' | 'timings' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony'>(initialTab);
   
   // Synchronize initialTab whenever modal opens or changes
   useEffect(() => {
@@ -166,6 +168,87 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const [syncedData, setSyncedData] = useState<SyncedIsmailiPayload>(() => getLatestSyncedData());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncSuccessMsg, setSyncSuccessMsg] = useState<string | null>(null);
+
+  // Timings Editing State
+  const [timingsForm, setTimingsForm] = useState({
+    bandagi: syncedData.centerData.prayerSchedule.bandagi,
+    morningDua: syncedData.centerData.prayerSchedule.morningDua,
+    eveningPrayerStandard: syncedData.centerData.prayerSchedule.eveningPrayerStandard,
+    eveningPrayerFriday: syncedData.centerData.prayerSchedule.eveningPrayerFriday,
+    prayerNotes: syncedData.centerData.prayerSchedule.notes,
+    buildingHours: syncedData.centerData.visitingHours.buildingHours,
+    gardensHours: syncedData.centerData.visitingHours.gardensHours,
+    visitingDays: syncedData.centerData.visitingHours.days.join(', '),
+    admission: syncedData.centerData.visitingHours.admission,
+  });
+  const [timingsSuccessMsg, setTimingsSuccessMsg] = useState<string | null>(null);
+
+  // Keep timingsForm synced when syncedData changes
+  useEffect(() => {
+    setTimingsForm({
+      bandagi: syncedData.centerData.prayerSchedule.bandagi,
+      morningDua: syncedData.centerData.prayerSchedule.morningDua,
+      eveningPrayerStandard: syncedData.centerData.prayerSchedule.eveningPrayerStandard,
+      eveningPrayerFriday: syncedData.centerData.prayerSchedule.eveningPrayerFriday,
+      prayerNotes: syncedData.centerData.prayerSchedule.notes,
+      buildingHours: syncedData.centerData.visitingHours.buildingHours,
+      gardensHours: syncedData.centerData.visitingHours.gardensHours,
+      visitingDays: syncedData.centerData.visitingHours.days.join(', '),
+      admission: syncedData.centerData.visitingHours.admission,
+    });
+  }, [syncedData]);
+
+  const handleSaveTimings = (e: React.FormEvent) => {
+    e.preventDefault();
+    const daysArr = timingsForm.visitingDays
+      .split(',')
+      .map((d) => d.trim())
+      .filter(Boolean);
+
+    const updated = updateCenterTimings({
+      prayerSchedule: {
+        bandagi: timingsForm.bandagi,
+        morningDua: timingsForm.morningDua,
+        eveningPrayerStandard: timingsForm.eveningPrayerStandard,
+        eveningPrayerFriday: timingsForm.eveningPrayerFriday,
+        notes: timingsForm.prayerNotes,
+      },
+      visitingHours: {
+        buildingHours: timingsForm.buildingHours,
+        gardensHours: timingsForm.gardensHours,
+        days: daysArr.length > 0 ? daysArr : ['Tuesday', 'Thursday', 'Saturday', 'Sunday'],
+        admission: timingsForm.admission,
+      },
+    });
+
+    setSyncedData(updated);
+    logLifespanEvent({
+      type: 'admin_action',
+      title: 'Center & Prayer Timings Updated',
+      summary: `Admin updated prayer timings and visitor hours. Bandagi: ${timingsForm.bandagi}, Evening: ${timingsForm.eveningPrayerStandard}`,
+      userIdentifier: 'Administrator',
+      status: 'success',
+    });
+
+    setTimingsSuccessMsg('Center & Prayer Timings updated successfully across the entire app!');
+    setTimeout(() => setTimingsSuccessMsg(null), 4000);
+  };
+
+  const handleResetTimings = () => {
+    if (window.confirm('Reset all center and prayer timings back to the official Ismaili Center defaults?')) {
+      const reset = resetCenterTimingsToDefault();
+      setSyncedData(reset);
+      logLifespanEvent({
+        type: 'admin_action',
+        title: 'Timings Reset to Official Defaults',
+        summary: 'Admin restored prayer schedules and visiting hours to default official timings.',
+        userIdentifier: 'Administrator',
+        status: 'reset',
+      });
+      setTimingsSuccessMsg('Timings restored to official Ismaili Center defaults.');
+      setTimeout(() => setTimingsSuccessMsg(null), 4000);
+    }
+  };
 
   const handleSyncFromOfficialWebsite = async () => {
     setIsSyncing(true);
@@ -464,6 +547,23 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             <span>Direct Call Transcripts</span>
             <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono font-bold">
               {anonymousCalls.length}
+            </span>
+          </button>
+
+          {/* TIMINGS & SCHEDULE MANAGEMENT TAB */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('timings')}
+            className={`px-4 py-3 text-xs font-bold border-b-2 flex items-center space-x-2 whitespace-nowrap cursor-pointer transition-all ${
+              activeTab === 'timings'
+                ? 'border-teal-500 text-teal-600 dark:text-teal-400 bg-teal-500/5'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+          >
+            <Clock className="w-4 h-4 text-teal-500" />
+            <span>Center & Prayer Timings</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[10px] font-mono font-bold">
+              Active
             </span>
           </button>
 
@@ -1050,6 +1150,301 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   })
                 )}
               </div>
+            </div>
+          )}
+
+          {/* TAB: CENTER & PRAYER TIMINGS MANAGEMENT */}
+          {activeTab === 'timings' && (
+            <div className="space-y-6 max-w-4xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+              {/* Header card with status and official sync button */}
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-teal-500/10 via-emerald-500/10 to-sky-500/10 border border-teal-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start space-x-3.5">
+                  <div className="p-2.5 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 mt-0.5">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                        Center &amp; Prayer Timings Management
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-teal-100 dark:bg-teal-950/70 text-teal-700 dark:text-teal-300 border border-teal-500/30">
+                        Live Central Time (CT)
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-xl leading-relaxed">
+                      Edit Jamatkhana congregational prayer times and public visiting hours. Changes update the Countdown in real-time, the Timings tab, the Events tab, and Phonebot audio.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleResetTimings}
+                    className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                    title="Restore default official timings"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Defaults</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSyncFromOfficialWebsite}
+                    disabled={isSyncing}
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                    title="Fetch latest updates from the.ismaili"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    <span>{isSyncing ? 'Syncing...' : 'Sync Official'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Success Notification */}
+              {timingsSuccessMsg && (
+                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center justify-between animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{timingsSuccessMsg}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTimingsSuccessMsg(null)}
+                    className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {syncSuccessMsg && (
+                <div className="p-3.5 rounded-xl bg-teal-50 dark:bg-teal-950/50 border border-teal-300 dark:border-teal-800 text-xs font-bold text-teal-800 dark:text-teal-200 flex items-center justify-between animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                    <span>{syncSuccessMsg}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSyncSuccessMsg(null)}
+                    className="text-teal-700 dark:text-teal-300 hover:text-teal-900 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleSaveTimings} className="space-y-6">
+                {/* 1. Jamatkhana Congregational Prayer Timings */}
+                <div className="p-5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/80 pb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="p-1.5 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                          Jamatkhana Congregational Prayer Times
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Times observe US Central Time (Houston, TX)
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 font-bold">
+                      Jamatkhana
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Bandagi */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        <span>Bandagi (Early Morning Meditation)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.bandagi}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, bandagi: e.target.value })}
+                        placeholder="e.g. 4:00 AM – 5:00 AM daily CT"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                      <p className="text-[10px] text-slate-400">Format: 4:00 AM – 5:00 AM daily CT</p>
+                    </div>
+
+                    {/* Morning Dua */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-teal-500" />
+                        <span>Morning Dua (Morning Assembly)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.morningDua}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, morningDua: e.target.value })}
+                        placeholder="e.g. 5:00 AM – 5:30 AM daily CT"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                      <p className="text-[10px] text-slate-400">Format: 5:00 AM – 5:30 AM daily CT</p>
+                    </div>
+
+                    {/* Evening Prayer Standard (Mon-Thu, Sat, Sun) */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                        <span>Evening Prayer (Mon–Thu, Sat &amp; Sun)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.eveningPrayerStandard}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, eveningPrayerStandard: e.target.value })}
+                        placeholder="e.g. 7:00 PM"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                      <p className="text-[10px] text-slate-400">Standard evening assembly time</p>
+                    </div>
+
+                    {/* Evening Prayer Friday */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                        <span>Evening Prayer (Fridays)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.eveningPrayerFriday}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, eveningPrayerFriday: e.target.value })}
+                        placeholder="e.g. 7:30 PM"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                      <p className="text-[10px] text-slate-400">Friday congregational evening assembly time</p>
+                    </div>
+                  </div>
+
+                  {/* Prayer notes */}
+                  <div className="space-y-1.5 pt-2">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Prayer Hall Etiquette &amp; Access Notes
+                    </label>
+                    <textarea
+                      value={timingsForm.prayerNotes}
+                      onChange={(e) => setTimingsForm({ ...timingsForm, prayerNotes: e.target.value })}
+                      rows={2}
+                      className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-2 focus:ring-teal-500/40"
+                      placeholder="Access notes for congregational prayer hall..."
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Public Visitor Opening Hours & Days */}
+                <div className="p-5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/80 pb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                          Public Visitor Hours &amp; Days
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Appears in Events tab, Navigations tab, and Phonebot replies
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-bold">
+                      Public Civic
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Public Days */}
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Public Visitor Days (comma-separated)
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.visitingDays}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, visitingDays: e.target.value })}
+                        placeholder="Tuesday, Thursday, Saturday, Sunday"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                    </div>
+
+                    {/* Building Hours */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Building &amp; Galleries Hours
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.buildingHours}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, buildingHours: e.target.value })}
+                        placeholder="10:00 AM – 4:00 PM Central Time"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                    </div>
+
+                    {/* 11-Acre Gardens Hours */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        11-Acre Charbagh Gardens Hours
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.gardensHours}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, gardensHours: e.target.value })}
+                        placeholder="8:00 AM – 4:00 PM Central Time"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                    </div>
+
+                    {/* Admission Policy */}
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Admission Policy Text
+                      </label>
+                      <input
+                        type="text"
+                        value={timingsForm.admission}
+                        onChange={(e) => setTimingsForm({ ...timingsForm, admission: e.target.value })}
+                        placeholder="Completely Free of Charge"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Action */}
+                <div className="flex items-center space-x-3 pt-2">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center space-x-2"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Save &amp; Apply Timings Across App</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResetTimings}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    Reset Defaults
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 

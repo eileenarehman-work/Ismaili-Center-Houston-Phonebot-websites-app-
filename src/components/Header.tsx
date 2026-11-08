@@ -32,7 +32,7 @@ interface HeaderProps {
   currentTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   onOpenSettings: () => void;
-  onOpenAdmin: (tab?: 'calls' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony') => void;
+  onOpenAdmin: (tab?: 'calls' | 'timings' | 'experiences' | 'history' | 'pipeline' | 'messages' | 'announcements' | 'telephony') => void;
   onLogoutAdmin?: () => void;
   isAdmin?: boolean;
   activeAccessibilityCount?: number;
@@ -300,7 +300,34 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    {/* Primary Highlighted: Manage Experiences */}
+                    {/* Primary Highlighted: Center & Prayer Timings */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAdminDropdownOpen(false);
+                        onOpenAdmin('timings');
+                      }}
+                      className="w-full text-left p-2 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 text-slate-800 dark:text-slate-100 transition-colors flex items-center space-x-2.5 cursor-pointer group"
+                    >
+                      <div className="p-1.5 rounded-lg bg-teal-600 text-white shadow-xs">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-teal-900 dark:text-teal-300">
+                            Prayer &amp; Visitor Timings
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-sm bg-teal-600 text-white text-[9px] font-bold">
+                            Edit
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          Prayer times, hours &amp; count
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Manage Experiences */}
                     <button
                       type="button"
                       onClick={() => {

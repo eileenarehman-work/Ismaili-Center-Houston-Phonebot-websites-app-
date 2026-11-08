@@ -85,15 +85,62 @@ export function getCentralTimeInfo(now: Date = new Date()): CentralTimeInfo {
   };
 }
 
-export function calculateCentralPrayerCountdown(now: Date = new Date()): PrayerCountdownInfo {
+/**
+ * Helper to parse a time string like "4:00 AM", "7:30 PM", "5:00 AM – 5:30 AM" into minutes from midnight
+ */
+export function parseTimeToMinutes(timeStr: string, defaultMinutes: number): number {
+  if (!timeStr) return defaultMinutes;
+  // Match first time in string, e.g. "4:00 AM" or "7:30 PM" or "19:30"
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/i);
+  if (!match) return defaultMinutes;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const modifier = (match[3] || '').toUpperCase();
+
+  if (modifier === 'PM' && hours < 12) hours += 12;
+  if (modifier === 'AM' && hours === 12) hours = 0;
+
+  return hours * 60 + minutes;
+}
+
+export function calculateCentralPrayerCountdown(
+  now: Date = new Date(),
+  customSchedule?: {
+    bandagi?: string;
+    morningDua?: string;
+    eveningPrayerStandard?: string;
+    eveningPrayerFriday?: string;
+  }
+): PrayerCountdownInfo {
   const info = getCentralTimeInfo(now);
   const currentMinutes = info.hour * 60 + info.minute;
 
-  const bandagiStart = 4 * 60; // 4:00 AM CT
-  const bandagiEnd = 5 * 60;   // 5:00 AM CT
-  const morningStart = 5 * 60; // 5:00 AM CT
-  const morningEnd = 5 * 60 + 30; // 5:30 AM CT
-  const eveningStart = info.isFriday ? 19 * 60 + 30 : 19 * 60; // 7:30 PM on Fri, 7:00 PM Mon-Thu, Sat, Sun
+  // Retrieve current schedule from localStorage/synced data if available
+  let sched = customSchedule;
+  if (!sched && typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem('ich_official_synced_data_v2');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.centerData?.prayerSchedule) {
+          sched = parsed.centerData.prayerSchedule;
+        }
+      }
+    } catch (_e) {
+      // ignore
+    }
+  }
+
+  // Parse start times (with official fallbacks)
+  const bandagiStart = sched?.bandagi ? parseTimeToMinutes(sched.bandagi, 4 * 60) : 4 * 60; // 4:00 AM CT
+  const bandagiEnd = bandagiStart + 60; // 1 hour assembly
+
+  const morningStart = sched?.morningDua ? parseTimeToMinutes(sched.morningDua, 5 * 60) : 5 * 60; // 5:00 AM CT
+  const morningEnd = morningStart + 30; // 30 mins assembly
+
+  const eveningStart = info.isFriday
+    ? (sched?.eveningPrayerFriday ? parseTimeToMinutes(sched.eveningPrayerFriday, 19 * 60 + 30) : 19 * 60 + 30)
+    : (sched?.eveningPrayerStandard ? parseTimeToMinutes(sched.eveningPrayerStandard, 19 * 60) : 19 * 60);
   const eveningEnd = eveningStart + 45; // ~45 mins assembly
 
   let name = '';
