@@ -154,9 +154,10 @@ export default function App() {
       if (e.key === '1') setCurrentTab('hotline');
       else if (e.key === '2') setCurrentTab('assistant');
       else if (e.key === '3') setCurrentTab('schedule');
-      else if (e.key === '4') setCurrentTab('visitor');
-      else if (e.key === '5') setCurrentTab('videos');
-      else if (e.key === '6' && isAdmin) setCurrentTab('admin');
+      else if (e.key === '4') setCurrentTab('navigations');
+      else if (e.key === '5') setCurrentTab('events');
+      else if (e.key === '6') setCurrentTab('videos');
+      else if (e.key === '7' && isAdmin) setCurrentTab('admin');
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -270,7 +271,15 @@ export default function App() {
                 centralTimeDisplay={centralTimeDisplay}
               />
             )}
-            {currentTab === 'visitor' && <VisitorInfoView />}
+            {currentTab === 'navigations' && (
+              <VisitorInfoView activeTab="navigations" onSelectTab={setCurrentTab} />
+            )}
+            {currentTab === 'events' && (
+              <VisitorInfoView activeTab="events" onSelectTab={setCurrentTab} />
+            )}
+            {currentTab === 'visitor' && (
+              <VisitorInfoView activeTab="navigations" onSelectTab={setCurrentTab} />
+            )}
             {currentTab === 'videos' && <VideosView />}
             {currentTab === 'admin' && isAdmin && (
               <AdminDashboardModal

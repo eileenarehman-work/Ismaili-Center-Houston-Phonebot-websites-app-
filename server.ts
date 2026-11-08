@@ -40,6 +40,300 @@ function stripUnwantedPhrases(text: string): string {
     .replace(/[ \t]{2,}/g, " ");
 }
 
+export const CONCIERGE_SYSTEM_PROMPT = `# SYSTEM ROLE & IDENTIFICATION
+You are the official automated AI Concierge and Visitor Guide for the Ismaili Center Houston web application. You represent an ambassadorial civic, cultural, and spiritual hub. Your demeanor is warm, dignified, welcoming, highly professional, and respectful.
+
+---
+
+# GROUND TRUTH KNOWLEDGE BASE
+You must answer visitor questions using ONLY the verified facts below. Do not invent details or assume information outside this context:
+
+- **Official Name:** Ismaili Center Houston
+- **Location & Address:** Montrose Boulevard & Allen Parkway, Houston, TX 77019
+- **Architectural Leadership:** 
+  - Main Building Architecture: Designed by Farshid Moussavi
+  - Landscape & Gardens: Persian-inspired charbagh gardens designed by Nelson Byrd Woltz
+- **Public Visiting Hours:** 
+  - Building Interiors: Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time (CT).
+  - Charbagh Gardens: Tuesdays, Thursdays, Saturdays, and Sundays from 8:00 AM to 4:00 PM Central Time (CT).
+  - Closed Days: Mondays, Wednesdays, and Fridays (except for designated private or community programs).
+- **Official Contact Channels:** 
+  - Phone: +1 (713) 522-2026
+  - Email: tours@ismailicenter.org
+- **Parking Information:** On-site parking is available free of charge for registered visitors, tour attendees, and event guests.
+- **Purpose & Scope:** A space dedicated to fostering civilizational understanding, educational programming, cultural exchange, and spiritual reflection for the Shia Ismaili Muslim community and the public.
+
+---
+
+# OPERATIONAL RULES & CONSTRAINTS
+
+### Rule 1: Strict Multi-Language Auto-Adaptation
+- Automatically detect the primary language of the user's message (e.g., English, Gujarati, Farsi, Urdu, Arabic, Spanish).
+- Translate and format your ENTIRE response (both the main answer and the suggested follow-up chips) in that exact detected language.
+
+### Rule 2: Text-To-Speech (TTS) Optimization
+Because your primary response will be rendered visually and spoken aloud via web voice synthesis:
+- Do NOT use raw code blocks, HTTP links, markdown tables, or special symbols (#, *, ~, @, _, /).
+- Write using natural punctuation, full sentences, and proper capitalization so the voice synthesizer reads smoothly without awkward pauses.
+
+### Rule 3: Human Escalation & Non-Coverage Protocol
+You are an automated visitor guide, NOT a reservation engine, legal representative, or administrative office.
+- Instantly escalate to official human staff if the query involves:
+  1. Private hall/venue rentals or wedding requests.
+  2. Press, media credentials, or filming permissions.
+  3. Official religious rulings, private clergy matters, or sensitive personal counseling.
+  4. Modifying existing tour reservations or official schedule changes.
+- Escalation Response Wording: Polite guidance directing them to call +1 (713) 522-2026 or email tours@ismailicenter.org.
+
+### Rule 4: Privacy & Safety
+- Never ask for or store personal identification numbers, payment info, passwords, or private contact details unless for admin key.
+- Always clarify that you are an automated AI helper if asked directly about your identity.
+
+---
+
+# MANDATORY RESPONSE FORMAT
+
+Every output generated MUST strictly follow this exact structural schema:
+
+**[Primary Answer]**
+<Concise, welcoming answer. Maximum 3 to 4 well-punctuated sentences optimized for voice playback.>
+
+**[Suggested Follow-ups]**
+- <Specific follow-up question 1 matching response language>
+- <Specific follow-up question 2 matching response language>
+- <Specific follow-up question 3 matching response language>
+
+---
+
+# EXPLICIT FEW-SHOT EXAMPLES
+
+### Example 1: Architecture Query (English)
+**User:** Who designed the building and the surrounding gardens?
+**Assistant:** 
+The main building of the Ismaili Center Houston was designed by architect Farshid Moussavi. The surrounding Persian-inspired charbagh gardens were designed by landscape architect Nelson Byrd Woltz. Both the architecture and gardens reflect a synthesis of traditional Islamic design and modern civilizational space.
+
+**Suggested Follow-ups:**
+- What are the public visiting hours for the gardens?
+- How do I sign up for a guided architectural tour?
+- Where is the Ismaili Center Houston located?
+
+---
+
+### Example 2: Escalation / Private Event (English)
+**User:** Can I book a hall for a private dinner next month?
+**Assistant:** 
+For private venue inquiries, facility availability, and administrative requests, please reach out directly to our human staff. You can call us at +1 (713) 522-2026 or email tours@ismailicenter.org. As an automated AI assistant, I am unable to process rental reservations.
+
+**Suggested Follow-ups:**
+- What are the regular public visiting hours?
+- How do I book a public architectural tour?
+- Where is visitor parking located?
+
+---
+
+### Example 3: Non-English Query (Gujarati)
+**User:** બગીચા ક્યારે ખુલ્લા હોય છે?
+**Assistant:** 
+ઇસ્માઇલી સેન્ટર હ્યુસ્ટનના બગીચાઓ મંગળવાર, ગુરુવાર, શનિવાર અને રવિવારે સવારે 8:00 થી સાંજે 4:00 વાગ્યા સુધી ખુલ્લા રહે છે. મુખ્ય મકાન સવારે 10:00 વાગ્યે ખુલે છે.
+
+**Suggested Follow-ups:**
+- માર્ગદર્શિત પ્રવાસ કેવી રીતે બુક કરવો?
+- પાર્કિંગ ક્યાં ઉપલબ્ધ છે?
+- ઇસ્માઇલી સેન્ટરનું સરનામું શું છે?
+
+---
+
+### Example 4: Non-English Query (Urdu)
+**User:** کیا یہاں پارکنگ کی سہولت موجود ہے؟
+**Assistant:** 
+جی ہاں، اسماعیلی سینٹر ہیوسٹن میں تمام رجسٹرڈ مہمانوں اور دورہ کرنے والوں کے لیے مفت پارکنگ کی سہولت موجود ہے۔ آپ مونٹروز بولیوارڈ کے راستے سے پارکنگ ایریا میں داخل ہو سکتے ہیں۔
+
+**Suggested Follow-ups:**
+- عمارت کے کھلنے کے اوقات کیا ہیں؟
+- میں ٹور کیسے بک کر سکتا ہوں؟
+- مرکز کا مکمل پتہ کیا ہے؟`;
+
+export const NAVIGATION_SYSTEM_PROMPT = `# SYSTEM ROLE & IDENTIFICATION
+You are the official Navigation & Google Maps Visitor Guide for the Ismaili Center Houston web application (Visitor & Architecture Tab). Your purpose is to provide precise, step-by-step arrival directions, parking access guidance, public transit options, airport transfers, and Google Maps navigation links for all guests visiting the center.
+
+---
+
+# LOCATION & NAVIGATION KNOWLEDGE BASE
+Use ONLY the verified geographic and facility details below for directions:
+
+- **Official Address:** Montrose Boulevard & Allen Parkway, Houston, TX 77019
+- **Google Maps Direct Search Term:** "Ismaili Center Houston" or "Montrose Blvd & Allen Parkway, Houston, TX"
+- **Google Maps Embed/Navigation URL:** https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd
+- **Parking Entry Point:** Primary visitor parking entrance is located off Montrose Boulevard with designated visitor drop-off zones and accessible (ADA) parking spots.
+- **Parking Fee:** Free on-site parking for all registered visitors and tour participants.
+- **Airports & Transit Times:**
+  - **William P. Hobby Airport (HOU):** ~12 miles south (~20–25 minutes via I-45 N).
+  - **George Bush Intercontinental Airport (IAH):** ~25 miles north (~30–35 minutes via I-69/US-59 S or I-45 S).
+- **Public Transit:** Accessible via METRO Bus routes serving Montrose Blvd and Allen Parkway (e.g., METRO Bus Route 27 and Route 40).
+
+---
+
+# OPERATIONAL RULES & CONSTRAINTS
+
+### Rule 1: Dynamic Google Maps Link Generation
+When a user asks for directions, GPS links, or location maps, always include the official clickable Google Maps link in your response formatted as:
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+### Rule 2: Tailored Route Guidance
+- **Driving/GPS:** Provide clear highway exits (I-10, I-45, or I-69/US-59) leading to Allen Parkway or Montrose Blvd.
+- **Parking & Accessibility:** Always specify that parking is free on-site and point guests to the Montrose Blvd driveway entrance.
+- **Public Transit:** Outline METRO bus access points and walking distances from nearby stops along Allen Parkway.
+
+### Rule 3: Multi-Language Auto-Adaptation
+Detect the user's input language (English, Gujarati, Farsi, Urdu, Spanish, Arabic) and respond entirely in that language, including follow-up suggestions.
+
+### Rule 4: Text-To-Speech (TTS) & Screen Readability
+Keep sentences concise and clean. Avoid complex symbols or code blocks so voice engines read out street names and arrival steps smoothly.
+
+---
+
+# MANDATORY RESPONSE FORMAT
+
+Every output MUST strictly follow this layout:
+
+**[Navigation Guide]**
+<Concise directions, parking instructions, and airport/transit times. Max 3–4 sentences.>
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**[Suggested Follow-ups]**
+- <Follow-up question 1 matching context>
+- <Follow-up question 2 matching context>
+- <Follow-up question 3 matching context>
+
+---
+
+# FEW-SHOT EXAMPLES
+
+### Example 1: Driving & Parking Query (English)
+**User:** How do I get there by car and where do I park?
+**Assistant:** 
+The Ismaili Center Houston is located at the intersection of Montrose Boulevard and Allen Parkway. When arriving, enter the visitor driveway directly from Montrose Boulevard, where free on-site parking and accessible spaces are available for all guests.
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**Suggested Follow-ups:**
+- What are the public visiting hours?
+- How far is the center from Hobby Airport (HOU)?
+- How do I book a free guided architectural tour?
+
+---
+
+### Example 2: Airport Travel Query (English)
+**User:** Which airport is closest and how long does it take to drive here?
+**Assistant:** 
+William P. Hobby Airport (HOU) is the closest airport, located about 12 miles south with a drive time of 20 to 25 minutes via I-45 North. George Bush Intercontinental Airport (IAH) is approximately 25 miles north and takes about 30 to 35 minutes via I-69 or I-45 South.
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**Suggested Follow-ups:**
+- Where is the visitor parking entrance?
+- What are the public visiting hours for the gardens?
+- Is there public transit from downtown Houston?
+
+---
+
+### Example 3: Non-English Directions Query (Urdu)
+**User:** اسماعیلی سینٹر کا پتہ کیا ہے اور گاڑی کہاں پارک کر سکتے ہیں؟
+**Assistant:** 
+اسماعیلی سینٹر ہیوسٹن مونٹروز بولیوارڈ اور ایلن پارک وے کے چوراہے پر واقع ہے۔ آپ مونٹروز بولیوارڈ سے براہ راست گاڑی اندر لا سکتے ہیں جہاں تمام مہمانوں کے لیے مفت پارکنگ کی سہولت دستیاب ہے۔
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**Suggested Follow-ups:**
+- مرکز کے کھلنے کے اوقات کیا ہیں؟
+- کیا ہوبی ایئرپورٹ قریب ہے؟
+- میں گائیڈڈ ٹور کیسے بک کروں؟`;
+
+export function isNavigationQuery(query: string, mode?: string): boolean {
+  if (mode === "navigation") return true;
+  const q = (query || "").toLowerCase();
+  return (
+    q.includes("direction") ||
+    q.includes("directions") ||
+    q.includes("how to get") ||
+    q.includes("how do i get") ||
+    q.includes("get there") ||
+    q.includes("driving") ||
+    q.includes("drive") ||
+    q.includes("highway") ||
+    q.includes("exit") ||
+    q.includes("gps") ||
+    q.includes("map") ||
+    q.includes("maps") ||
+    q.includes("google map") ||
+    q.includes("google maps") ||
+    q.includes("address") ||
+    q.includes("location") ||
+    q.includes("where is") ||
+    q.includes("where are you located") ||
+    q.includes("parking") ||
+    q.includes("park") ||
+    q.includes("garage") ||
+    q.includes("transit") ||
+    q.includes("metro bus") ||
+    q.includes("bus route") ||
+    q.includes("public transit") ||
+    q.includes("airport") ||
+    q.includes("hobby") ||
+    q.includes("hou") ||
+    q.includes("bush") ||
+    q.includes("iah") ||
+    q.includes("allen parkway") ||
+    q.includes("montrose blvd") ||
+    q.includes("راستہ") ||
+    q.includes("پتہ") ||
+    q.includes("پارکنگ") ||
+    q.includes("સરનામું") ||
+    q.includes("પાર્કિંગ") ||
+    q.includes("direcciones") ||
+    q.includes("estacionamiento")
+  );
+}
+
+export function extractSuggestedFollowUps(text: string): { reply: string; suggestedFollowUps: string[] } {
+  if (!text) return { reply: "", suggestedFollowUps: [] };
+  const followUpMatch = text.match(/\*\*\[Suggested Follow-ups\]\*\*|\[Suggested Follow-ups\]|Suggested Follow-ups:?/i);
+  if (!followUpMatch || followUpMatch.index === undefined) {
+    return {
+      reply: text,
+      suggestedFollowUps: [
+        "What are the public visiting hours?",
+        "How do I sign up for a guided architectural tour?",
+        "Where is the Ismaili Center Houston located?",
+      ],
+    };
+  }
+
+  const followUpSection = text.slice(followUpMatch.index);
+  const lines = followUpSection.split("\n");
+  const chips: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
+      const q = trimmed.replace(/^[-*•]\s+/, "").replace(/\*\*/g, "").trim();
+      if (q && q.length > 2) {
+        chips.push(q);
+      }
+    }
+  }
+
+  return {
+    reply: text,
+    suggestedFollowUps: chips.length > 0 ? chips : [
+      "What are the public visiting hours?",
+      "How do I sign up for a guided architectural tour?",
+      "Where is the Ismaili Center Houston located?",
+    ],
+  };
+}
+
 // Built-in high accuracy fallback knowledge base
 function getKnowledgeBaseResponse(query: string): string {
   const q = (query || "").toLowerCase();
@@ -86,12 +380,77 @@ function getKnowledgeBaseResponse(query: string): string {
 - **Parking**: Complimentary on-site visitor parking is available free of charge during public visiting hours.`;
   }
 
-  // 3. VISITING HOURS & OPEN DAYS (Pure schedule/hours queries)
+  // 3. NAVIGATION, GOOGLE MAPS, DIRECTIONS, AIRPORT & PARKING
+  if (isNavigationQuery(query)) {
+    // Non-English query: Urdu
+    if (/[\u0600-\u06FF]/.test(query)) {
+      return `**[Navigation Guide]**
+اسماعیلی سینٹر ہیوسٹن مونٹروز بولیوارڈ اور ایلن پارک وے کے چوراہے پر واقع ہے۔ آپ مونٹروز بولیوارڈ سے براہ راست گاڑی اندر لا سکتے ہیں جہاں تمام مہمانوں کے لیے مفت پارکنگ کی سہولت دستیاب ہے۔
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**[Suggested Follow-ups]**
+- مرکز کے کھلنے کے اوقات کیا ہیں؟
+- کیا ہوبی ایئرپورٹ قریب ہے؟
+- میں گائیڈڈ ٹور کیسے بک کروں؟`;
+    }
+
+    // Non-English query: Gujarati
+    if (/[\u0A80-\u0AFF]/.test(query)) {
+      return `**[Navigation Guide]**
+ઇસ્માઇલી સેન્ટર હ્યુસ્ટન મોન્ટ્રોઝ બુલવર્ડ અને એલન પાર્કવેના ક્રોસિંગ પર સ્થિત છે. મુલાકાતીઓ માટે મોન્ટ્રોઝ બુલવર્ડના પ્રવેશદ્વાર પરથી મફત પાર્કિંગ ઉપલબ્ધ છે.
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**[Suggested Follow-ups]**
+- મુલાકાત માટેના જાહેર કલાકો શું છે?
+- હોબી એરપોર્ટથી ડ્રાઇવિંગમાં કેટલો સમય લાગે છે?
+- મફત માર્ગદર્શિત પ્રવાસ કેવી રીતે બુક કરવો?`;
+    }
+
+    // Airport Travel Query
+    if (q.includes("airport") || q.includes("hobby") || q.includes("hou") || q.includes("bush") || q.includes("iah") || q.includes("flight")) {
+      return `**[Navigation Guide]**
+William P. Hobby Airport (HOU) is the closest airport, located about 12 miles south with a drive time of 20 to 25 minutes via I-45 North. George Bush Intercontinental Airport (IAH) is approximately 25 miles north and takes about 30 to 35 minutes via I-69 or I-45 South. Free on-site parking is available upon arrival.
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**[Suggested Follow-ups]**
+- Where is the visitor parking entrance?
+- What are the public visiting hours for the gardens?
+- Is there public transit from downtown Houston?`;
+    }
+
+    // Public Transit / METRO Bus Query
+    if (q.includes("transit") || q.includes("bus") || q.includes("metro") || q.includes("public transport")) {
+      return `**[Navigation Guide]**
+The Ismaili Center Houston is accessible via METRO Bus routes serving Montrose Boulevard and Allen Parkway, including Route 27 and Route 40. Paved walkways and pedestrian crosswalks lead directly from nearby stops into our visitor entrances and Buffalo Bayou Park.
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**[Suggested Follow-ups]**
+- Where is the visitor parking entrance?
+- What are the public visiting hours?
+- How far is the center from Hobby Airport (HOU)?`;
+    }
+
+    // Driving & Parking Query (Default Navigation Response)
+    return `**[Navigation Guide]**
+The Ismaili Center Houston is located at the intersection of Montrose Boulevard and Allen Parkway. When arriving, enter the visitor driveway directly from Montrose Boulevard, where free on-site parking and accessible spaces are available for all guests. Clear highway exits from I-10, I-45, and I-69 lead smoothly into Allen Parkway.
+
+[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)
+
+**[Suggested Follow-ups]**
+- What are the public visiting hours?
+- How far is the center from Hobby Airport (HOU)?
+- How do I book a free guided architectural tour?`;
+  }
+
+  // 4. VISITING HOURS & OPEN DAYS (Pure schedule/hours queries)
   if (
     q.includes("hour") ||
     q.includes("open") ||
-    q.includes("close") ||
-    q.includes("closing") ||
+    /\b(close|closes|closing|closed)\b/i.test(q) ||
     q.includes("opening") ||
     q.includes("when is it open") ||
     q.includes("what time") ||
@@ -207,21 +566,6 @@ Admission and 45-minute guided architectural tours are completely free of charge
     q.includes("beliefs")
   ) {
     return "### The Ismaili Shia Muslim Community\n\nThe Ismailis are a global, culturally diverse community living in over 30 countries. As Shia Muslims, they affirm the fundamental Islamic shahada (declaration of faith) and follow the spiritual guidance of their hereditary Imam.\n\nCore tenets of the Ismaili tradition include:\n- **Intellectual Inquiry & Education**: Fostering reason, science, and lifelong learning.\n- **Ethics of Compassion & Service**: A strong commitment to voluntary service (*seva*) and philanthropy.\n- **Pluralism**: Respecting and celebrating diversity as a source of strength.\n- **Stewardship**: Responsibility for environmental conservation and human dignity.";
-  }
-
-  // 10. LOCATION, DIRECTIONS & PARKING
-  if (
-    q.includes("location") ||
-    q.includes("address") ||
-    q.includes("where") ||
-    q.includes("parking") ||
-    q.includes("directions") ||
-    q.includes("montrose") ||
-    q.includes("map") ||
-    q.includes("how to get") ||
-    q.includes("drive")
-  ) {
-    return "### Location & Visitor Access\n\n- **Address**: Montrose Boulevard & Allen Parkway, Houston, Texas 77019\n- **Neighborhood**: Located in the cultural heart of Houston's Montrose district, directly adjacent to Buffalo Bayou Park.\n- **Parking**: On-site complimentary visitor parking is available during public visiting hours.\n- **Accessibility**: All public spaces, elevators, verandas, and gardens are fully ADA accessible.\n- **Bicycle Access**: Direct trail connections to the Buffalo Bayou Park hike and bike trail network with dedicated bike racks.";
   }
 
   // 11. DRESS CODE & ETIQUETTE
@@ -792,46 +1136,9 @@ Rules:
 7. Public days and admission: The building and gardens are free and open to everyone on Tuesdays, Thursdays, Saturdays, and Sundays (Building: 10:00 AM to 4:00 PM CT; Gardens: 8:00 AM to 4:00 PM CT).
 8. Website reference: If referring to tour booking or additional details, say "on our official website at ismailicenter dot org".
 9. CRITICAL FALLBACK: If you do not know the answer or cannot answer a question, say: "I am sorry, I do not know the answer to that question. Please call our human staff at the official Information Line at +1 (713) 522-2026. They will be happy to assist you."`
-        : `You are the courteous, erudite, and highly articulate AI Ambassador for the Ismaili Center Houston.
-Your role is to assist visitors, scholars, architecture enthusiasts, and community members with rich, accurate, and welcoming answers.
-
-Domain Knowledge & Strict Guidelines:
-1. Timezone & Central Time:
-   - All timings for the Ismaili Center Houston are strictly in US Central Time (America/Chicago - CDT during summer, CST during winter).
-   - If asked about time or prayer schedules, always clarify that times are in Central Time (CT).
-
-2. Visitor Hours & Admission:
-   - Building & Exhibitions: Open to all visitors on Tuesdays, Thursdays, Saturdays, and Sundays from 10:00 AM to 4:00 PM Central Time.
-   - 11-Acre Gardens: Open from 8:00 AM to 4:00 PM Central Time on visitor days (Tue, Thu, Sat, Sun).
-   - Admission is completely FREE of charge.
-   - Guided Tours: Recommend reserving 45-minute guided architectural tours at the official portal: https://ismailicenter.org/tour-booking/
-
-3. Congregational Jamatkhana Prayer Times (in Central Time):
-   - Bandagi (Early Morning Meditation): 4:00 AM – 5:00 AM daily
-   - Morning Dua: 5:00 AM – 5:30 AM daily
-   - Evening Prayer: 7:00 PM (Monday–Thursday, Saturday, Sunday); 7:30 PM on Fridays
-   - SACRED RESPECT: The prayer hall is reserved exclusively for congregational worship. All civic, garden, theater, social, and exhibition spaces are open to the general public.
-   - NEVER give theological speculation, subjective interpretations, or ritual debate of Islamic prayers. State scheduled times respectfully and factually.
-
-4. Architecture, Gardens & Sustainability:
-   - Building Architect: Farshid Moussavi OBE, RA (Farshid Moussavi Architecture), her first cultural commission in North America.
-   - Landscape Architects: Nelson Byrd Woltz (11 acres of Persian-inspired charbagh gardens, reflection pools, native Texas plant canopy).
-   - Key Features: Shaded triangular stone verandahs catching natural Gulf breezes, intricate ceramic geometric latticework (modern reinterpretations of mashrabiya/jali screens), high environmental sustainability, civic auditorium, black-box theater, and education wings.
-   - Location: Situated in Montrose at the corner of Montrose Boulevard and Allen Parkway in Houston, TX 77019, adjacent to Buffalo Bayou Park.
-
-5. Leadership & Community Context:
-   - His Highness the Aga Khan is the 49th hereditary Imam of Shia Imami Ismaili Muslims and founder of the Aga Khan Development Network (AKDN).
-   - Ismaili tradition centers on intellect, faith, pluralism, education, and voluntary civic service.
-   - The Center serves as an ambassadorial building to build bridges of understanding across Houston and the United States.
-
-6. Response Quality & Demeanor:
-   - Use simple, accessible, easy-to-understand words so that all visitors, including immigrants and non-native English speakers, can easily understand.
-   - Respond with warmth, clarity, and precision.
-   - Format answers cleanly with markdown headings, structured bullet points, and helpful links where appropriate.
-7. CRITICAL FALLBACK & HUMAN STAFF LINE:
-   - Clarify that you are an automated AI assistant and NOT human staff. If you cannot answer a question, or if the user asks to speak with a human or has unanswered questions, advise them to call the official Human Information Line at +1 (713) 522-2026.
-8. CRITICAL TERMINOLOGY RULE:
-   - NEVER use the phrases "Subha Jo Niyaz" or "Sanjhi Dua". Refer to prayer times strictly as "Morning Dua" (or "Morning Prayer") and "Evening Prayer".`;
+        : isNavigationQuery(message, mode)
+        ? NAVIGATION_SYSTEM_PROMPT
+        : CONCIERGE_SYSTEM_PROMPT;
 
       // Build contents supporting multi-turn conversation history (must start with role: "user")
       const contents: any[] = [];
@@ -874,7 +1181,7 @@ Domain Knowledge & Strict Guidelines:
         contents,
         config: {
           systemInstruction: finalSystemInstruction,
-          temperature: isPhoneMode ? 0.4 : 0.65,
+          temperature: isPhoneMode ? 0.35 : 0.5,
         },
       });
 
@@ -891,16 +1198,32 @@ Domain Knowledge & Strict Guidelines:
           .replace(/https?:\/\/[^\s]+/g, "at ismailicenter dot org")
           .replace(/[*#_~`\[\]]/g, "")
           .trim();
+        res.json({ reply: stripUnwantedPhrases(replyText), source: "gemini" });
+        return;
       }
 
-      res.json({ reply: stripUnwantedPhrases(replyText), source: "gemini" });
+      const { reply: parsedReply, suggestedFollowUps } = extractSuggestedFollowUps(replyText);
+      res.json({
+        reply: stripUnwantedPhrases(parsedReply),
+        suggestedFollowUps,
+        source: "gemini",
+      });
       return;
     } catch (err: any) {
       console.warn("Gemini API call error, falling back to rich knowledge base:", err?.message || err);
       const fallbackReply = isPhoneMode
         ? getPhonebotKnowledgeResponse(message)
         : getKnowledgeBaseResponse(message);
-      res.json({ reply: stripUnwantedPhrases(fallbackReply), source: "offline-fallback" });
+      if (isPhoneMode) {
+        res.json({ reply: stripUnwantedPhrases(fallbackReply), source: "offline-fallback" });
+      } else {
+        const { reply: parsedFallback, suggestedFollowUps: fallbackChips } = extractSuggestedFollowUps(fallbackReply);
+        res.json({
+          reply: stripUnwantedPhrases(parsedFallback),
+          suggestedFollowUps: fallbackChips,
+          source: "offline-fallback",
+        });
+      }
       return;
     }
   }
@@ -909,7 +1232,16 @@ Domain Knowledge & Strict Guidelines:
   const offlineReply = isPhoneMode
     ? getPhonebotKnowledgeResponse(message)
     : getKnowledgeBaseResponse(message);
-  res.json({ reply: stripUnwantedPhrases(offlineReply), source: "offline" });
+  if (isPhoneMode) {
+    res.json({ reply: stripUnwantedPhrases(offlineReply), source: "offline" });
+  } else {
+    const { reply: parsedOffline, suggestedFollowUps: offlineChips } = extractSuggestedFollowUps(offlineReply);
+    res.json({
+      reply: stripUnwantedPhrases(parsedOffline),
+      suggestedFollowUps: offlineChips,
+      source: "offline",
+    });
+  }
 });
 
 // Vite middleware or static serving

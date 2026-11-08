@@ -39,7 +39,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner Card with Countdown & Central Time */}
-      <div className="scroll-reveal bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+      <div className="scroll-reveal bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 md:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
           <div>
             <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-[#007ba8] dark:text-teal-400">
@@ -103,9 +103,6 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
               <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Bandagi
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Quiet meditative morning contemplation
-              </p>
             </div>
             <div className="pt-3 border-t border-amber-200/60 dark:border-amber-800/40">
               <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
@@ -127,15 +124,11 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
               <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Morning Dua
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Dawn congregational morning prayer
-              </p>
             </div>
             <div className="pt-3 border-t border-teal-200/60 dark:border-teal-800/40">
               <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
                 5:00 AM – 5:30 AM
               </p>
-              <span className="text-[11px] text-slate-400 font-medium">Daily</span>
             </div>
           </div>
 
@@ -151,9 +144,6 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
               <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Evening Prayer
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Sunset congregational evening worship
-              </p>
             </div>
             <div className="pt-3 border-t border-indigo-200/60 dark:border-indigo-800/40 space-y-2">
               <div className="flex items-center justify-between">

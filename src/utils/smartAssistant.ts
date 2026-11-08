@@ -318,29 +318,54 @@ Each Center reflects a unique synthesis of Islamic architectural heritage and co
   // 9. LOCATION, ADDRESS & PARKING
   {
     id: 'location_and_parking',
-    keywords: ['location', 'address', 'where', 'parking', 'park', 'directions', 'drive', 'map', 'montrose', 'allen', 'parkway', 'airport', 'downtown'],
-    phrases: ['where is it located', 'what is the address', 'is there parking', 'where to park', 'how to get there', 'parking fee', 'directions to ismaili center'],
-    title: 'Address, Directions & Parking',
-    generateResponse: () => ({
-      text: `### Location, Directions & Parking
-
-- **Street Address**: **Montrose Boulevard & Allen Parkway, Houston, Texas 77019**
-- **Neighborhood**: Situated in Houston's historic, tree-lined **Montrose** cultural district, directly adjacent to Buffalo Bayou Park.
-- **Visitor Parking**:
-  - **Free On-Site Parking**: Dedicated complimentary visitor parking is provided on-site during all public visiting hours.
-  - **Bicycle Racks**: Available near garden entrances, connecting to the Buffalo Bayou hike and bike trail network.
-  - **Rideshare / Drop-Off**: Designated drop-off turnout along Montrose Boulevard.
-- **Proximity**:
-  - 5 minutes from Downtown Houston.
-  - 8 minutes from the Museum District and The Menil Collection.
-  - 25 minutes from George Bush Intercontinental Airport (IAH).
-  - 20 minutes from William P. Hobby Airport (HOU).`,
-      followUps: [
-        'What are the visitor hours?',
-        'Is the building ADA accessible?',
-        'How do I book a tour?',
-      ],
-    }),
+    keywords: ['location', 'address', 'where', 'parking', 'park', 'directions', 'direction', 'drive', 'driving', 'map', 'maps', 'google', 'montrose', 'allen', 'parkway', 'airport', 'hobby', 'iah', 'hou', 'bush', 'transit', 'metro', 'bus', 'downtown', 'gps', 'highway'],
+    phrases: ['where is it located', 'what is the address', 'is there parking', 'where to park', 'how to get there', 'parking fee', 'directions to ismaili center', 'how do i get there by car', 'open in google maps'],
+    title: 'Address, Directions & Google Maps',
+    generateResponse: (query) => {
+      const q = (query || '').toLowerCase();
+      // Urdu
+      if (/[\u0600-\u06FF]/.test(query)) {
+        return {
+          text: `**[Navigation Guide]**\nاسماعیلی سینٹر ہیوسٹن مونٹروز بولیوارڈ اور ایلن پارک وے کے چوراہے پر واقع ہے۔ آپ مونٹروز بولیوارڈ سے براہ راست گاڑی اندر لا سکتے ہیں جہاں تمام مہمانوں کے لیے مفت پارکنگ کی سہولت دستیاب ہے۔\n\n[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)`,
+          followUps: [
+            'مرکز کے کھلنے کے اوقات کیا ہیں؟',
+            'کیا ہوبی ایئرپورٹ قریب ہے؟',
+            'میں گائیڈڈ ٹور کیسے بک کروں؟',
+          ],
+        };
+      }
+      // Gujarati
+      if (/[\u0A80-\u0AFF]/.test(query)) {
+        return {
+          text: `**[Navigation Guide]**\nઇસ્માઇલી સેન્ટર હ્યુસ્ટન મોન્ટ્રોઝ બુલવર્ડ અને એલન પાર્કવેના ક્રોસિંગ પર સ્થિત છે. મુલાકાતીઓ માટે મોન્ટ્રોઝ બુલવર્ડના પ્રવેશદ્વાર પરથી મફત પાર્કિંગ ઉપલબ્ધ છે.\n\n[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)`,
+          followUps: [
+            'મુલાકાત માટેના જાહેર કલાકો શું છે?',
+            'હોબી એરપોર્ટથી ડ્રાઇવિંગમાં કેટલો સમય લાગે છે?',
+            'મફત માર્ગદર્શિત પ્રવાસ કેવી રીતે બુક કરવો?',
+          ],
+        };
+      }
+      // Airport query
+      if (q.includes('airport') || q.includes('hobby') || q.includes('hou') || q.includes('bush') || q.includes('iah')) {
+        return {
+          text: `**[Navigation Guide]**\nWilliam P. Hobby Airport (HOU) is the closest airport, located about 12 miles south with a drive time of 20 to 25 minutes via I-45 North. George Bush Intercontinental Airport (IAH) is approximately 25 miles north and takes about 30 to 35 minutes via I-69 or I-45 South.\n\n[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)`,
+          followUps: [
+            'Where is the visitor parking entrance?',
+            'What are the public visiting hours for the gardens?',
+            'Is there public transit from downtown Houston?',
+          ],
+        };
+      }
+      // Default Navigation Response
+      return {
+        text: `**[Navigation Guide]**\nThe Ismaili Center Houston is located at the intersection of Montrose Boulevard and Allen Parkway. When arriving, enter the visitor driveway directly from Montrose Boulevard, where free on-site parking and accessible spaces are available for all guests. Clear highway exits from I-10, I-45, or I-69 lead smoothly into Allen Parkway.\n\n[Open in Google Maps](https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd)`,
+        followUps: [
+          'What are the public visiting hours?',
+          'How far is the center from Hobby Airport (HOU)?',
+          'How do I book a free guided architectural tour?',
+        ],
+      };
+    },
   },
 
   // 10. VISITOR ETIQUETTE, DRESS CODE & PHOTOGRAPHY
@@ -865,6 +890,44 @@ export function stripUnwantedPhrases(text: string): string {
     .replace(/[ \t]{2,}/g, ' ');
 }
 
+export function extractSuggestedFollowUps(text: string): { reply: string; suggestedFollowUps: string[] } {
+  if (!text) return { reply: '', suggestedFollowUps: [] };
+  const followUpMatch = text.match(/\*\*\[Suggested Follow-ups\]\*\*|\[Suggested Follow-ups\]|Suggested Follow-ups:?/i);
+  if (!followUpMatch || followUpMatch.index === undefined) {
+    return {
+      reply: text,
+      suggestedFollowUps: [
+        'What are the public visiting hours?',
+        'How do I sign up for a guided architectural tour?',
+        'Where is the Ismaili Center Houston located?',
+      ],
+    };
+  }
+
+  const followUpSection = text.slice(followUpMatch.index);
+  const lines = followUpSection.split('\n');
+  const chips: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.startsWith('• ')) {
+      const q = trimmed.replace(/^[-*•]\s+/, '').replace(/\*\*/g, '').trim();
+      if (q && q.length > 2) {
+        chips.push(q);
+      }
+    }
+  }
+
+  return {
+    reply: text,
+    suggestedFollowUps: chips.length > 0 ? chips : [
+      'What are the public visiting hours?',
+      'How do I sign up for a guided architectural tour?',
+      'Where is the Ismaili Center Houston located?',
+    ],
+  };
+}
+
 /**
  * Clean text specifically for spoken voice / telephone manner:
  * Strips all markdown, symbols like *, bullets, headers, URLs, and awkward punctuation.
@@ -902,7 +965,16 @@ export function cleanSpokenPhoneText(text: string): string {
     .replace(/\bes\s+ismaili\b/gi, 'Ismaili')
     .replace(/\bes-ismaili\b/gi, 'Ismaili')
     // Smooth time dashes like 10:00 AM – 4:00 PM -> 10:00 AM to 4:00 PM
-    .replace(/(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[–—\-]\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))/g, '$1 to $2')
+    .replace(/(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))\s*[–—\-]\s*(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))/gi, '$1 to $2')
+    // Format AM and PM clearly so SpeechSynthesis pronounces "A M" and "P M" clearly
+    .replace(/\b(\d{1,2}):00\s*(?:AM|am)\b/gi, '$1 A M')
+    .replace(/\b(\d{1,2}):00\s*(?:PM|pm)\b/gi, '$1 P M')
+    .replace(/\b(\d{1,2}):(\d{2})\s*(?:AM|am)\b/gi, '$1 $2 A M')
+    .replace(/\b(\d{1,2}):(\d{2})\s*(?:PM|pm)\b/gi, '$1 $2 P M')
+    .replace(/\b(\d{1,2})\s*(?:AM|am)\b/g, '$1 A M')
+    .replace(/\b(\d{1,2})\s*(?:PM|pm)\b/g, '$1 P M')
+    .replace(/\bA\.M\.\b/gi, 'A M')
+    .replace(/\bP\.M\.\b/gi, 'P M')
     // Smooth phone number for speech synthesis
     .replace(/\+?1?\s*\(?713\)?[\s.-]*522[\s.-]*2026/g, '7 1 3, 5 2 2, 2 0 2 6')
     // Clean multiple newlines into smooth sentence breaks

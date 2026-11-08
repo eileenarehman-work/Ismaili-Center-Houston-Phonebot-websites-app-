@@ -102,7 +102,13 @@ export function humanizeSpokenText(text: string): string {
 
   // 1. Markdown, symbols, headers & links cleanup
   t = t
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 on our official website at ismailicenter dot org')
+    .replace(/\[Open in Google Maps\]\([^)]+\)/gi, 'Open in Google Maps.')
+    .replace(/\[([^\]]+)\]\([^)]*google\.com\/maps[^)]*\)/gi, '$1.')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    .replace(/\*\*\[Navigation Guide\]\*\*/gi, '')
+    .replace(/\[Navigation Guide\]/gi, '')
+    .replace(/\*\*\[Suggested Follow-ups\]\*\*[\s\S]*$/gi, '')
+    .replace(/\[Suggested Follow-ups\][\s\S]*$/gi, '')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/\*([^*]+)\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
@@ -141,14 +147,21 @@ export function humanizeSpokenText(text: string): string {
   // Phone number audio smoothing for telephone clarity
   t = t.replace(/\+?1?\s*\(?713\)?[\s.-]*522[\s.-]*2026/g, '7 1 3, 5 2 2, 2 0 2 6');
 
-  // Time formatting: 10:00 AM -> 10:00 A M, 4:00 PM -> 4:00 P M
-  t = t.replace(/(\d{1,2}):00\s*(AM|am)/g, '$1 A M');
-  t = t.replace(/(\d{1,2}):00\s*(PM|pm)/g, '$1 P M');
-  t = t.replace(/(\d{1,2}):(\d{2})\s*(AM|am)/g, '$1 $2 A M');
-  t = t.replace(/(\d{1,2}):(\d{2})\s*(PM|pm)/g, '$1 $2 P M');
+  // Time formatting: ensure AM and PM are clearly pronounced as "A M" and "P M" (not the word "am" or swallowed)
+  // Expand ranges like 10:00 AM – 4:00 PM -> 10:00 AM to 4:00 PM first
+  t = t.replace(/(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))\s*[–—\-]\s*(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))/gi, '$1 to $2');
 
-  // Time ranges: 10:00 AM – 4:00 PM -> 10:00 A M to 4:00 P M
-  t = t.replace(/(\d{1,2}(?::\d{2})?\s*[AaPp]\s*[Mm])\s*[–—\-]\s*(\d{1,2}(?::\d{2})?\s*[AaPp]\s*[Mm])/g, '$1 to $2');
+  // Handle times like 10:00 AM, 4:00 PM, 10:30 AM, 7:30 PM, 10 AM, 4 PM
+  t = t.replace(/\b(\d{1,2}):00\s*(?:AM|am)\b/gi, '$1 A M');
+  t = t.replace(/\b(\d{1,2}):00\s*(?:PM|pm)\b/gi, '$1 P M');
+  t = t.replace(/\b(\d{1,2}):(\d{2})\s*(?:AM|am)\b/gi, '$1 $2 A M');
+  t = t.replace(/\b(\d{1,2}):(\d{2})\s*(?:PM|pm)\b/gi, '$1 $2 P M');
+  t = t.replace(/\b(\d{1,2})\s*(?:AM|am)\b/g, '$1 A M');
+  t = t.replace(/\b(\d{1,2})\s*(?:PM|pm)\b/g, '$1 P M');
+
+  // Any standalone AM / PM following a time or digit
+  t = t.replace(/\bA\.M\.\b/gi, 'A M');
+  t = t.replace(/\bP\.M\.\b/gi, 'P M');
 
   // Street address smoothing
   t = t.replace(/\bBlvd\.?\b/gi, 'Boulevard');

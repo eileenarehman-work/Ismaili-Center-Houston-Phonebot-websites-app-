@@ -777,8 +777,8 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
 
         {/* Top Action Buttons & Layout Selector */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Layout Mode Selector (Stacked vs 3-Columns) */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700">
+          {/* Layout Mode Selector (Stacked vs 3-Columns) - Hidden on small mobile screens to prevent crowding */}
+          <div className="hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={() => setMobileLayoutMode('stacked')}
@@ -839,7 +839,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
           {/* Top Row: Phone Console & Keypad side-by-side on desktop/horizontal */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch w-full scroll-reveal">
             {/* Top-Left: Virtual Phone Console (Phone Button & Voice Controls) */}
-            <div className="flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-lg border border-slate-800 space-y-2.5 min-h-[470px]">
+            <div className="flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-[#0e1726] to-slate-950 text-white shadow-lg border border-slate-800 space-y-2.5 min-h-0 md:min-h-[470px]">
               {/* Top Status Header */}
               <div className="w-full flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-1.5 font-mono">
                 <span className="flex items-center gap-1.5">
@@ -1119,7 +1119,7 @@ export const VoiceHotlineView: React.FC<VoiceHotlineViewProps> = ({ isAdmin = fa
             </div>
 
             {/* Top-Right: Keypad & Directory */}
-            <div className="flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 min-h-[470px]">
+            <div className="flex flex-col justify-between bg-white dark:bg-[#131d2e] rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 min-h-0 md:min-h-[470px]">
               {/* Keypad Header */}
               <div className="border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
                 <div>

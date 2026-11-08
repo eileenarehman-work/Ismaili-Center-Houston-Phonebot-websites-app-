@@ -61,10 +61,19 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
               <li>
                 <button
                   type="button"
-                  onClick={() => onSelectTab('visitor')}
+                  onClick={() => onSelectTab('navigations')}
                   className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors cursor-pointer"
                 >
-                  Visitor &amp; Architecture Guide
+                  Navigations &amp; Directions
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onSelectTab('events')}
+                  className="hover:text-[#007ba8] dark:hover:text-teal-400 transition-colors cursor-pointer"
+                >
+                  Events &amp; Guided Tours
                 </button>
               </li>
               <li>

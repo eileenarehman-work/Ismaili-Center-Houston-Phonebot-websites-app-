@@ -23,7 +23,9 @@ import {
   Megaphone,
   Layers,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Navigation,
+  Calendar
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -126,10 +128,24 @@ export const Header: React.FC<HeaderProps> = ({
       dotColorClass: 'bg-emerald-500',
     },
     {
-      id: 'visitor',
-      label: 'Visitor',
-      icon: <Info className="w-4 h-4" />,
+      id: 'navigations',
+      label: 'Navigations',
+      icon: <Navigation className="w-4 h-4" />,
       shortcut: '4',
+      colorName: 'Teal Emerald',
+      activeClass: 'bg-teal-600 text-white shadow-md shadow-teal-600/25 ring-2 ring-teal-500',
+      inactiveClass: 'bg-teal-50/70 dark:bg-teal-950/30 text-teal-900 dark:text-teal-200 border border-teal-200/80 dark:border-teal-800/60',
+      inactiveHoverClass: 'hover:bg-teal-100/80 dark:hover:bg-teal-900/50 hover:border-teal-400',
+      iconColorClass: 'text-teal-600 dark:text-teal-400',
+      badgeActiveClass: 'bg-white/20 text-white',
+      badgeInactiveClass: 'bg-teal-200/70 dark:bg-teal-800/60 text-teal-800 dark:text-teal-200',
+      dotColorClass: 'bg-teal-500',
+    },
+    {
+      id: 'events',
+      label: 'Events',
+      icon: <Calendar className="w-4 h-4" />,
+      shortcut: '5',
       colorName: 'Warm Amber',
       activeClass: 'bg-amber-600 text-white shadow-md shadow-amber-600/25 ring-2 ring-amber-500',
       inactiveClass: 'bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/60',
@@ -143,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
       id: 'videos',
       label: 'Media',
       icon: <Tv className="w-4 h-4" />,
-      shortcut: '5',
+      shortcut: '6',
       colorName: 'Royal Purple',
       activeClass: 'bg-purple-600 text-white shadow-md shadow-purple-600/25 ring-2 ring-purple-500',
       inactiveClass: 'bg-purple-50/70 dark:bg-purple-950/30 text-purple-900 dark:text-purple-200 border border-purple-200/80 dark:border-purple-800/60',
@@ -157,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({
       id: 'admin' as NavigationTab,
       label: 'Admin',
       icon: <ShieldCheck className="w-4 h-4" />,
-      shortcut: '6',
+      shortcut: '7',
       colorName: 'Amber Gold',
       activeClass: 'bg-amber-600 text-white shadow-md shadow-amber-600/25 ring-2 ring-amber-500',
       inactiveClass: 'bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-700/60',
@@ -476,7 +492,7 @@ export const Header: React.FC<HeaderProps> = ({
           style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
         >
           {tabs.map((tab) => {
-            const isActive = currentTab === tab.id;
+            const isActive = currentTab === tab.id || (currentTab === 'visitor' && tab.id === 'navigations');
             return (
               <motion.button
                 key={tab.id}
@@ -507,19 +523,19 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </nav>
 
-        {/* Mobile Horizontal Quick-Tab Strip - View all full tab names directly on mobile without scrolling */}
-        <nav className="flex md:hidden overflow-x-auto py-1.5 px-0 gap-1.5 scrollbar-none border-t border-slate-200/60 dark:border-slate-800 w-full">
+        {/* Mobile Horizontal Quick-Tab Strip - Smooth scrollable tab bar with comfortable touch targets and subtle scroll hints */}
+        <nav className="flex md:hidden overflow-x-auto py-2 px-1 gap-1.5 scrollbar-none border-t border-slate-200/60 dark:border-slate-800 w-full touch-pan-x -mx-1">
           {tabs.map((tab) => {
-            const isActive = currentTab === tab.id;
+            const isActive = currentTab === tab.id || (currentTab === 'visitor' && tab.id === 'navigations');
             return (
               <motion.button
                 key={tab.id}
                 type="button"
-                whileTap={{ scale: 0.94 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onSelectTab(tab.id)}
-                className={`shrink-0 flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`shrink-0 flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? `${tab.activeClass} shadow-sm`
+                    ? `${tab.activeClass} shadow-xs ring-1 ring-white/20`
                     : `${tab.inactiveClass} ${tab.inactiveHoverClass}`
                 }`}
               >
@@ -554,7 +570,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="space-y-1.5">
             {tabs.map((tab) => {
-              const isActive = currentTab === tab.id;
+              const isActive = currentTab === tab.id || (currentTab === 'visitor' && tab.id === 'navigations');
               return (
                 <button
                   key={tab.id}

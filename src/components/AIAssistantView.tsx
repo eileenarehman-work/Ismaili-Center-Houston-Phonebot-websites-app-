@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage } from '../types.ts';
+import { ChatMessage, NavigationTab } from '../types.ts';
 import { formatCentralTimestamp } from '../utils/time.ts';
 import { getSmartAssistantResponse, queryKnowledgeEngine } from '../utils/smartAssistant.ts';
 import { humanizeSpokenText, getGoogleUKEnglishMaleVoice } from '../utils/naturalVoice.ts';
@@ -16,11 +16,12 @@ import {
   Sparkles,
   ExternalLink,
   Info,
-  Cpu
+  Cpu,
+  MapPin
 } from 'lucide-react';
 
 interface AIAssistantViewProps {
-  onNavigateToTab?: (tab: 'schedule' | 'visitor' | 'videos') => void;
+  onNavigateToTab?: (tab: NavigationTab) => void;
 }
 
 export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTab }) => {
@@ -95,13 +96,13 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
   }, [messages, isTyping]);
 
   const quickQueries = [
+    { label: 'Directions & Maps', query: 'How do I get there by car and where do I park?' },
     { label: 'Visitor Hours', query: 'When is the Ismaili Center Houston open to visitors?' },
     { label: 'Book a Tour', query: 'How do I book a guided tour of the center?' },
-    { label: 'Prayer Schedule', query: 'What is the Jamatkhana prayer schedule?' },
+    { label: 'Airport Transit', query: 'Which airport is closest and how long does it take to drive here?' },
     { label: 'Architecture & Gardens', query: 'Who designed the building and gardens?' },
-    { label: 'Who is the Aga Khan?', query: 'Who is His Highness the Aga Khan?' },
-    { label: 'About the Ismaili Faith', query: 'What is the Ismaili Shia Muslim faith and tradition?' },
-    { label: 'Location', query: 'Where is the Ismaili Center located in Houston?' },
+    { label: 'Prayer Schedule', query: 'What is the Jamatkhana prayer schedule?' },
+    { label: 'Public Transit', query: 'Is there public transit via METRO bus to the center?' },
   ];
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -250,14 +251,74 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
   const renderFormattedContent = (content: string) => {
     const lines = content.split('\n');
     return lines.map((line, idx) => {
-      // Check for bullet list item
-      const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('* ');
-      const cleanLine = isBullet ? line.trim().substring(2) : line;
+      const trimmed = line.trim();
 
-      // Parse bold **text** and URLs
-      const parts = cleanLine.split(/(\*\*.*?\*\*|https?:\/\/[^\s]+)/g);
+      // Check for standalone Google Maps link
+      if (/^\[Open in Google Maps\]\(https?:\/\/[^\s)]+\)$/i.test(trimmed)) {
+        const urlMatch = trimmed.match(/\((https?:\/\/[^\s)]+)\)/);
+        const url = urlMatch ? urlMatch[1] : 'https://www.google.com/maps/search/?api=1&query=Ismaili+Center+Houston+Montrose+Blvd';
+        return (
+          <div key={idx} className="my-2.5">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs shadow-md transition-all active:scale-95 group cursor-pointer"
+              title="Open Navigation in Google Maps"
+            >
+              <MapPin className="w-4 h-4 text-emerald-100 group-hover:scale-110 transition-transform" />
+              <span>Open in Google Maps</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-90 group-hover:translate-x-0.5 transition-transform" />
+            </a>
+          </div>
+        );
+      }
+
+      // Check for bullet list item
+      const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+      const cleanLine = isBullet ? trimmed.substring(2) : line;
+
+      // Parse markdown links [label](url), bold **text**, and raw URLs
+      const parts = cleanLine.split(/(\[[^\]]+\]\(https?:\/\/[^\s)]+\)|\*\*.*?\*\*|https?:\/\/[^\s]+)/g);
 
       const parsedElements = parts.map((part, pIdx) => {
+        // Markdown link [Label](url)
+        const mdLinkMatch = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+        if (mdLinkMatch) {
+          const label = mdLinkMatch[1];
+          const url = mdLinkMatch[2];
+          const isGoogleMaps = label.toLowerCase().includes('google map') || url.includes('google.com/maps');
+
+          if (isGoogleMaps) {
+            return (
+              <a
+                key={pIdx}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 my-1 rounded-lg bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition-colors shadow-2xs cursor-pointer"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>{label}</span>
+                <ExternalLink className="w-3 h-3 ml-0.5 opacity-80" />
+              </a>
+            );
+          }
+
+          return (
+            <a
+              key={pIdx}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-[#007ba8] dark:text-teal-400 hover:underline font-semibold"
+            >
+              <span>{label}</span>
+              <ExternalLink className="w-3 h-3 ml-1 flex-shrink-0" />
+            </a>
+          );
+        }
+
         if (part.startsWith('**') && part.endsWith('**')) {
           return (
             <strong key={pIdx} className="font-semibold text-slate-900 dark:text-white">
@@ -265,6 +326,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ onNavigateToTa
             </strong>
           );
         }
+
         if (part.startsWith('http://') || part.startsWith('https://')) {
           return (
             <a

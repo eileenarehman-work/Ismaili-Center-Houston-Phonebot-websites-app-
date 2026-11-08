@@ -58,7 +58,7 @@ export const VideosView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Title Banner */}
-      <div className="scroll-reveal bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="scroll-reveal bg-white dark:bg-[#131d2e] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
             <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-[#007ba8] dark:text-teal-400">

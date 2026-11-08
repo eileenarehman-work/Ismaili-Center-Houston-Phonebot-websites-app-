@@ -1,4 +1,4 @@
-export type NavigationTab = 'assistant' | 'hotline' | 'schedule' | 'visitor' | 'videos' | 'admin';
+export type NavigationTab = 'assistant' | 'hotline' | 'schedule' | 'navigations' | 'events' | 'videos' | 'admin' | 'visitor';
 
 export interface ChatMessage {
   id: string;
